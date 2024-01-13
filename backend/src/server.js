@@ -1,7 +1,7 @@
 const http = require("http");
 const express = require("express");
 const { Server } = require("socket.io");
-const joinRoom = require("./utils");
+const { joinRoom } = require("./utils");
 
 const app = express();
 
@@ -19,11 +19,11 @@ io.on("connection", (socket) => {
   console.log(`a user connected ${socket.id}`);
 
   joinRoom(socket);
-
-  socket.on("event", function (data) {
-    console.log(data);
-  });
 });
+
+function sortAlphanumeric(arr) {
+  return arr.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+}
 
 httpServer.listen(3000, () => {
   console.log("Server is running on port 3000 ");

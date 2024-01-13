@@ -1,6 +1,7 @@
 const http = require("http");
 const express = require("express");
 const { Server } = require("socket.io");
+const joinRoom = require("./utils");
 
 const app = express();
 
@@ -16,6 +17,12 @@ const io = new Server(httpServer, {
 
 io.on("connection", (socket) => {
   console.log(`a user connected ${socket.id}`);
+
+  joinRoom(socket);
+
+  socket.on("event", function (data) {
+    console.log(data);
+  });
 });
 
 httpServer.listen(3000, () => {

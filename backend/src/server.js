@@ -21,10 +21,6 @@ io.on("connection", (socket) => {
   joinRoom(socket);
 });
 
-function sortAlphanumeric(arr) {
-  return arr.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
-}
-
 httpServer.listen(3000, () => {
   console.log("Server is running on port 3000 ");
 });

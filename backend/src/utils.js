@@ -19,6 +19,18 @@ function joinRoom(socket) {
       socket.to(currentRoom).emit("event", data);
     });
 
+    socket.on("winner", function (data) {
+      socket.to(currentRoom).emit("winner", data);
+    });
+
+    socket.on("draw", function (data) {
+      socket.to(currentRoom).emit("draw", data);
+    });
+
+    socket.on("user-disconnect", () => {
+      socket.to(currentRoom).emit("user-disconnected", socket.id);
+    });
+
     // notifying the new user about the new users
     socket.to(currentRoom).emit("new-user-connected", socket.id);
   });

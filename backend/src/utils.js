@@ -13,8 +13,6 @@ function joinRoom(socket, io) {
     // getting room details
     const sockets = await io.in(currentRoom).fetchSockets();
 
-    console.log("Room size: ", sockets.length);
-
     // don't join if size is greater than or equal to 2
     if (sockets.length >= 2) {
       console.log("Room is full no joining");
@@ -25,6 +23,19 @@ function joinRoom(socket, io) {
     } else {
       // joining the room
       socket.join(currentRoom);
+
+      console.log("Room size: ", sockets.length);
+
+      // being 1 means two sockets has been joined
+      // generating whose turn first
+      if (sockets.length == 1) {
+        let randomIndex = Math.floor(Math.random() * 2);
+        let randomUser = [sender, receiver][randomIndex];
+
+        console.log("Random user: ", randomUser);
+
+        socket.emit("player-turn", randomUser);
+      }
 
       socket.on("event", function (data) {
         socket.broadcast.to(currentRoom).emit("event", data);

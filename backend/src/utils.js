@@ -1,3 +1,5 @@
+const { getGameInfo, setGameInfo, addGameInfo } = require("./game_info.js");
+
 function joinRoom(socket, io) {
   // object contains, myUid, otherUid
   socket.on("join-room", async (object) => {
@@ -33,6 +35,11 @@ function joinRoom(socket, io) {
         let randomUser = [player1, player2][randomIndex % 2];
 
         console.log("Random user: ", randomUser);
+
+        addGameInfo({
+          room: currentRoom,
+          "player-turn": randomUser,
+        });
 
         socket.broadcast.emit("player-turn", randomUser);
       }

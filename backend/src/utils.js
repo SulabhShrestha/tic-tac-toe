@@ -16,7 +16,7 @@ function joinRoom(socket) {
     console.log("currentRoom", currentRoom);
 
     socket.on("event", function (data) {
-      socket.to(currentRoom).emit("event", data);
+      socket.broadcast.to(currentRoom).emit("event", data);
     });
 
     socket.on("winner", function (data) {

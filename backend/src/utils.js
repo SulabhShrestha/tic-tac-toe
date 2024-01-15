@@ -1,14 +1,14 @@
 function joinRoom(socket, io) {
   // object contains, myUid, otherUid
   socket.on("join-room", async (object) => {
-    console.log("User joined room:", object["to"]);
+    console.log("User joined room:", object["from"]);
 
     // getting the sender and receiver user id
-    const sender = object["to"];
-    const receiver = object["from"];
+    const player1 = object["to"];
+    const player2 = object["from"];
 
     // sorting the user id to maintain the consistency of the room name
-    currentRoom = sortAlphanumeric([sender, receiver]).join("-");
+    currentRoom = sortAlphanumeric([player1, player2]).join("-");
 
     // getting room details
     const sockets = await io.in(currentRoom).fetchSockets();
@@ -29,12 +29,12 @@ function joinRoom(socket, io) {
       // being 1 means two sockets has been joined
       // generating whose turn first
       if (sockets.length == 1) {
-        let randomIndex = Math.floor(Math.random() * 2);
-        let randomUser = [sender, receiver][randomIndex];
+        let randomIndex = Math.floor(Math.random() * 100);
+        let randomUser = [player1, player2][randomIndex % 2];
 
         console.log("Random user: ", randomUser);
 
-        socket.emit("player-turn", randomUser);
+        socket.broadcast.emit("player-turn", randomUser);
       }
 
       socket.on("event", function (data) {

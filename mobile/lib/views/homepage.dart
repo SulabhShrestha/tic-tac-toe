@@ -41,15 +41,7 @@ class _HomePageState extends State<HomePage> {
               crossAxisCount: 3,
             ),
             children: [
-              _buildGridCell(),
-              _buildGridCell(),
-              _buildGridCell(),
-              _buildGridCell(),
-              _buildGridCell(),
-              _buildGridCell(),
-              _buildGridCell(),
-              _buildGridCell(),
-              _buildGridCell(),
+              for (int a = 0; a < 9; a++) _buildGridCell(a),
             ],
           ),
         ],
@@ -57,13 +49,22 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildGridCell() {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(),
-      ),
-      child: const Center(
-        child: Text("Hello"),
+  Widget _buildGridCell(int index) {
+    return GestureDetector(
+      onTap: () {
+        socketWebServices.sendData(data: {
+          "from": "123",
+          "to": "456",
+          "selectedIndex": index,
+        });
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(),
+        ),
+        child: const Center(
+          child: Text("Hello"),
+        ),
       ),
     );
   }

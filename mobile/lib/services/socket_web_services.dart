@@ -32,4 +32,8 @@ class SocketWebServices {
       "to": otherUserId,
     });
   }
+
+  void sendData({required Map<String, dynamic> data}) {
+    socket.emit("event", data);
+  }
 }

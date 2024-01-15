@@ -1,6 +1,6 @@
-function joinRoom(socket) {
+function joinRoom(socket, io) {
   // object contains, myUid, otherUid
-  socket.on("join-room", (object) => {
+  socket.on("join-room", async (object) => {
     console.log("User joined room:", object["to"]);
 
     // getting the sender and receiver user id
@@ -10,29 +10,41 @@ function joinRoom(socket) {
     // sorting the user id to maintain the consistency of the room name
     currentRoom = sortAlphanumeric([sender, receiver]).join("-");
 
-    // joining the room
-    socket.join(currentRoom);
+    // getting room details
+    const sockets = await io.in(currentRoom).fetchSockets();
 
-    console.log("currentRoom", currentRoom);
+    console.log("Room size: ", sockets.length);
 
-    socket.on("event", function (data) {
-      socket.broadcast.to(currentRoom).emit("event", data);
-    });
+    // don't join if size is greater than or equal to 2
+    if (sockets.length >= 2) {
+      console.log("Room is full no joining");
+      socket.emit(
+        "room-not-found",
+        "The room you searching doesn't exists or is full"
+      );
+    } else {
+      // joining the room
+      socket.join(currentRoom);
 
-    socket.on("winner", function (data) {
-      socket.to(currentRoom).emit("winner", data);
-    });
+      socket.on("event", function (data) {
+        socket.broadcast.to(currentRoom).emit("event", data);
+      });
 
-    socket.on("draw", function (data) {
-      socket.to(currentRoom).emit("draw", data);
-    });
+      socket.on("winner", function (data) {
+        socket.to(currentRoom).emit("winner", data);
+      });
 
-    socket.on("user-disconnect", () => {
-      socket.to(currentRoom).emit("user-disconnected", socket.id);
-    });
+      socket.on("draw", function (data) {
+        socket.to(currentRoom).emit("draw", data);
+      });
 
-    // notifying the new user about the new users
-    socket.to(currentRoom).emit("new-user-connected", socket.id);
+      socket.on("user-disconnect", () => {
+        socket.to(currentRoom).emit("user-disconnected", socket.id);
+      });
+
+      // notifying the new user about the new users
+      socket.to(currentRoom).emit("new-user-connected", socket.id);
+    }
   });
 }
 

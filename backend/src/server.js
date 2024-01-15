@@ -18,7 +18,7 @@ const io = new Server(httpServer, {
 io.on("connection", (socket) => {
   console.log(`a user connected ${socket.id}`);
 
-  joinRoom(socket);
+  joinRoom(socket, io);
 });
 
 httpServer.listen(3000, () => {

@@ -1,16 +1,19 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile/models/tic_tac_model.dart';
+import 'package:mobile/providers/tic_tac_providers.dart';
 import 'package:mobile/services/socket_web_services.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends ConsumerState<HomePage> {
   late SocketWebServices socketWebServices;
 
   @override
@@ -19,7 +22,10 @@ class _HomePageState extends State<HomePage> {
     socketWebServices.joinRoom(myUid: "123", otherUserId: "456");
 
     socketWebServices.socket.on("event", (data) {
-      log("Data from socket $data");
+      ref.watch(ticTacProvider.notifier).addTicTac(TicTacModel(
+          myUID: data["to"],
+          otherUID: data["from"],
+          selectedIndex: data["selectedIndex"]));
     });
     super.initState();
   }
@@ -50,6 +56,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildGridCell(int index) {
+    var ticTacProv = ref.watch(ticTacProvider); // Assuming you are using hooks
+
+    bool isSelected = ticTacProv.any((model) => model.selectedIndex == index);
+
     return GestureDetector(
       onTap: () {
         socketWebServices.sendData(data: {
@@ -62,8 +72,8 @@ class _HomePageState extends State<HomePage> {
         decoration: BoxDecoration(
           border: Border.all(),
         ),
-        child: const Center(
-          child: Text("Hello"),
+        child: Center(
+          child: isSelected ? Text("hy") : Text("Hello"),
         ),
       ),
     );

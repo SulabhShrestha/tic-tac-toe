@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:mobile/services/socket_web_services.dart';
 
@@ -9,9 +11,16 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  late SocketWebServices socketWebServices;
+
   @override
   void initState() {
-    SocketWebServices().init();
+    socketWebServices = SocketWebServices()..init();
+    socketWebServices.joinRoom(myUid: "123", otherUserId: "456");
+
+    socketWebServices.socket.on("event", (data) {
+      log("Data from socket $data");
+    });
     super.initState();
   }
 

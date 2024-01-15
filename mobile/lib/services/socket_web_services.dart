@@ -21,4 +21,15 @@ class SocketWebServices {
       log("Connected to the server");
     });
   }
+
+  void disconnect() {
+    socket.disconnect();
+  }
+
+  void joinRoom({required String myUid, required String otherUserId}) {
+    socket.emit('join-room', {
+      "from": myUid,
+      "to": otherUserId,
+    });
+  }
 }

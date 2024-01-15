@@ -1,4 +1,9 @@
-const { getGameInfo, setGameInfo, addGameInfo } = require("./game_info.js");
+const {
+  getGameInfoByRoom,
+  setGameInfo,
+  updateGameInfoByRoom,
+  addGameInfo,
+} = require("./game_info.js");
 
 function joinRoom(socket, io) {
   // object contains, myUid, otherUid
@@ -45,6 +50,17 @@ function joinRoom(socket, io) {
       }
 
       socket.on("event", function (data) {
+        // getting uid that triggered this event
+        let userId = getGameInfoByRoom(currentRoom)["player-turn"];
+
+        const selectedUserIndex = [player1, player2].indexOf(userId);
+
+        const nextPlayerTurn = [player1, player2][(selectedUserIndex + 1) % 2];
+
+        updateGameInfoByRoom(currentRoom, {
+          "player-turn": nextPlayerTurn,
+        });
+
         socket.broadcast.to(currentRoom).emit("event", data);
       });
 

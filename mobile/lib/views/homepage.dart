@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/models/tic_tac_model.dart';
+import 'package:mobile/providers/player_turn_provider.dart';
 import 'package:mobile/providers/tic_tac_providers.dart';
 import 'package:mobile/services/socket_web_services.dart';
 
@@ -21,6 +22,11 @@ class _HomePageState extends ConsumerState<HomePage> {
     socketWebServices = SocketWebServices()..init();
     socketWebServices.joinRoom(myUid: "123", otherUserId: "456");
 
+    socketWebServices.socket.on("player-turn", (playerUid) {
+      log("Player turn $playerUid");
+      ref.watch(playerTurnProvider.notifier).state = playerUid;
+    });
+
     socketWebServices.socket.on("event", (data) {
       ref.watch(ticTacProvider.notifier).addTicTac(TicTacModel(
           myUID: data["to"],
@@ -38,7 +44,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // who's turn
-          const Text("Your turn"),
+          Text("${ref.watch(playerTurnProvider)} turn"),
 
           GridView(
             physics: const NeverScrollableScrollPhysics(),
@@ -61,19 +67,21 @@ class _HomePageState extends ConsumerState<HomePage> {
     bool isSelected = ticTacProv.any((model) => model.selectedIndex == index);
 
     return GestureDetector(
-      onTap: () {
-        socketWebServices.sendData(data: {
-          "from": "123",
-          "to": "456",
-          "selectedIndex": index,
-        });
-      },
+      onTap: isSelected
+          ? null
+          : () {
+              socketWebServices.sendData(data: {
+                "from": "123",
+                "to": "456",
+                "selectedIndex": index,
+              });
+            },
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(),
         ),
         child: Center(
-          child: isSelected ? Text("hy") : Text("Hello"),
+          child: isSelected ? const Text("hy") : Text("Hello"),
         ),
       ),
     );

@@ -27,6 +27,8 @@ class SocketWebServices {
   }
 
   void joinRoom({required String myUid, required String otherUserId}) {
+    log("Joining room");
+
     socket.emit('join-room', {
       "from": myUid,
       "to": otherUserId,

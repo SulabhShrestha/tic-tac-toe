@@ -28,6 +28,10 @@ class _HomePageState extends ConsumerState<HomePage> {
     });
 
     socketWebServices.socket.on("event", (data) {
+      // changing player state
+      ref.watch(playerTurnProvider.notifier).state = data["player-turn"];
+
+      // adding to selected
       ref.watch(ticTacProvider.notifier).addTicTac(TicTacModel(
           myUID: data["to"],
           otherUID: data["from"],
@@ -37,12 +41,23 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   @override
+  void dispose() {
+    socketWebServices.disconnect();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
           child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          GestureDetector(
+              onTap: () {
+                socketWebServices.joinRoom(myUid: "123", otherUserId: "456");
+              },
+              child: Text("Again")),
           // who's turn
           Text("${ref.watch(playerTurnProvider)} turn"),
 

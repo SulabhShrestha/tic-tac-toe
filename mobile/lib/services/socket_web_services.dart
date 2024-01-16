@@ -22,6 +22,7 @@ class SocketWebServices {
     });
   }
 
+  // sending disconnect status to the server
   void disconnect() {
     socket.disconnect();
   }

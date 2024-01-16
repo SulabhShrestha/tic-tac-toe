@@ -40,6 +40,11 @@ module.exports = {
       // If the room doesn't match, return the original object
       return game;
     });
-    console.log("game info", game_info[0]["selectedCells"], game_info);
+  },
+
+  getSelectedCellsInfoByRoom: (room) => {
+    const game = game_info.find((game) => game.room === room);
+
+    return game.selectedCells;
   },
 };

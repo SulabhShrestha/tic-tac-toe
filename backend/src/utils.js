@@ -4,6 +4,7 @@ const {
   updateGameInfoByRoom,
   addGameInfo,
   addSelectedCellInfo,
+  getSelectedCellsInfoByRoom,
 } = require("./game_info.js");
 
 function joinRoom(socket, io) {
@@ -76,6 +77,9 @@ function joinRoom(socket, io) {
           selectedIndex: data["selectedIndex"],
         });
 
+        const selectedCellsInfo = getSelectedCellsInfoByRoom(currentRoom);
+        checkForConclusion(selectedCellsInfo);
+
         // sending the event to the connected clients
         io.to(currentRoom).emit("event", {
           ...data,
@@ -106,6 +110,18 @@ function joinRoom(socket, io) {
 // Custom sorting function for alphanumeric strings, useful for maintaining the consistency of the room name
 function sortAlphanumeric(arr) {
   return arr.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+}
+
+function checkForConclusion(selectedCellsInfo) {
+  // Grouping based on unique selectedBy values
+  const groupedBySelectedBy = selectedCellsInfo.reduce((acc, cell) => {
+    const { selectedBy, selectedIndex } = cell;
+    acc[selectedBy] = acc[selectedBy] || [];
+    acc[selectedBy].push(selectedIndex);
+    return acc;
+  }, {});
+
+  console.log(groupedBySelectedBy);
 }
 
 module.exports = { joinRoom };

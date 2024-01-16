@@ -23,4 +23,23 @@ module.exports = {
       return game;
     });
   },
+
+  // New method to add selected cells to the game info
+  addSelectedCellInfo: (room, cellsInfo) => {
+    game_info = game_info.map((game) => {
+      // Check if the room property matches the provided room
+      if (game.room === room) {
+        // Check if selectedCells is an array, if not, initialize it as an empty array
+        const currentSelectedCells = Array.isArray(game.selectedCells)
+          ? game.selectedCells
+          : [];
+
+        // Update the matched object with new selected cells
+        return { ...game, selectedCells: [...currentSelectedCells, cellsInfo] };
+      }
+      // If the room doesn't match, return the original object
+      return game;
+    });
+    console.log("game info", game_info[0]["selectedCells"], game_info);
+  },
 };

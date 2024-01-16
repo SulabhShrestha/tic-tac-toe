@@ -3,6 +3,7 @@ const {
   setGameInfo,
   updateGameInfoByRoom,
   addGameInfo,
+  addSelectedCellInfo,
 } = require("./game_info.js");
 
 function joinRoom(socket, io) {
@@ -64,10 +65,18 @@ function joinRoom(socket, io) {
 
         const nextPlayerTurn = [player1, player2][(selectedUserIndex + 1) % 2];
 
+        // storing the nextPlayer turn in the game info
         updateGameInfoByRoom(currentRoom, {
           "player-turn": nextPlayerTurn,
         });
 
+        // adding the selected cells info to the game info
+        addSelectedCellInfo(currentRoom, {
+          selectedBy: data["selectedBy"],
+          selectedIndex: data["selectedIndex"],
+        });
+
+        // sending the event to the connected clients
         io.to(currentRoom).emit("event", {
           ...data,
           "player-turn": nextPlayerTurn,

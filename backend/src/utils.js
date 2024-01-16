@@ -117,6 +117,7 @@ function checkForConclusion(selectedCellsInfo, io) {
     return acc;
   }, {});
 
+  // first priority is to check if any of the user has won
   for (const key in groupedBySelectedBy) {
     const element = groupedBySelectedBy[key];
 
@@ -125,7 +126,18 @@ function checkForConclusion(selectedCellsInfo, io) {
 
       // winner declared
       io.to(currentRoom).emit("winner", key);
+      return;
     }
+  }
+
+  // and then, checking for draw
+  // but the combine should be = 36, as 0+...8
+  if (
+    Object.values(groupedBySelectedBy)
+      .flat()
+      .reduce((sum, index) => sum + index, 0) === 36
+  ) {
+    io.to(currentRoom).emit("draw", "Game is draw");
   }
 }
 

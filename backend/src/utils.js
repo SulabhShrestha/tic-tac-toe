@@ -78,17 +78,13 @@ function joinRoom(socket, io) {
         });
 
         const selectedCellsInfo = getSelectedCellsInfoByRoom(currentRoom);
-        checkForConclusion(selectedCellsInfo);
+        checkForConclusion(selectedCellsInfo, io);
 
         // sending the event to the connected clients
         io.to(currentRoom).emit("event", {
           ...data,
           "player-turn": nextPlayerTurn,
         });
-      });
-
-      socket.on("winner", function (data) {
-        io.to(currentRoom).emit("winner", data);
       });
 
       socket.on("draw", function (data) {
@@ -112,7 +108,7 @@ function sortAlphanumeric(arr) {
   return arr.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
 }
 
-function checkForConclusion(selectedCellsInfo) {
+function checkForConclusion(selectedCellsInfo, io) {
   // Grouping based on unique selectedBy values
   const groupedBySelectedBy = selectedCellsInfo.reduce((acc, cell) => {
     const { selectedBy, selectedIndex } = cell;
@@ -121,7 +117,35 @@ function checkForConclusion(selectedCellsInfo) {
     return acc;
   }, {});
 
-  console.log(groupedBySelectedBy);
+  for (const key in groupedBySelectedBy) {
+    const element = groupedBySelectedBy[key];
+
+    if (hasWinningSequence(element)) {
+      console.log(`${key} is the winner!`);
+
+      // winner declared
+      io.to(currentRoom).emit("winner", key);
+    }
+  }
+}
+
+function hasWinningSequence(indices) {
+  // Define the winning sequences
+  const winningSequences = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8], // Rows
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8], // Columns
+    [0, 4, 8],
+    [2, 4, 6], // Diagonals
+  ];
+
+  // Check if any winning sequence is a subset of the provided indices
+  return winningSequences.some((sequence) =>
+    sequence.every((index) => indices.includes(index))
+  );
 }
 
 module.exports = { joinRoom };

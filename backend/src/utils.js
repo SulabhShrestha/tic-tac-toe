@@ -46,7 +46,7 @@ function joinRoom(socket, io) {
           "player-turn": randomUser,
         });
 
-        socket.broadcast.emit("player-turn", randomUser);
+        io.to(currentRoom).emit("player-turn", randomUser);
       }
 
       socket.on("event", function (data) {
@@ -61,23 +61,23 @@ function joinRoom(socket, io) {
           "player-turn": nextPlayerTurn,
         });
 
-        socket.broadcast.to(currentRoom).emit("event", data);
+        io.to(currentRoom).emit("event", data);
       });
 
       socket.on("winner", function (data) {
-        socket.to(currentRoom).emit("winner", data);
+        io.to(currentRoom).emit("winner", data);
       });
 
       socket.on("draw", function (data) {
-        socket.to(currentRoom).emit("draw", data);
+        io.to(currentRoom).emit("draw", data);
       });
 
       socket.on("user-disconnect", () => {
-        socket.to(currentRoom).emit("user-disconnected", socket.id);
+        io.to(currentRoom).emit("user-disconnected", socket.id);
       });
 
       // notifying the new user about the new users
-      socket.to(currentRoom).emit("new-user-connected", socket.id);
+      io.to(currentRoom).emit("new-user-connected", socket.id);
     }
   });
 }

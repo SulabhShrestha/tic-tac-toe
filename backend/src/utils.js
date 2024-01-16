@@ -61,7 +61,10 @@ function joinRoom(socket, io) {
           "player-turn": nextPlayerTurn,
         });
 
-        io.to(currentRoom).emit("event", data);
+        io.to(currentRoom).emit("event", {
+          ...data,
+          "player-turn": nextPlayerTurn,
+        });
       });
 
       socket.on("winner", function (data) {
@@ -72,7 +75,9 @@ function joinRoom(socket, io) {
         io.to(currentRoom).emit("draw", data);
       });
 
-      socket.on("user-disconnect", () => {
+      // triggers automatically when user is disconnected
+      socket.on("disconnect", () => {
+        console.log("User disconnected");
         io.to(currentRoom).emit("user-disconnected", socket.id);
       });
 

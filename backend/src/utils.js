@@ -46,7 +46,14 @@ function joinRoom(socket, io) {
           "player-turn": randomUser,
         });
 
-        io.to(currentRoom).emit("player-turn", randomUser);
+        // generating player1 and player2 randomly
+        const p1 = randomUser;
+        const p2 = [player1, player2][(randomIndex + 1) % 2];
+
+        io.to(currentRoom).emit("game-init", {
+          player1: p1,
+          player2: p2,
+        });
       }
 
       socket.on("event", function (data) {

@@ -35,6 +35,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       ref.watch(ticTacProvider.notifier).addTicTac(TicTacModel(
           myUID: data["to"],
           otherUID: data["from"],
+          selectedBy: data["selectedBy"],
           selectedIndex: data["selectedIndex"]));
     });
     super.initState();
@@ -77,17 +78,27 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   Widget _buildGridCell(int index) {
-    var ticTacProv = ref.watch(ticTacProvider); // Assuming you are using hooks
+    var ticTacProv = ref.watch(ticTacProvider);
+    var playerTurn = ref.watch(playerTurnProvider);
 
-    bool isSelected = ticTacProv.any((model) => model.selectedIndex == index);
+    TicTacModel? model = ticTacProv.firstWhere((ticTac) {
+      return ticTac.selectedIndex == index;
+    },
+        orElse: () => TicTacModel(
+              myUID: "xxx",
+              otherUID: "xx",
+              selectedBy: "xx",
+              selectedIndex: -1,
+            ));
 
     return GestureDetector(
-      onTap: isSelected
+      onTap: model.selectedIndex == index
           ? null
           : () {
               socketWebServices.sendData(data: {
                 "from": "123",
                 "to": "456",
+                "selectedBy": "123",
                 "selectedIndex": index,
               });
             },
@@ -96,7 +107,9 @@ class _HomePageState extends ConsumerState<HomePage> {
           border: Border.all(),
         ),
         child: Center(
-          child: isSelected ? const Text("hy") : Text("Hello"),
+          child: model.selectedIndex == index
+              ? Text(model.selectedBy)
+              : Text("select"),
         ),
       ),
     );

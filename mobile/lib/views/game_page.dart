@@ -7,14 +7,14 @@ import 'package:mobile/providers/player_turn_provider.dart';
 import 'package:mobile/providers/tic_tac_providers.dart';
 import 'package:mobile/services/socket_web_services.dart';
 
-class HomePage extends ConsumerStatefulWidget {
-  const HomePage({super.key});
+class GamePage extends ConsumerStatefulWidget {
+  const GamePage({super.key});
 
   @override
-  ConsumerState<HomePage> createState() => _HomePageState();
+  ConsumerState<GamePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends ConsumerState<HomePage> {
+class _HomePageState extends ConsumerState<GamePage> {
   late SocketWebServices socketWebServices;
 
   @override
@@ -22,9 +22,9 @@ class _HomePageState extends ConsumerState<HomePage> {
     socketWebServices = SocketWebServices()..init();
     socketWebServices.joinRoom(myUid: "123", otherUserId: "456");
 
-    socketWebServices.socket.on("player-turn", (playerUid) {
-      log("Player turn $playerUid");
-      ref.watch(playerTurnProvider.notifier).state = playerUid;
+    socketWebServices.socket.on("game-init", (gameInit) {
+      log("Player turn $gameInit");
+      ref.watch(playerTurnProvider.notifier).state = gameInit["player1"];
     });
 
     socketWebServices.socket.on("event", (data) {
@@ -49,31 +49,34 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    var playerTurnProv = ref.watch(playerTurnProvider);
+
     return Scaffold(
       body: SafeArea(
-          child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          GestureDetector(
-              onTap: () {
-                socketWebServices.joinRoom(myUid: "123", otherUserId: "456");
-              },
-              child: Text("Again")),
-          // who's turn
-          Text("${ref.watch(playerTurnProvider)} turn"),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            GestureDetector(
+                onTap: () {
+                  socketWebServices.joinRoom(myUid: "123", otherUserId: "456");
+                },
+                child: Text("Again")),
+            // who's turn
+            Text("${playerTurnProv == "123" ? "Your" : playerTurnProv} turn"),
 
-          GridView(
-            physics: const NeverScrollableScrollPhysics(),
-            shrinkWrap: true,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
+            GridView(
+              physics: const NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+              ),
+              children: [
+                for (int a = 0; a < 9; a++) _buildGridCell(a),
+              ],
             ),
-            children: [
-              for (int a = 0; a < 9; a++) _buildGridCell(a),
-            ],
-          ),
-        ],
-      )),
+          ],
+        ),
+      ),
     );
   }
 
@@ -108,10 +111,17 @@ class _HomePageState extends ConsumerState<HomePage> {
         ),
         child: Center(
           child: model.selectedIndex == index
-              ? Text(model.selectedBy)
-              : Text("select"),
+              ? _buildSomething(model.selectedBy)
+              : Text(" "),
         ),
       ),
+    );
+  }
+
+  Widget _buildSomething(String selectedBy) {
+    return Icon(
+      selectedBy == "123" ? Icons.done : Icons.close,
+      size: 54,
     );
   }
 }

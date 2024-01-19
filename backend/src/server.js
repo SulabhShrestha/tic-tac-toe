@@ -1,7 +1,7 @@
 const http = require("http");
 const express = require("express");
 const { Server } = require("socket.io");
-const { joinRoom } = require("./utils");
+const { joinRoom, checkForConclusion } = require("./utils");
 const {
   addGameInfo,
   getGameInfoByRoomId,
@@ -10,6 +10,8 @@ const {
   deleteGameInfoByRoomId,
   deleteGameInfoByUserId,
   getGameInfoByUserId,
+  addSelectedCellInfo,
+  getSelectedCellsInfoByRoomID,
 } = require("./game_info");
 
 const app = express();
@@ -36,6 +38,8 @@ io.on("connection", (socket) => {
 
     // getting the game info
     const gameInfo = getGameInfoByUserId(onlinePlayers[socket.id]);
+
+    console.log("Game info: ", gameInfo);
 
     io.to(gameInfo.roomID).emit("user-disconnected");
 
@@ -114,12 +118,48 @@ io.on("connection", (socket) => {
         player1,
         player2,
       });
+
+      //
     } else {
       socket.emit(
         "room-not-found",
         "The room you searching doesn't exists or is full."
       );
     }
+  });
+
+  // handling the event when a user selects a cell
+  socket.on("event", function ({ uid, roomID, selectedIndex }) {
+    console.log("Event: ", uid, roomID, selectedIndex);
+
+    const gameInfo = getGameInfoByRoomId(roomID);
+
+    let userId = gameInfo["player-turn"];
+
+    const selectedUserIndex = gameInfo.players.indexOf(userId);
+
+    const nextPlayerTurn = gameInfo.players[(selectedUserIndex + 1) % 2];
+
+    // storing the nextPlayer turn in the game info
+    updateGameInfoByRoomId(roomID, {
+      "player-turn": nextPlayerTurn,
+    });
+
+    // adding the selected cells info to the game info
+    addSelectedCellInfo(roomID, {
+      selectedBy: uid,
+      selectedIndex,
+    });
+
+    const selectedCellsInfo = getSelectedCellsInfoByRoomID(roomID);
+    checkForConclusion(selectedCellsInfo, io);
+
+    // sending the event to the connected clients
+    io.to(roomID).emit("event", {
+      selectedIndex,
+      uid,
+      "player-turn": nextPlayerTurn,
+    });
   });
 
   // Function to generate a unique room ID

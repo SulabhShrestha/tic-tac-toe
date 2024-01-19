@@ -26,6 +26,7 @@ module.exports = {
 
   // get game info by user id
   getGameInfoByUserId: (uid) => {
+    console.log("Getting games: ", game_info, uid);
     return game_info.find((game) => game.players.includes(uid));
   },
 
@@ -38,10 +39,10 @@ module.exports = {
   },
 
   // New method to add selected cells to the game info
-  addSelectedCellInfo: (room, cellsInfo) => {
+  addSelectedCellInfo: (roomID, cellsInfo) => {
     game_info = game_info.map((game) => {
       // Check if the room property matches the provided room
-      if (game.room === room) {
+      if (game.roomID === roomID) {
         // Check if selectedCells is an array, if not, initialize it as an empty array
         const currentSelectedCells = Array.isArray(game.selectedCells)
           ? game.selectedCells
@@ -55,8 +56,8 @@ module.exports = {
     });
   },
 
-  getSelectedCellsInfoByRoom: (room) => {
-    const game = game_info.find((game) => game.room === room);
+  getSelectedCellsInfoByRoomID: (roomID) => {
+    const game = game_info.find((game) => game.roomID === roomID);
 
     return game.selectedCells;
   },

@@ -64,35 +64,6 @@ function joinRoom(socket, io) {
         });
       }
 
-      socket.on("event", function (data) {
-        // getting uid that triggered this event
-        let userId = getGameInfoByRoom(currentRoom)["player-turn"];
-
-        const selectedUserIndex = [player1, player2].indexOf(userId);
-
-        const nextPlayerTurn = [player1, player2][(selectedUserIndex + 1) % 2];
-
-        // storing the nextPlayer turn in the game info
-        updateGameInfoByRoom(currentRoom, {
-          "player-turn": nextPlayerTurn,
-        });
-
-        // adding the selected cells info to the game info
-        addSelectedCellInfo(currentRoom, {
-          selectedBy: data["selectedBy"],
-          selectedIndex: data["selectedIndex"],
-        });
-
-        const selectedCellsInfo = getSelectedCellsInfoByRoom(currentRoom);
-        checkForConclusion(selectedCellsInfo, io);
-
-        // sending the event to the connected clients
-        io.to(currentRoom).emit("event", {
-          ...data,
-          "player-turn": nextPlayerTurn,
-        });
-      });
-
       socket.on("draw", function (data) {
         io.to(currentRoom).emit("draw", data);
       });
@@ -160,4 +131,4 @@ function hasWinningSequence(indices) {
   );
 }
 
-module.exports = { joinRoom };
+module.exports = { joinRoom, checkForConclusion };

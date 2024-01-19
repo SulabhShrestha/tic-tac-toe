@@ -27,13 +27,19 @@ function joinRoom(socket, io) {
       console.log("Room is full no joining");
       socket.emit(
         "room-not-found",
-        "The room you searching doesn't exists or is full"
+        "The room you searching doesn't exists or is full."
       );
     } else {
       // joining the room
       socket.join(currentRoom);
 
       console.log("Room size: ", sockets.length);
+
+      // means waiting for other people to join
+      if (sockets.length == 0) {
+        console.log("Waiting for other");
+        socket.emit("waiting-for-other-people");
+      }
 
       // being 1 means two sockets has been joined
       // generating whose turn first

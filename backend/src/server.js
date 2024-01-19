@@ -1,13 +1,12 @@
 const http = require("http");
 const express = require("express");
 const { Server } = require("socket.io");
-const { joinRoom, checkForConclusion } = require("./utils");
+const { checkForConclusion } = require("./utils");
 const {
   addGameInfo,
   getGameInfoByRoomId,
-  updateGameInfoByRoom,
+
   updateGameInfoByRoomId,
-  deleteGameInfoByRoomId,
   deleteGameInfoByUserId,
   getGameInfoByUserId,
   addSelectedCellInfo,
@@ -152,7 +151,7 @@ io.on("connection", (socket) => {
     });
 
     const selectedCellsInfo = getSelectedCellsInfoByRoomID(roomID);
-    checkForConclusion(selectedCellsInfo, io);
+    checkForConclusion(selectedCellsInfo, io, roomID);
 
     // sending the event to the connected clients
     io.to(roomID).emit("event", {

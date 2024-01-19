@@ -38,6 +38,16 @@ class _HomePageState extends ConsumerState<GamePage> {
       ref.watch(ticTacProvider.notifier).addTicTac(
           TicTacModel(uid: data["uid"], selectedIndex: data["selectedIndex"]));
     });
+
+    socketWebServices.socket.on("winner", (user) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("$user won the game")));
+    });
+
+    socketWebServices.socket.on("draw", (_) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text("Draw")));
+    });
     super.initState();
   }
 

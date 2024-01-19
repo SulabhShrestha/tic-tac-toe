@@ -32,7 +32,7 @@ class SocketWebServices {
     log("Creating room");
 
     socket.emit('create-room', {
-      "from": myUid,
+      "uid": myUid,
     });
   }
 
@@ -42,12 +42,12 @@ class SocketWebServices {
     socket.on("room-created", onCreated);
   }
 
-  void joinRoom({required String myUid, required String otherUserId}) {
+  void joinRoom({required String myUid, required String roomID}) {
     log("Joining room");
 
     socket.emit('join-room', {
-      "from": myUid,
-      "to": otherUserId,
+      "uid": myUid,
+      "roomID": roomID,
     });
   }
 

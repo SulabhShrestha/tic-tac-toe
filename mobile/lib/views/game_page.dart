@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/models/tic_tac_model.dart';
 import 'package:mobile/providers/player_turn_provider.dart';
+import 'package:mobile/providers/room_details_provider.dart';
 import 'package:mobile/providers/tic_tac_providers.dart';
+import 'package:mobile/providers/waiting_for_connection_provider.dart';
 import 'package:mobile/services/socket_web_services.dart';
 
 class GamePage extends ConsumerStatefulWidget {
@@ -20,11 +22,12 @@ class _HomePageState extends ConsumerState<GamePage> {
   @override
   void initState() {
     socketWebServices = SocketWebServices()..init();
-    socketWebServices.joinRoom(myUid: "123", otherUserId: "456");
-
+    // socketWebServices.joinRoom(myUid: "123", otherUserId: "456");
+    //
     socketWebServices.socket.on("game-init", (gameInit) {
       log("Player turn $gameInit");
       ref.watch(playerTurnProvider.notifier).state = gameInit["player1"];
+      ref.watch(waitingForConnectionProvider.notifier).state = false;
     });
 
     socketWebServices.socket.on("event", (data) {
@@ -32,11 +35,8 @@ class _HomePageState extends ConsumerState<GamePage> {
       ref.watch(playerTurnProvider.notifier).state = data["player-turn"];
 
       // adding to selected
-      ref.watch(ticTacProvider.notifier).addTicTac(TicTacModel(
-          myUID: data["to"],
-          otherUID: data["from"],
-          selectedBy: data["selectedBy"],
-          selectedIndex: data["selectedIndex"]));
+      ref.watch(ticTacProvider.notifier).addTicTac(
+          TicTacModel(uid: data["uid"], selectedIndex: data["selectedIndex"]));
     });
     super.initState();
   }
@@ -51,16 +51,17 @@ class _HomePageState extends ConsumerState<GamePage> {
   Widget build(BuildContext context) {
     var playerTurnProv = ref.watch(playerTurnProvider);
 
+    log("Game page");
+
     return Scaffold(
       body: SafeArea(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            GestureDetector(
-                onTap: () {
-                  socketWebServices.joinRoom(myUid: "123", otherUserId: "456");
-                },
-                child: Text("Again")),
+            Text("Room id: ${ref.watch(roomDetailsProvider)}"),
+
+            Text(
+                "Waiting for opponent: ${ref.watch(waitingForConnectionProvider)}"),
             // who's turn
             Text("${playerTurnProv == "123" ? "Your" : playerTurnProv} turn"),
 
@@ -88,9 +89,7 @@ class _HomePageState extends ConsumerState<GamePage> {
       return ticTac.selectedIndex == index;
     },
         orElse: () => TicTacModel(
-              myUID: "xxx",
-              otherUID: "xx",
-              selectedBy: "xx",
+              uid: "xx",
               selectedIndex: -1,
             ));
 
@@ -98,10 +97,10 @@ class _HomePageState extends ConsumerState<GamePage> {
       onTap: model.selectedIndex == index
           ? null
           : () {
+              log("Selected");
               socketWebServices.sendData(data: {
-                "from": "123",
-                "to": "456",
-                "selectedBy": "123",
+                "uid": "123",
+                "roomID": ref.watch(roomDetailsProvider),
                 "selectedIndex": index,
               });
             },
@@ -111,7 +110,7 @@ class _HomePageState extends ConsumerState<GamePage> {
         ),
         child: Center(
           child: model.selectedIndex == index
-              ? _buildSomething(model.selectedBy)
+              ? _buildSomething(model.uid)
               : Text(" "),
         ),
       ),

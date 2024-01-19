@@ -2,8 +2,8 @@
 let game_info = [];
 
 module.exports = {
-  getGameInfoByRoom: (room) => {
-    return game_info.find((game) => game.room == room);
+  getGameInfoByRoomId: (roomID) => {
+    return game_info.find((game) => game.roomID == roomID);
   },
   addGameInfo: (newInfo) => {
     game_info = [...game_info, newInfo];
@@ -12,10 +12,10 @@ module.exports = {
   },
   setGameInfo: (updatedGameInfo) => (game_info = updatedGameInfo),
 
-  updateGameInfoByRoom: (room, updatedInfo) => {
+  updateGameInfoByRoomId: (roomID, updatedInfo) => {
     game_info = game_info.map((game) => {
       // Check if the room property matches the provided room
-      if (game.room === room) {
+      if (game.roomID === roomID) {
         // Update the matched object with the new data
         return { ...game, ...updatedInfo };
       }

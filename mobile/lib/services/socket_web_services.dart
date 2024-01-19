@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:flutter/cupertino.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class SocketWebServices {
@@ -25,6 +26,20 @@ class SocketWebServices {
   // sending disconnect status to the server
   void disconnect() {
     socket.disconnect();
+  }
+
+  void createRoom({required String myUid}) {
+    log("Creating room");
+
+    socket.emit('create-room', {
+      "from": myUid,
+    });
+  }
+
+  // when room is created
+  void roomCreated(ValueChanged<dynamic> onCreated) {
+    log("Game created");
+    socket.on("room-created", onCreated);
   }
 
   void joinRoom({required String myUid, required String otherUserId}) {

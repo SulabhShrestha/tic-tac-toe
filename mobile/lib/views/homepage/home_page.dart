@@ -2,20 +2,34 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile/providers/waiting_for_connection_provider.dart';
 import 'package:mobile/services/socket_web_services.dart';
 import 'package:mobile/views/game_page.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    log("Waiting for connection ${ref.watch(waitingForConnectionProvider)}");
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                SocketWebServices socketWebServices = SocketWebServices()
+                  ..init()
+                  ..createRoom(myUid: "123")
+                  ..roomCreated((data) {
+                    log("Room created $data");
+                    ref.watch(waitingForConnectionProvider.notifier).state =
+                        true;
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) => const GamePage()));
+                  });
+              },
               child: const Text("Create Game"),
             ),
             ElevatedButton(
@@ -38,8 +52,8 @@ class HomePage extends StatelessWidget {
   Widget _askForRoomId(BuildContext context) {
     return AlertDialog(
       title: const Text("Enter Room ID"),
-      content: TextField(
-        decoration: const InputDecoration(hintText: "Enter Room ID"),
+      content: const TextField(
+        decoration: InputDecoration(hintText: "Enter Room ID"),
       ),
       actions: [
         ElevatedButton(

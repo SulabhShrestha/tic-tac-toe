@@ -24,6 +24,19 @@ module.exports = {
     });
   },
 
+  // get game info by user id
+  getGameInfoByUserId: (uid) => {
+    return game_info.find((game) => game.players.includes(uid));
+  },
+
+  // delete game
+  deleteGameInfoByUserId: (uid) => {
+    console.log("Before: ", game_info);
+    game_info = game_info.filter((game) => !game.players.includes(uid));
+
+    console.log("After: ", game_info);
+  },
+
   // New method to add selected cells to the game info
   addSelectedCellInfo: (room, cellsInfo) => {
     game_info = game_info.map((game) => {

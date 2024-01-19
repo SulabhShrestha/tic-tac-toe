@@ -7,6 +7,9 @@ const {
   getGameInfoByRoomId,
   updateGameInfoByRoom,
   updateGameInfoByRoomId,
+  deleteGameInfoByRoomId,
+  deleteGameInfoByUserId,
+  getGameInfoByUserId,
 } = require("./game_info");
 
 const app = express();
@@ -21,14 +24,34 @@ const io = new Server(httpServer, {
   },
 });
 
+// socket id : actual user id
+const onlinePlayers = {};
+
 io.on("connection", (socket) => {
   console.log(`a user connected ${socket.id}`);
+
+  // triggers automatically when user is disconnected
+  socket.on("disconnect", () => {
+    console.log("User disconnected");
+
+    // getting the game info
+    const gameInfo = getGameInfoByUserId(onlinePlayers[socket.id]);
+
+    io.to(gameInfo.roomID).emit("user-disconnected");
+
+    // removing from online players and game info
+    deleteGameInfoByUserId(onlinePlayers[socket.id]);
+    delete onlinePlayers[socket.id];
+  });
 
   // Event when a player creates a game
   socket.on("create-room", ({ uid }) => {
     const roomID = generateRoomID();
 
     console.log("Create room : ", uid);
+
+    // adding to onlinePlayers
+    onlinePlayers[socket.id] = uid;
 
     addGameInfo({
       roomID: roomID,
@@ -43,13 +66,31 @@ io.on("connection", (socket) => {
   });
 
   socket.on("join-room", ({ uid, roomID }) => {
+    // adding to onlinePlayers
+    onlinePlayers[socket.id] = uid;
+
     // getting room details
     const roomDetails = getGameInfoByRoomId(roomID);
 
     console.log("Room details", roomDetails);
 
+    // room doesn't exists
+    if (!roomDetails) {
+      socket.emit("room-not-found", "The room you searching doesn't exists.");
+      return;
+    }
+
+    // room is full
+    else if (roomDetails && roomDetails.players.length == 2) {
+      socket.emit(
+        "room-not-found",
+        "The room you searching doesn't exists or is full."
+      );
+      return;
+    }
+
     // someone is waiting for other player and can join the game
-    if (roomDetails && roomDetails.players.length == 1) {
+    else if (roomDetails && roomDetails.players.length == 1) {
       console.log("inside if");
       socket.join(roomID);
       // combining joined and waiting players

@@ -97,12 +97,6 @@ function joinRoom(socket, io) {
         io.to(currentRoom).emit("draw", data);
       });
 
-      // triggers automatically when user is disconnected
-      socket.on("disconnect", () => {
-        console.log("User disconnected");
-        io.to(currentRoom).emit("user-disconnected", socket.id);
-      });
-
       // notifying the new user about the new users
       io.to(currentRoom).emit("new-user-connected", socket.id);
     }

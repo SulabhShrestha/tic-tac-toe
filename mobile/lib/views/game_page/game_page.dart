@@ -26,8 +26,6 @@ class _HomePageState extends ConsumerState<GamePage> {
   @override
   void initState() {
     socketWebServices = SocketWebServices()..init();
-    // socketWebServices.joinRoom(myUid: "123", otherUserId: "456");
-    //
     socketWebServices.socket.on("game-init", (gameInit) {
       log("Player turn $gameInit");
       ref.watch(playerTurnProvider.notifier).state = gameInit["player1"];
@@ -55,13 +53,20 @@ class _HomePageState extends ConsumerState<GamePage> {
         "conclusion": GameConclusion.draw,
       };
     });
+
+    socketWebServices.socket.on("user-disconnected", (uid) {
+      log("User disconnected $uid");
+    });
     super.initState();
   }
 
   @override
   void dispose() {
-    // removing the game conclusion
-    ref.watch(gameConclusionProvider.notifier).state = {};
+    // removing all the saved data
+    ref.read(gameConclusionProvider.notifier).state = {};
+    ref.read(playerTurnProvider.notifier).state = "";
+    ref.read(ticTacProvider.notifier).removeAll();
+    ref.read(gameConclusionProvider.notifier).state = {};
 
     socketWebServices.disconnect();
     super.dispose();
@@ -69,7 +74,7 @@ class _HomePageState extends ConsumerState<GamePage> {
 
   @override
   Widget build(BuildContext context) {
-    var playerTurnProv = ref.watch(playerTurnProvider);
+    var playerTurnProv = ref.read(playerTurnProvider);
 
     log("Game page");
 

@@ -172,16 +172,17 @@ class _HomePageState extends ConsumerState<GamePage> {
             ));
 
     return GestureDetector(
-      onTap: model.selectedIndex == index
-          ? null
-          : () {
-              log("Selected");
+      // it should be both player turn and cell should be empty
+      onTap: model.selectedIndex != index && playerTurn == "123"
+          ? () {
               socketWebServices.sendData(data: {
                 "uid": "123",
                 "roomID": ref.watch(roomDetailsProvider),
                 "selectedIndex": index,
               });
-            },
+            }
+          : null,
+
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(),

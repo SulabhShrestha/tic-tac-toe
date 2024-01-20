@@ -4,11 +4,13 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/models/tic_tac_model.dart';
+import 'package:mobile/providers/game_conclusion_provider.dart';
 import 'package:mobile/providers/player_turn_provider.dart';
 import 'package:mobile/providers/room_details_provider.dart';
 import 'package:mobile/providers/tic_tac_providers.dart';
 import 'package:mobile/providers/waiting_for_connection_provider.dart';
 import 'package:mobile/services/socket_web_services.dart';
+import 'package:mobile/utils/tic_tac_utils.dart';
 import 'package:mobile/views/game_page/widgets/waiting_loading_indicator.dart';
 
 class GamePage extends ConsumerStatefulWidget {
@@ -42,19 +44,25 @@ class _HomePageState extends ConsumerState<GamePage> {
     });
 
     socketWebServices.socket.on("winner", (user) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("$user won the game")));
+      ref.watch(gameConclusionProvider.notifier).state = {
+        "winner": user,
+        "conclusion": GameConclusion.win,
+      };
     });
 
     socketWebServices.socket.on("draw", (_) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text("Draw")));
+      ref.watch(gameConclusionProvider.notifier).state = {
+        "conclusion": GameConclusion.draw,
+      };
     });
     super.initState();
   }
 
   @override
   void dispose() {
+    // removing the game conclusion
+    ref.watch(gameConclusionProvider.notifier).state = {};
+
     socketWebServices.disconnect();
     super.dispose();
   }
@@ -69,13 +77,10 @@ class _HomePageState extends ConsumerState<GamePage> {
       body: SafeArea(
         child: Stack(
           children: [
+            // game grid
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("Room id: ${ref.watch(roomDetailsProvider)}"),
-
-                Text(
-                    "Waiting for opponent: ${ref.watch(waitingForConnectionProvider)}"),
                 // who's turn
                 Text(
                     "${playerTurnProv == "123" ? "Your" : playerTurnProv} turn"),
@@ -108,9 +113,46 @@ class _HomePageState extends ConsumerState<GamePage> {
                         ),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: WaitingLoadingIndicator(),
+                      child: const WaitingLoadingIndicator(),
                     ),
                   )),
+
+            // show either win or draw
+            if (ref.watch(gameConclusionProvider).isNotEmpty)
+              BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Colors.blue.shade600, Colors.green],
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // conclusion text
+                        if (ref.watch(gameConclusionProvider)["conclusion"] ==
+                            GameConclusion.draw)
+                          const Text("Draw"),
+
+                        if (ref.watch(gameConclusionProvider)["conclusion"] ==
+                            GameConclusion.win)
+                          Text(
+                              "${ref.watch(gameConclusionProvider)["winner"]} won the game"),
+                        ElevatedButton(
+                          onPressed: () {},
+                          child: const Text("Play Again"),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),

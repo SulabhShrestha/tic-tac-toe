@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class SocketWebServices {
@@ -8,10 +9,8 @@ class SocketWebServices {
 
   /// adds the userId in the header location
   void init() {
-    log("Uid: ");
-
     socket = IO.io(
-        'http://10.0.2.2:3000',
+        dotenv.env['URL'],
         IO.OptionBuilder()
             .setTransports(['websocket'])
             .disableAutoConnect()

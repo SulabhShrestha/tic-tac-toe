@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +9,7 @@ import 'package:mobile/providers/room_details_provider.dart';
 import 'package:mobile/providers/tic_tac_providers.dart';
 import 'package:mobile/providers/waiting_for_connection_provider.dart';
 import 'package:mobile/services/socket_web_services.dart';
+import 'package:mobile/views/game_page/widgets/waiting_loading_indicator.dart';
 
 class GamePage extends ConsumerStatefulWidget {
   const GamePage({super.key});
@@ -65,26 +67,50 @@ class _HomePageState extends ConsumerState<GamePage> {
 
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
           children: [
-            Text("Room id: ${ref.watch(roomDetailsProvider)}"),
-
-            Text(
-                "Waiting for opponent: ${ref.watch(waitingForConnectionProvider)}"),
-            // who's turn
-            Text("${playerTurnProv == "123" ? "Your" : playerTurnProv} turn"),
-
-            GridView(
-              physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-              ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                for (int a = 0; a < 9; a++) _buildGridCell(a),
+                Text("Room id: ${ref.watch(roomDetailsProvider)}"),
+
+                Text(
+                    "Waiting for opponent: ${ref.watch(waitingForConnectionProvider)}"),
+                // who's turn
+                Text(
+                    "${playerTurnProv == "123" ? "Your" : playerTurnProv} turn"),
+
+                GridView(
+                  physics: const NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                  ),
+                  children: [
+                    for (int a = 0; a < 9; a++) _buildGridCell(a),
+                  ],
+                ),
               ],
             ),
+
+            // show loading indicator when waiting for opponent, and make background blur
+            if (ref.watch(waitingForConnectionProvider))
+              BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Colors.blue.shade600, Colors.green],
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: WaitingLoadingIndicator(),
+                    ),
+                  )),
           ],
         ),
       ),

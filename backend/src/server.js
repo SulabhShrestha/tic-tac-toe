@@ -25,6 +25,10 @@ const io = new Server(httpServer, {
   },
 });
 
+app.get("/", (req, res) => {
+  res.send("Server running");
+});
+
 // socket id : actual user id
 const onlinePlayers = {};
 
@@ -181,6 +185,8 @@ io.on("connection", (socket) => {
   }
 });
 
-httpServer.listen(3000, () => {
+const port = process.env.PORT || 3000;
+
+httpServer.listen(port, () => {
   console.log("Server is running on port 3000 ");
 });

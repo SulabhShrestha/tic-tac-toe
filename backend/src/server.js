@@ -40,7 +40,10 @@ io.on("connection", (socket) => {
 
     console.log("Game info: ", gameInfo);
 
-    io.to(gameInfo.roomID).emit("user-disconnected");
+    // which means the data is already deleted and user is disconnected
+    if (!gameInfo) return;
+
+    io.to(gameInfo.roomID).emit("user-disconnected", onlinePlayers[socket.id]);
 
     // removing from online players and game info
     deleteGameInfoByUserId(onlinePlayers[socket.id]);

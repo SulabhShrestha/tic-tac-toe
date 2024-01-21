@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/providers/room_details_provider.dart';
+import 'package:mobile/providers/user_id_provider.dart';
 import 'package:mobile/providers/waiting_for_connection_provider.dart';
 import 'package:mobile/services/socket_web_services.dart';
 import 'package:mobile/views/game_page/game_page.dart';
@@ -14,6 +15,7 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    debugPrint("Uid: ${ref.watch(userIdProvider)}");
     return Scaffold(
       body: SafeArea(
         child: SizedBox(
@@ -40,6 +42,8 @@ class HomePage extends ConsumerWidget {
               ),
               ElevatedButton(
                 onPressed: () {
+                  log("Ref: ${ref.read(userIdProvider)}");
+
                   // alert dialog
                   showDialog(
                       context: context,

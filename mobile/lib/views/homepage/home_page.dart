@@ -10,13 +10,22 @@ import 'package:mobile/providers/waiting_for_connection_provider.dart';
 import 'package:mobile/services/socket_web_services.dart';
 import 'package:mobile/views/game_page/game_page.dart';
 
-class HomePage extends ConsumerWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    debugPrint("Home page");
+  ConsumerState<HomePage> createState() => _HomePageState();
+}
 
+class _HomePageState extends ConsumerState<HomePage> {
+  @override
+  void dispose() {
+    debugPrint("Widget disposing");
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: SizedBox(
@@ -31,11 +40,18 @@ class HomePage extends ConsumerWidget {
                     ..init()
                     ..createRoom(myUid: "123")
                     ..roomCreated((roomId) {
-                      ref.read(roomDetailsProvider.notifier).state = roomId;
-                      ref.read(waitingForConnectionProvider.notifier).state =
-                          true;
+                      try {
+                        ref.read(roomDetailsProvider.notifier).state = roomId;
+                        ref.read(waitingForConnectionProvider.notifier).state =
+                            true;
 
-                      Navigator.of(context).pushNamed("/game");
+                        Navigator.of(context).pushNamed("/game");
+                      } catch (e) {
+                        log("Something");
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                            content: Text(
+                                "Something went wrong. Restart the app.")));
+                      }
                     });
                 },
                 child: const Text("Create Game"),

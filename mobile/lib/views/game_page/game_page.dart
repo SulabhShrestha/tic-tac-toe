@@ -93,7 +93,7 @@ class _HomePageState extends ConsumerState<GamePage> {
                     socketWebServices.disconnect();
 
                     Navigator.pushNamedAndRemoveUntil(
-                        context, "/", (route) => false);
+                        context, "/", (route) => true);
                   },
                 ),
               ],

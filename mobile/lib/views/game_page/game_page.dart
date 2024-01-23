@@ -12,6 +12,7 @@ import 'package:mobile/providers/waiting_for_connection_provider.dart';
 import 'package:mobile/services/socket_web_services.dart';
 import 'package:mobile/utils/tic_tac_utils.dart';
 import 'package:mobile/views/game_page/widgets/waiting_loading_indicator.dart';
+import 'package:mobile/views/homepage/home_page.dart';
 
 class GamePage extends ConsumerStatefulWidget {
   const GamePage({super.key});
@@ -61,51 +62,107 @@ class _HomePageState extends ConsumerState<GamePage> {
   }
 
   @override
-  void dispose() {
-    // removing all the saved data
-    ref.read(gameConclusionProvider.notifier).state = {};
-    ref.read(playerTurnProvider.notifier).state = "";
-    ref.read(ticTacProvider.notifier).removeAll();
-    ref.read(gameConclusionProvider.notifier).state = {};
-
-    socketWebServices.disconnect();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     var playerTurnProv = ref.read(playerTurnProvider);
 
-    log("Game page");
-
-    return Scaffold(
-      body: SafeArea(
-        child: Stack(
-          children: [
-            // game grid
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // who's turn
-                Text(
-                    "${playerTurnProv == "123" ? "Your" : playerTurnProv} turn"),
-
-                GridView(
-                  physics: const NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
+    Future<void> _showBackDialog() async {
+      await showDialog(
+          context: context,
+          builder: (_) {
+            return AlertDialog(
+              title: const Text('Are you sure?'),
+              content: const Text(
+                'Are you sure you want to leave this page?',
+              ),
+              actions: <Widget>[
+                TextButton(
+                  style: TextButton.styleFrom(
+                    textStyle: Theme.of(context).textTheme.labelLarge,
                   ),
-                  children: [
-                    for (int a = 0; a < 9; a++) _buildGridCell(a),
-                  ],
+                  child: const Text('Nevermind'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                TextButton(
+                  style: TextButton.styleFrom(
+                    textStyle: Theme.of(context).textTheme.labelLarge,
+                  ),
+                  child: const Text('Leave'),
+                  onPressed: () async {
+                    socketWebServices.disconnect();
+
+                    Navigator.pushNamedAndRemoveUntil(
+                        context, "/", (route) => false);
+                  },
                 ),
               ],
-            ),
+            );
+          });
+    }
 
-            // show loading indicator when waiting for opponent, and make background blur
-            if (ref.watch(waitingForConnectionProvider))
-              BackdropFilter(
+    return PopScope(
+      canPop: false,
+      onPopInvoked: (didPop) async {
+        await _showBackDialog();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Tic Tac Toe"),
+          leading: IconButton(
+            onPressed: () async {
+              await _showBackDialog();
+            },
+            icon: Icon(Icons.arrow_back),
+          ),
+        ),
+        body: SafeArea(
+          child: Stack(
+            children: [
+              // game grid
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // who's turn
+                  Text(
+                      "${playerTurnProv == "123" ? "Your" : playerTurnProv} turn"),
+
+                  GridView(
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                    ),
+                    children: [
+                      for (int a = 0; a < 9; a++) _buildGridCell(a),
+                    ],
+                  ),
+                ],
+              ),
+
+              // show loading indicator when waiting for opponent, and make background blur
+              if (ref.watch(waitingForConnectionProvider))
+                BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [Colors.blue.shade600, Colors.green],
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const WaitingLoadingIndicator(),
+                      ),
+                    )),
+
+              // show either win or draw
+              if (ref.watch(gameConclusionProvider).isNotEmpty)
+                BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
                   child: Center(
                     child: Container(
@@ -118,47 +175,29 @@ class _HomePageState extends ConsumerState<GamePage> {
                         ),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const WaitingLoadingIndicator(),
-                    ),
-                  )),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // conclusion text
+                          if (ref.watch(gameConclusionProvider)["conclusion"] ==
+                              GameConclusion.draw)
+                            const Text("Draw"),
 
-            // show either win or draw
-            if (ref.watch(gameConclusionProvider).isNotEmpty)
-              BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-                child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [Colors.blue.shade600, Colors.green],
+                          if (ref.watch(gameConclusionProvider)["conclusion"] ==
+                              GameConclusion.win)
+                            Text(
+                                "${ref.watch(gameConclusionProvider)["winner"]} won the game"),
+                          ElevatedButton(
+                            onPressed: () {},
+                            child: const Text("Play Again"),
+                          ),
+                        ],
                       ),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // conclusion text
-                        if (ref.watch(gameConclusionProvider)["conclusion"] ==
-                            GameConclusion.draw)
-                          const Text("Draw"),
-
-                        if (ref.watch(gameConclusionProvider)["conclusion"] ==
-                            GameConclusion.win)
-                          Text(
-                              "${ref.watch(gameConclusionProvider)["winner"]} won the game"),
-                        ElevatedButton(
-                          onPressed: () {},
-                          child: const Text("Play Again"),
-                        ),
-                      ],
                     ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -21,10 +21,15 @@ class SocketWebServices {
     socket.onConnect((_) {
       log("Connected to the server");
     });
+
+    socket.onDisconnect((_) {
+      log("Disconnected from the server");
+    });
   }
 
   /// sending disconnect status to the server
   void disconnect() {
+    log("Disconnect server function called");
     socket.disconnect();
   }
 

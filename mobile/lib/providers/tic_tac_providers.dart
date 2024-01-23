@@ -5,7 +5,7 @@ import 'package:mobile/models/tic_tac_model.dart';
 
 // Stores all private chat messages
 final ticTacProvider =
-    StateNotifierProvider<TicTacProvider, List<TicTacModel>>((ref) {
+    StateNotifierProvider.autoDispose<TicTacProvider, List<TicTacModel>>((ref) {
   return TicTacProvider();
 });
 

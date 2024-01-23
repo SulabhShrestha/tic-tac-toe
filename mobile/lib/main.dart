@@ -27,12 +27,15 @@ class MyApp extends ConsumerWidget {
     debugPrint("Uid: ${ref.watch(userIdProvider)}");
 
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const HomePage(),
-    );
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          useMaterial3: true,
+        ),
+        initialRoute: "/",
+        routes: {
+          "/game": (context) => const GamePage(),
+          "/": (context) => const HomePage(),
+        });
   }
 }

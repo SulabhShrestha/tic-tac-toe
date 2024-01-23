@@ -15,7 +15,8 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    debugPrint("Uid: ${ref.watch(userIdProvider)}");
+    debugPrint("Home page");
+
     return Scaffold(
       body: SafeArea(
         child: SizedBox(
@@ -30,12 +31,11 @@ class HomePage extends ConsumerWidget {
                     ..init()
                     ..createRoom(myUid: "123")
                     ..roomCreated((roomId) {
-                      ref.watch(roomDetailsProvider.notifier).state = roomId;
-                      ref.watch(waitingForConnectionProvider.notifier).state =
+                      ref.read(roomDetailsProvider.notifier).state = roomId;
+                      ref.read(waitingForConnectionProvider.notifier).state =
                           true;
 
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (context) => const GamePage()));
+                      Navigator.of(context).pushNamed("/game");
                     });
                 },
                 child: const Text("Create Game"),

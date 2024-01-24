@@ -15,6 +15,8 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    debugPrint("Uid: ${ref.watch(roomDetailsProvider)}");
+
     return Scaffold(
       body: SafeArea(
         child: SizedBox(

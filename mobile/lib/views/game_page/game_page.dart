@@ -28,6 +28,8 @@ class _HomePageState extends ConsumerState<GamePage> {
   void initState() {
     socketWebServices = SocketWebServices()..init();
     socketWebServices.socket.on("game-init", (gameInit) {
+      debugPrint("Inside game init");
+
       log("Player turn $gameInit");
       ref.watch(playerTurnProvider.notifier).state = gameInit["player1"];
       ref.watch(waitingForConnectionProvider.notifier).state = false;
@@ -91,6 +93,14 @@ class _HomePageState extends ConsumerState<GamePage> {
                   child: const Text('Leave'),
                   onPressed: () async {
                     socketWebServices.disconnect();
+
+                    // removing global state data
+                    ref.read(roomDetailsProvider.notifier).state = "";
+                    ref.read(waitingForConnectionProvider.notifier).state =
+                        false;
+                    ref.read(gameConclusionProvider.notifier).state = {};
+                    ref.read(ticTacProvider.notifier).removeAll();
+                    ref.read(playerTurnProvider.notifier).state = "";
 
                     Navigator.pushNamedAndRemoveUntil(
                         context, "/", (route) => true);

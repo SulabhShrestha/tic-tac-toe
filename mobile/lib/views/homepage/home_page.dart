@@ -71,12 +71,22 @@ class HomePage extends ConsumerWidget {
         LoadingButtonWithText(
             text: "Join",
             onTap: () {
+              debugPrint(_roomIDController.text);
+
               // joining the user to the game
               SocketWebServices socketWebServices = SocketWebServices()
                 ..init()
                 ..joinRoom(
                     myUid: ref.read(userIdProvider),
                     roomID: _roomIDController.text);
+
+              // when room not found
+              socketWebServices.socket.on("room-not-found", (data) {
+                debugPrint("Room not found");
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context)
+                    .showSnackBar(SnackBar(content: Text("Room not found")));
+              });
 
               // joining the game on correct room id
               socketWebServices.socket.on("game-init", (gameInit) {

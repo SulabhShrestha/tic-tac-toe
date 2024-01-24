@@ -26,15 +26,6 @@ class _LoadingButtonWithTextState extends ConsumerState<LoadingButtonWithText> {
     // [isLoading] depends primarily on waitingConnection
     isLoading = ref.read(waitingForConnectionProvider);
 
-    SocketWebServices()
-      ..init()
-      ..socket.on("room-not-found", (_) {
-        debugPrint("Room not found");
-        setState(() {
-          isLoading = false;
-        });
-      });
-
     super.initState();
   }
 
@@ -50,7 +41,7 @@ class _LoadingButtonWithTextState extends ConsumerState<LoadingButtonWithText> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (isLoading) CircularProgressIndicator(),
+          if (isLoading) const CircularProgressIndicator(),
           Text(widget.text),
         ],
       ),

@@ -60,7 +60,9 @@ class _HomePageState extends ConsumerState<GamePage> {
     });
 
     socketWebServices.socket.on("user-disconnected", (uid) {
-      log("User disconnected $uid");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Other player left the game.")),
+      );
     });
     super.initState();
   }

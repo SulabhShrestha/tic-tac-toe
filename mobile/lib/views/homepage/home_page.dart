@@ -10,22 +10,11 @@ import 'package:mobile/providers/waiting_for_connection_provider.dart';
 import 'package:mobile/services/socket_web_services.dart';
 import 'package:mobile/views/game_page/game_page.dart';
 
-class HomePage extends ConsumerStatefulWidget {
+class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
   @override
-  ConsumerState<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends ConsumerState<HomePage> {
-  @override
-  void dispose() {
-    debugPrint("Widget disposing");
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       body: SafeArea(
         child: SizedBox(
@@ -40,18 +29,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                     ..init()
                     ..createRoom(myUid: "123")
                     ..roomCreated((roomId) {
-                      try {
-                        ref.read(roomDetailsProvider.notifier).state = roomId;
-                        ref.read(waitingForConnectionProvider.notifier).state =
-                            true;
+                      ref.read(roomDetailsProvider.notifier).state = roomId;
+                      ref.read(waitingForConnectionProvider.notifier).state =
+                          true;
 
-                        Navigator.of(context).pushNamed("/game");
-                      } catch (e) {
-                        log("Something");
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text(
-                                "Something went wrong. Restart the app.")));
-                      }
+                      Navigator.of(context).pushNamed("/game");
                     });
                 },
                 child: const Text("Create Game"),
@@ -64,7 +46,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                   showDialog(
                       context: context,
                       builder: (context) {
-                        return _askForRoomId(context);
+                        return _askForRoomId(context, ref);
                       });
                 },
                 child: const Text("Join Game"),
@@ -76,19 +58,25 @@ class _HomePageState extends ConsumerState<HomePage> {
     );
   }
 
-  Widget _askForRoomId(BuildContext context) {
+  Widget _askForRoomId(BuildContext context, WidgetRef ref) {
+    final TextEditingController _roomIDController = TextEditingController();
     return AlertDialog(
       title: const Text("Enter Room ID"),
-      content: const TextField(
-        decoration: InputDecoration(hintText: "Enter Room ID"),
+      content: TextField(
+        controller: _roomIDController,
+        decoration: const InputDecoration(hintText: "Enter Room ID"),
       ),
       actions: [
         ElevatedButton(
           onPressed: () {
+            debugPrint("Room ID: ${ref.read(userIdProvider)}");
+
             // joining the user to the game
             SocketWebServices socketWebServices = SocketWebServices()
               ..init()
-              ..joinRoom(myUid: "123", roomID: "room");
+              ..joinRoom(
+                  myUid: ref.read(userIdProvider),
+                  roomID: _roomIDController.text);
 
             // joining the game on correct room id
             socketWebServices.socket.on("game-init", (gameInit) {

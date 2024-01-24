@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/models/tic_tac_model.dart';
+import 'package:mobile/providers/all_players_provider.dart';
 import 'package:mobile/providers/game_conclusion_provider.dart';
 import 'package:mobile/providers/player_turn_provider.dart';
 import 'package:mobile/providers/room_details_provider.dart';
@@ -11,6 +12,7 @@ import 'package:mobile/providers/tic_tac_providers.dart';
 import 'package:mobile/providers/waiting_for_connection_provider.dart';
 import 'package:mobile/services/socket_web_services.dart';
 import 'package:mobile/utils/tic_tac_utils.dart';
+import 'package:mobile/views/game_page/widgets/player_icon.dart';
 import 'package:mobile/views/game_page/widgets/waiting_loading_indicator.dart';
 import 'package:mobile/views/homepage/home_page.dart';
 
@@ -28,9 +30,9 @@ class _HomePageState extends ConsumerState<GamePage> {
   void initState() {
     socketWebServices = SocketWebServices()..init();
     socketWebServices.socket.on("game-init", (gameInit) {
-      debugPrint("Inside game init");
+      debugPrint("Inside game init $gameInit");
 
-      log("Player turn $gameInit");
+      ref.watch(allPlayersProvider.notifier).addPlayers(gameInit);
       ref.watch(playerTurnProvider.notifier).state = gameInit["player1"];
       ref.watch(waitingForConnectionProvider.notifier).state = false;
     });
@@ -63,53 +65,55 @@ class _HomePageState extends ConsumerState<GamePage> {
     super.initState();
   }
 
+  Future<void> _showBackDialog() async {
+    await showDialog(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            title: const Text('Are you sure?'),
+            content: const Text(
+              'Are you sure you want to leave this page?',
+            ),
+            actions: <Widget>[
+              TextButton(
+                style: TextButton.styleFrom(
+                  textStyle: Theme.of(context).textTheme.labelLarge,
+                ),
+                child: const Text('Nevermind'),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+              TextButton(
+                style: TextButton.styleFrom(
+                  textStyle: Theme.of(context).textTheme.labelLarge,
+                ),
+                child: const Text('Leave'),
+                onPressed: () async {
+                  socketWebServices.disconnect();
+
+                  // removing global state data
+                  ref.read(roomDetailsProvider.notifier).state = "";
+                  ref.read(waitingForConnectionProvider.notifier).state = false;
+                  ref.read(gameConclusionProvider.notifier).state = {};
+                  ref.read(ticTacProvider.notifier).removeAll();
+                  ref.read(playerTurnProvider.notifier).state = "";
+                  ref.read(allPlayersProvider.notifier).empty();
+
+                  Navigator.pushNamedAndRemoveUntil(
+                      context, "/", (route) => true);
+                },
+              ),
+            ],
+          );
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
     var playerTurnProv = ref.read(playerTurnProvider);
 
-    Future<void> _showBackDialog() async {
-      await showDialog(
-          context: context,
-          builder: (_) {
-            return AlertDialog(
-              title: const Text('Are you sure?'),
-              content: const Text(
-                'Are you sure you want to leave this page?',
-              ),
-              actions: <Widget>[
-                TextButton(
-                  style: TextButton.styleFrom(
-                    textStyle: Theme.of(context).textTheme.labelLarge,
-                  ),
-                  child: const Text('Nevermind'),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
-                TextButton(
-                  style: TextButton.styleFrom(
-                    textStyle: Theme.of(context).textTheme.labelLarge,
-                  ),
-                  child: const Text('Leave'),
-                  onPressed: () async {
-                    socketWebServices.disconnect();
-
-                    // removing global state data
-                    ref.read(roomDetailsProvider.notifier).state = "";
-                    ref.read(waitingForConnectionProvider.notifier).state =
-                        false;
-                    ref.read(gameConclusionProvider.notifier).state = {};
-                    ref.read(ticTacProvider.notifier).removeAll();
-                    ref.read(playerTurnProvider.notifier).state = "";
-
-                    Navigator.pushNamedAndRemoveUntil(
-                        context, "/", (route) => true);
-                  },
-                ),
-              ],
-            );
-          });
-    }
+    debugPrint("Player turn: ${ref.read(allPlayersProvider)}");
 
     return PopScope(
       canPop: false,
@@ -136,6 +140,15 @@ class _HomePageState extends ConsumerState<GamePage> {
                   // who's turn
                   Text(
                       "${playerTurnProv == "123" ? "Your" : playerTurnProv} turn"),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      for (final entry in ref.read(allPlayersProvider).entries)
+                        PlayerIcon(
+                            playerTitle: entry.key, playerUid: entry.value),
+                    ],
+                  ),
 
                   GridView(
                     physics: const NeverScrollableScrollPhysics(),

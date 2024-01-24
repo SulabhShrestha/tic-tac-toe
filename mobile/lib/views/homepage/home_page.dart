@@ -29,7 +29,7 @@ class HomePage extends ConsumerWidget {
                 onTap: () {
                   SocketWebServices()
                     ..init()
-                    ..createRoom(myUid: "123")
+                    ..createRoom(myUid: ref.read(userIdProvider))
                     ..roomCreated((roomId) {
                       ref.read(roomDetailsProvider.notifier).state = roomId;
                       ref.read(waitingForConnectionProvider.notifier).state =
@@ -90,8 +90,7 @@ class HomePage extends ConsumerWidget {
 
               // joining the game on correct room id
               socketWebServices.socket.on("game-init", (gameInit) {
-                Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => const GamePage()));
+                Navigator.of(context).pushNamed("/game");
               });
             }),
       ],

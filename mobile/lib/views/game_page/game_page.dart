@@ -9,6 +9,7 @@ import 'package:mobile/providers/game_conclusion_provider.dart';
 import 'package:mobile/providers/player_turn_provider.dart';
 import 'package:mobile/providers/room_details_provider.dart';
 import 'package:mobile/providers/tic_tac_providers.dart';
+import 'package:mobile/providers/user_id_provider.dart';
 import 'package:mobile/providers/waiting_for_connection_provider.dart';
 import 'package:mobile/services/socket_web_services.dart';
 import 'package:mobile/utils/tic_tac_utils.dart';
@@ -213,7 +214,10 @@ class _HomePageState extends ConsumerState<GamePage> {
                             Text(
                                 "${ref.watch(gameConclusionProvider)["winner"]} won the game"),
                           ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              socketWebServices.sendPlayAgainEvent(
+                                  roomID: ref.read(roomDetailsProvider));
+                            },
                             child: const Text("Play Again"),
                           ),
                         ],
@@ -231,6 +235,7 @@ class _HomePageState extends ConsumerState<GamePage> {
   Widget _buildGridCell(int index) {
     var ticTacProv = ref.watch(ticTacProvider);
     var playerTurn = ref.watch(playerTurnProvider);
+    var userIdProv = ref.watch(userIdProvider);
 
     TicTacModel? model = ticTacProv.firstWhere((ticTac) {
       return ticTac.selectedIndex == index;
@@ -242,7 +247,7 @@ class _HomePageState extends ConsumerState<GamePage> {
 
     return GestureDetector(
       // it should be both player turn and cell should be empty
-      onTap: model.selectedIndex != index && playerTurn == "123"
+      onTap: model.selectedIndex != index && playerTurn == userIdProv
           ? () {
               socketWebServices.sendData(data: {
                 "uid": "123",

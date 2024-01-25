@@ -37,12 +37,8 @@ io.on("connection", (socket) => {
 
   // triggers automatically when user is disconnected
   socket.on("disconnect", () => {
-    console.log("User disconnected");
-
     // getting the game info
     const gameInfo = getGameInfoByUserId(onlinePlayers[socket.id]);
-
-    console.log("Game info: ", gameInfo);
 
     // which means the data is already deleted and user is disconnected
     if (!gameInfo) return;
@@ -166,6 +162,25 @@ io.on("connection", (socket) => {
       uid,
       "player-turn": nextPlayerTurn,
     });
+  });
+
+  // handling the play again event
+  socket.on("play-again", ({ roomID }) => {
+    // getting the game info
+    const gameInfo = getGameInfoByRoomId(roomID);
+
+    console.log("Game info: ", gameInfo);
+
+    // which means the data is already deleted and user is disconnected
+    if (!gameInfo) return;
+
+    // resetting the game info
+    updateGameInfoByRoomId(roomID, {
+      "player-turn": gameInfo.players[0],
+    });
+
+    // sending the event to the connected clients
+    io.to(roomID).emit("play-again");
   });
 
   // Function to generate a unique room ID

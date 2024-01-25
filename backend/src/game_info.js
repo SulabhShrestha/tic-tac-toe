@@ -38,6 +38,22 @@ module.exports = {
     console.log("After: ", game_info);
   },
 
+  // remove all the selected cells from the game info
+  clearSelectedCellsInfoByRoomID: (roomID) => {
+    game_info = game_info.map((game) => {
+      // Check if the room property matches the provided room
+      if (game.roomID === roomID) {
+        // Update the matched object with new selected cells
+        return { ...game, selectedCells: [] };
+      }
+
+      // If the room doesn't match, return the original object
+      return game;
+    });
+
+    console.log("Game info: ", game_info);
+  },
+
   // New method to add selected cells to the game info
   addSelectedCellInfo: (roomID, cellsInfo) => {
     game_info = game_info.map((game) => {

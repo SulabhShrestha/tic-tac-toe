@@ -250,7 +250,7 @@ class _HomePageState extends ConsumerState<GamePage> {
       onTap: model.selectedIndex != index && playerTurn == userIdProv
           ? () {
               socketWebServices.sendData(data: {
-                "uid": "123",
+                "uid": userIdProv,
                 "roomID": ref.watch(roomDetailsProvider),
                 "selectedIndex": index,
               });
@@ -263,16 +263,16 @@ class _HomePageState extends ConsumerState<GamePage> {
         ),
         child: Center(
           child: model.selectedIndex == index
-              ? _buildSomething(model.uid)
+              ? _buildSomething(model.uid, userIdProv)
               : Text(" "),
         ),
       ),
     );
   }
 
-  Widget _buildSomething(String selectedBy) {
+  Widget _buildSomething(String selectedBy, String myUid) {
     return Icon(
-      selectedBy == "123" ? Icons.done : Icons.close,
+      selectedBy == myUid ? Icons.done : Icons.close,
       size: 54,
     );
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/providers/room_details_provider.dart';
 
@@ -50,7 +51,21 @@ class _WaitingLoadingIndicatorState
           ),
         ),
         const SizedBox(height: 16),
-        secondWordBold("Room ID: ", ref.watch(roomDetailsProvider))
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            secondWordBold("Room ID: ", ref.watch(roomDetailsProvider)),
+            IconButton(
+                onPressed: () {
+                  Clipboard.setData(
+                      ClipboardData(text: ref.watch(roomDetailsProvider)));
+                },
+                icon: const Icon(
+                  Icons.content_copy,
+                  color: Colors.grey,
+                )),
+          ],
+        ),
       ],
     );
   }

@@ -18,19 +18,22 @@ import 'package:mobile/views/game_page/widgets/waiting_loading_indicator.dart';
 import 'package:mobile/views/homepage/home_page.dart';
 
 class GamePage extends ConsumerStatefulWidget {
-  const GamePage({super.key});
+  final SocketWebServices socketWebServices;
+  const GamePage({
+    super.key,
+    required this.socketWebServices,
+  });
 
   @override
   ConsumerState<GamePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends ConsumerState<GamePage> {
-  late SocketWebServices socketWebServices;
+  bool snackBarShown = false;
 
   @override
   void initState() {
-    socketWebServices = SocketWebServices()..init();
-    socketWebServices.socket.on("game-init", (gameInit) {
+    widget.socketWebServices.socket.on("game-init", (gameInit) {
       debugPrint("Inside game init $gameInit");
 
       ref.watch(allPlayersProvider.notifier).addPlayers(gameInit);
@@ -38,7 +41,7 @@ class _HomePageState extends ConsumerState<GamePage> {
       ref.watch(waitingForConnectionProvider.notifier).state = false;
     });
 
-    socketWebServices.socket.on("event", (data) {
+    widget.socketWebServices.socket.on("event", (data) {
       // changing player state
       ref.watch(playerTurnProvider.notifier).state = data["player-turn"];
 
@@ -47,23 +50,27 @@ class _HomePageState extends ConsumerState<GamePage> {
           TicTacModel(uid: data["uid"], selectedIndex: data["selectedIndex"]));
     });
 
-    socketWebServices.socket.on("winner", (user) {
+    widget.socketWebServices.socket.on("winner", (user) {
       ref.watch(gameConclusionProvider.notifier).state = {
         "winner": user,
         "conclusion": GameConclusion.win,
       };
     });
 
-    socketWebServices.socket.on("draw", (_) {
+    widget.socketWebServices.socket.on("draw", (_) {
       ref.watch(gameConclusionProvider.notifier).state = {
         "conclusion": GameConclusion.draw,
       };
     });
 
-    socketWebServices.socket.on("user-disconnected", (uid) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Other player left the game.")),
-      );
+    widget.socketWebServices.socket.on("user-disconnected", (uid) {
+      debugPrint("User disconnected: $uid");
+      if (!snackBarShown) {
+        snackBarShown = true;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Other player left the game.")),
+        );
+      }
     });
     super.initState();
   }
@@ -93,7 +100,7 @@ class _HomePageState extends ConsumerState<GamePage> {
                 ),
                 child: const Text('Leave'),
                 onPressed: () async {
-                  socketWebServices.disconnect();
+                  widget.socketWebServices.disconnect();
 
                   // removing global state data
                   ref.read(roomDetailsProvider.notifier).state = "";
@@ -215,7 +222,7 @@ class _HomePageState extends ConsumerState<GamePage> {
                                 "${ref.watch(gameConclusionProvider)["winner"]} won the game"),
                           ElevatedButton(
                             onPressed: () {
-                              socketWebServices.sendPlayAgainEvent(
+                              widget.socketWebServices.sendPlayAgainEvent(
                                   roomID: ref.read(roomDetailsProvider));
                             },
                             child: const Text("Play Again"),
@@ -249,7 +256,7 @@ class _HomePageState extends ConsumerState<GamePage> {
       // it should be both player turn and cell should be empty
       onTap: model.selectedIndex != index && playerTurn == userIdProv
           ? () {
-              socketWebServices.sendData(data: {
+              widget.socketWebServices.sendData(data: {
                 "uid": userIdProv,
                 "roomID": ref.watch(roomDetailsProvider),
                 "selectedIndex": index,
@@ -264,7 +271,7 @@ class _HomePageState extends ConsumerState<GamePage> {
         child: Center(
           child: model.selectedIndex == index
               ? _buildSomething(model.uid, userIdProv)
-              : Text(" "),
+              : const Text(" "),
         ),
       ),
     );

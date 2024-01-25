@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/providers/user_id_provider.dart';
+import 'package:mobile/services/socket_web_services.dart';
 import 'package:mobile/views/game_page/game_page.dart';
 
 import 'views/homepage/home_page.dart';
@@ -27,15 +28,30 @@ class MyApp extends ConsumerWidget {
     debugPrint("Uid: ${ref.watch(userIdProvider)}");
 
     return MaterialApp(
-        title: 'Flutter Demo',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
-        ),
-        initialRoute: "/",
-        routes: {
-          "/game": (context) => const GamePage(),
-          "/": (context) => const HomePage(),
-        });
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        useMaterial3: true,
+      ),
+      initialRoute: "/",
+      onGenerateRoute: generateRoute,
+    );
+  }
+
+  Route<dynamic>? generateRoute(RouteSettings settings) {
+    switch (settings.name) {
+      case '/game':
+        return MaterialPageRoute(
+          builder: (_) => GamePage(
+              socketWebServices: settings.arguments as SocketWebServices),
+        );
+      case '/':
+        return MaterialPageRoute(
+          builder: (_) => const HomePage(),
+        );
+      default:
+        // Handle unknown routes
+        return null;
+    }
   }
 }

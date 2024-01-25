@@ -15,6 +15,7 @@ class SocketWebServices {
         IO.OptionBuilder()
             .setTransports(['websocket'])
             .disableAutoConnect()
+            .enableForceNewConnection()
             .build());
 
     socket.connect(); // connect to the server
@@ -42,7 +43,7 @@ class SocketWebServices {
   }
 
   // when room is created
-  void roomCreated(ValueChanged<dynamic> onCreated) {
+  void onRoomCreated(ValueChanged<dynamic> onCreated) {
     log("Game created");
     socket.on("room-created", onCreated);
   }

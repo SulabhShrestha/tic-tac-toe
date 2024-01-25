@@ -27,16 +27,18 @@ class HomePage extends ConsumerWidget {
               LoadingButtonWithText(
                 text: "Create Game",
                 onTap: () {
-                  SocketWebServices()
+                  var socketWebServices = SocketWebServices()
                     ..init()
-                    ..createRoom(myUid: ref.read(userIdProvider))
-                    ..roomCreated((roomId) {
-                      ref.read(roomDetailsProvider.notifier).state = roomId;
-                      ref.read(waitingForConnectionProvider.notifier).state =
-                          true;
+                    ..createRoom(myUid: ref.read(userIdProvider));
 
-                      Navigator.of(context).pushNamed("/game");
-                    });
+                  socketWebServices.onRoomCreated((roomId) {
+                    ref.read(roomDetailsProvider.notifier).state = roomId;
+                    ref.read(waitingForConnectionProvider.notifier).state =
+                        true;
+
+                    Navigator.of(context)
+                        .pushNamed("/game", arguments: socketWebServices);
+                  });
                 },
               ),
               ElevatedButton(

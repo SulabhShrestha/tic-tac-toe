@@ -47,7 +47,7 @@ class MyApp extends ConsumerWidget {
               socketWebServices: (settings.arguments
                       as Map<String, dynamic>)["socketWebServices"]
                   as SocketWebServices,
-              players: (settings.arguments as Map)["players"]
+              players: (settings.arguments as Map<String, dynamic>)["players"]
                   as Map<String, dynamic>),
         );
       case '/':

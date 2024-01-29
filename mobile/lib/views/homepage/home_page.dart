@@ -38,7 +38,7 @@ class HomePage extends ConsumerWidget {
 
                     Navigator.of(context).pushNamed("/game", arguments: {
                       "socketWebServices": socketWebServices,
-                      "players": {},
+                      "players": <String, dynamic>{},
                     });
                   });
                 },

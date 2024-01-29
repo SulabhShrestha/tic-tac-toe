@@ -105,7 +105,7 @@ class _HomePageState extends ConsumerState<GamePage> {
                 style: TextButton.styleFrom(
                   textStyle: Theme.of(context).textTheme.labelLarge,
                 ),
-                child: const Text('Nevermind'),
+                child: const Text('{} as Map<String, dynamic>Nevermind'),
                 onPressed: () {
                   Navigator.pop(context);
                 },
@@ -161,6 +161,7 @@ class _HomePageState extends ConsumerState<GamePage> {
             children: [
               // game grid
               Column(
+                mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // who's turn

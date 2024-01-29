@@ -82,9 +82,9 @@ class _HomePageState extends ConsumerState<GamePage> {
       });
     } else {
       Future(() {
-        ref.watch(allPlayersProvider.notifier).addPlayers(widget.players!);
+        ref.watch(allPlayersProvider.notifier).addPlayers(widget.players);
         ref.watch(playerTurnProvider.notifier).state =
-            widget.players!["player1"];
+            widget.players["player1"];
         ref.watch(waitingForConnectionProvider.notifier).state = false;
       });
     }

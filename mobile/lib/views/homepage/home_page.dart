@@ -96,6 +96,9 @@ class HomePage extends ConsumerWidget {
               socketWebServices.socket.on("game-init", (players) {
                 debugPrint("Game init $players");
 
+                ref.read(roomDetailsProvider.notifier).state =
+                    _roomIDController.text;
+
                 Navigator.of(context).pushNamed("/game", arguments: {
                   "socketWebServices": socketWebServices,
                   "players": players,

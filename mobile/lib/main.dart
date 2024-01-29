@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -43,7 +44,11 @@ class MyApp extends ConsumerWidget {
       case '/game':
         return MaterialPageRoute(
           builder: (_) => GamePage(
-              socketWebServices: settings.arguments as SocketWebServices),
+              socketWebServices: (settings.arguments
+                      as Map<String, dynamic>)["socketWebServices"]
+                  as SocketWebServices,
+              players: (settings.arguments as Map)["players"]
+                  as Map<String, dynamic>),
         );
       case '/':
         return MaterialPageRoute(

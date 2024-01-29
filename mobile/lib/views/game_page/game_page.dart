@@ -19,9 +19,14 @@ import 'package:mobile/views/homepage/home_page.dart';
 
 class GamePage extends ConsumerStatefulWidget {
   final SocketWebServices socketWebServices;
+
+  // players value is only available when joining game
+  final Map<String, dynamic> players;
+
   const GamePage({
     super.key,
     required this.socketWebServices,
+    required this.players,
   });
 
   @override
@@ -33,14 +38,6 @@ class _HomePageState extends ConsumerState<GamePage> {
 
   @override
   void initState() {
-    widget.socketWebServices.socket.on("game-init", (gameInit) {
-      debugPrint("Inside game init $gameInit");
-
-      ref.watch(allPlayersProvider.notifier).addPlayers(gameInit);
-      ref.watch(playerTurnProvider.notifier).state = gameInit["player1"];
-      ref.watch(waitingForConnectionProvider.notifier).state = false;
-    });
-
     widget.socketWebServices.socket.on("event", (data) {
       // changing player state
       ref.watch(playerTurnProvider.notifier).state = data["player-turn"];
@@ -72,6 +69,25 @@ class _HomePageState extends ConsumerState<GamePage> {
         );
       }
     });
+
+    // when coming after creating game, game-init event is triggered
+    // joining game has already triggered game-init event
+    if (widget.players.isEmpty) {
+      widget.socketWebServices.socket.on("game-init", (gameInit) {
+        debugPrint("Inside game init $gameInit");
+
+        ref.watch(allPlayersProvider.notifier).addPlayers(gameInit);
+        ref.watch(playerTurnProvider.notifier).state = gameInit["player1"];
+        ref.watch(waitingForConnectionProvider.notifier).state = false;
+      });
+    } else {
+      Future(() {
+        ref.watch(allPlayersProvider.notifier).addPlayers(widget.players!);
+        ref.watch(playerTurnProvider.notifier).state =
+            widget.players!["player1"];
+        ref.watch(waitingForConnectionProvider.notifier).state = false;
+      });
+    }
     super.initState();
   }
 

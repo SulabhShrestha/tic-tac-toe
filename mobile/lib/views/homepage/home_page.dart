@@ -36,8 +36,10 @@ class HomePage extends ConsumerWidget {
                     ref.read(waitingForConnectionProvider.notifier).state =
                         true;
 
-                    Navigator.of(context)
-                        .pushNamed("/game", arguments: socketWebServices);
+                    Navigator.of(context).pushNamed("/game", arguments: {
+                      "socketWebServices": socketWebServices,
+                      "players": {},
+                    });
                   });
                 },
               ),
@@ -91,8 +93,13 @@ class HomePage extends ConsumerWidget {
               });
 
               // joining the game on correct room id
-              socketWebServices.socket.on("game-init", (gameInit) {
-                Navigator.of(context).pushNamed("/game");
+              socketWebServices.socket.on("game-init", (players) {
+                debugPrint("Game init $players");
+
+                Navigator.of(context).pushNamed("/game", arguments: {
+                  "socketWebServices": socketWebServices,
+                  "players": players,
+                });
               });
             }),
       ],

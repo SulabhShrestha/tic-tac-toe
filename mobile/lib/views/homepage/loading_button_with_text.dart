@@ -22,15 +22,9 @@ class _LoadingButtonWithTextState extends ConsumerState<LoadingButtonWithText> {
   bool isLoading = false;
 
   @override
-  void initState() {
-    // [isLoading] depends primarily on waitingConnection
-    isLoading = ref.read(waitingForConnectionProvider);
-
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    debugPrint("should load: $isLoading");
+
     return ElevatedButton(
       onPressed: () {
         setState(() {
@@ -41,7 +35,8 @@ class _LoadingButtonWithTextState extends ConsumerState<LoadingButtonWithText> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (isLoading) const CircularProgressIndicator(),
+          if (ref.read(waitingForConnectionProvider))
+            const CircularProgressIndicator(),
           Text(widget.text),
         ],
       ),

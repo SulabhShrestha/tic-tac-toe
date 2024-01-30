@@ -100,6 +100,20 @@ class _HomePageState extends ConsumerState<GamePage> {
     super.initState();
   }
 
+  void resetAllStateAndMoveBack() {
+    widget.socketWebServices.disconnect();
+
+    // removing global state data
+    ref.read(roomDetailsProvider.notifier).state = "";
+    ref.watch(waitingForConnectionProvider.notifier).state = false;
+    ref.read(gameConclusionProvider.notifier).state = {};
+    ref.read(ticTacProvider.notifier).removeAll();
+    ref.read(playerTurnProvider.notifier).state = "";
+    ref.read(allPlayersProvider.notifier).empty();
+
+    Navigator.pushNamedAndRemoveUntil(context, "/", (route) => true);
+  }
+
   Future<void> _showPlayAgainDialog(String whichPlayer) {
     return showDialog(
         context: context,
@@ -110,7 +124,7 @@ class _HomePageState extends ConsumerState<GamePage> {
             actions: [
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context);
+                  resetAllStateAndMoveBack();
                 },
                 child: const Text("No"),
               ),
@@ -152,18 +166,7 @@ class _HomePageState extends ConsumerState<GamePage> {
                 ),
                 child: const Text('Leave'),
                 onPressed: () async {
-                  widget.socketWebServices.disconnect();
-
-                  // removing global state data
-                  ref.read(roomDetailsProvider.notifier).state = "";
-                  ref.read(waitingForConnectionProvider.notifier).state = false;
-                  ref.read(gameConclusionProvider.notifier).state = {};
-                  ref.read(ticTacProvider.notifier).removeAll();
-                  ref.read(playerTurnProvider.notifier).state = "";
-                  ref.read(allPlayersProvider.notifier).empty();
-
-                  Navigator.pushNamedAndRemoveUntil(
-                      context, "/", (route) => true);
+                  resetAllStateAndMoveBack();
                 },
               ),
             ],

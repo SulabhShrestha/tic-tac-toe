@@ -70,6 +70,15 @@ class _HomePageState extends ConsumerState<GamePage> {
       }
     });
 
+    widget.socketWebServices.socket.on("play-again", (uid) {
+      String whichPlayer = ref
+          .read(allPlayersProvider)
+          .entries
+          .firstWhere((element) => element.value == uid)
+          .key;
+      _showPlayAgainDialog(whichPlayer);
+    });
+
     // when coming after creating game, game-init event is triggered
     // joining game has already triggered game-init event
     if (widget.players.isEmpty) {
@@ -91,6 +100,33 @@ class _HomePageState extends ConsumerState<GamePage> {
     super.initState();
   }
 
+  Future<void> _showPlayAgainDialog(String whichPlayer) {
+    return showDialog(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            title: const Text("Play Again?"),
+            content: Text("$whichPlayer is challenging you again!"),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text("No"),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  widget.socketWebServices.sendPlayAgainEvent(
+                      roomID: ref.read(roomDetailsProvider));
+                },
+                child: const Text("Yes"),
+              ),
+            ],
+          );
+        });
+  }
+
   Future<void> _showBackDialog() async {
     await showDialog(
         context: context,
@@ -105,7 +141,7 @@ class _HomePageState extends ConsumerState<GamePage> {
                 style: TextButton.styleFrom(
                   textStyle: Theme.of(context).textTheme.labelLarge,
                 ),
-                child: const Text('{} as Map<String, dynamic>Nevermind'),
+                child: const Text('Nevermind'),
                 onPressed: () {
                   Navigator.pop(context);
                 },

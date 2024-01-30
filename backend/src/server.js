@@ -97,7 +97,6 @@ io.on("connection", (socket) => {
 
     // someone is waiting for other player and can join the game
     else if (roomDetails && roomDetails.players.length == 1) {
-      console.log("inside if");
       socket.join(roomID);
       // combining joined and waiting players
       const players = [roomDetails.players[0], uid];
@@ -112,7 +111,6 @@ io.on("connection", (socket) => {
         players: players,
         "player-turn": player1,
       });
-
       console.log("Room info: ", getGameInfoByRoomId(roomID));
 
       // sending the game initialized event to the room
@@ -164,23 +162,10 @@ io.on("connection", (socket) => {
     });
   });
 
-  // handling the play again event
-  socket.on("play-again", ({ roomID }) => {
-    // getting the game info
-    const gameInfo = getGameInfoByRoomId(roomID);
-
-    console.log("Game info: ", gameInfo);
-
-    // which means the data is already deleted and user is disconnected
-    if (!gameInfo) return;
-
-    // resetting the game info
-    updateGameInfoByRoomId(roomID, {
-      "player-turn": gameInfo.players[0],
-    });
-
+  // handling the play again event and sending to the other person
+  socket.on("play-again", ({ roomID, uid }) => {
     // sending the event to the connected clients
-    io.to(roomID).emit("play-again");
+    io.to(roomID).emit("play-again", uid);
   });
 
   // Function to generate a unique room ID

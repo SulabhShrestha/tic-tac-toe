@@ -3,9 +3,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/providers/game_conclusion_provider.dart';
-import 'package:mobile/providers/player_turn_provider.dart';
 import 'package:mobile/providers/room_details_provider.dart';
-import 'package:mobile/providers/tic_tac_providers.dart';
+
 import 'package:mobile/providers/user_id_provider.dart';
 import 'package:mobile/services/socket_web_services.dart';
 import 'package:mobile/utils/tic_tac_utils.dart';

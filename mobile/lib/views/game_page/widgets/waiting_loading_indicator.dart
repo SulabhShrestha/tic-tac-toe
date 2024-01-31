@@ -76,11 +76,11 @@ class _WaitingLoadingIndicatorState
         children: <TextSpan>[
           TextSpan(
             text: firstWord,
-            style: TextStyle(color: Colors.white),
+            style: const TextStyle(color: Colors.white),
           ),
           TextSpan(
             text: secondWord,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
             ),

@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -14,8 +13,8 @@ import 'package:mobile/providers/waiting_for_connection_provider.dart';
 import 'package:mobile/services/socket_web_services.dart';
 import 'package:mobile/utils/tic_tac_utils.dart';
 import 'package:mobile/views/game_page/widgets/player_icon.dart';
+import 'package:mobile/views/game_page/widgets/player_profile_card.dart';
 import 'package:mobile/views/game_page/widgets/waiting_loading_indicator.dart';
-import 'package:mobile/views/homepage/home_page.dart';
 
 import 'widgets/display_game_conclusion.dart';
 
@@ -67,7 +66,7 @@ class _HomePageState extends ConsumerState<GamePage> {
       if (!snackBarShown) {
         snackBarShown = true;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Other player left the game.")),
+          const SnackBar(content: Text("Other player left the game.")),
         );
       }
     });
@@ -88,14 +87,14 @@ class _HomePageState extends ConsumerState<GamePage> {
         debugPrint("Inside game init $gameInit");
 
         ref.watch(allPlayersProvider.notifier).addPlayers(gameInit);
-        ref.watch(playerTurnProvider.notifier).state = gameInit["player1"];
+        ref.watch(playerTurnProvider.notifier).state = gameInit["Player 1"];
         ref.watch(waitingForConnectionProvider.notifier).state = false;
       });
     } else {
       Future(() {
         ref.watch(allPlayersProvider.notifier).addPlayers(widget.players);
         ref.watch(playerTurnProvider.notifier).state =
-            widget.players["player1"];
+            widget.players["Player 1"];
         ref.watch(waitingForConnectionProvider.notifier).state = false;
       });
     }
@@ -206,7 +205,7 @@ class _HomePageState extends ConsumerState<GamePage> {
             onPressed: () async {
               await _showBackDialog();
             },
-            icon: Icon(Icons.arrow_back),
+            icon: const Icon(Icons.arrow_back),
           ),
         ),
         body: SafeArea(
@@ -217,16 +216,15 @@ class _HomePageState extends ConsumerState<GamePage> {
                 mainAxisSize: MainAxisSize.max,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // who's turn
-                  Text(
-                      "${playerTurnProv == "123" ? "Your" : playerTurnProv} turn"),
-
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
+                      // for (final entry in ref.read(allPlayersProvider).entries)
+                      //   PlayerIcon(
+                      //       playerTitle: entry.key, playerUid: entry.value),
+
                       for (final entry in ref.read(allPlayersProvider).entries)
-                        PlayerIcon(
-                            playerTitle: entry.key, playerUid: entry.value),
+                        PlayerProfileCard(playerInfo: entry),
                     ],
                   ),
 
@@ -240,6 +238,22 @@ class _HomePageState extends ConsumerState<GamePage> {
                     children: [
                       for (int a = 0; a < 9; a++) _buildGridCell(a),
                     ],
+                  ),
+
+                  // who's turn
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Colors.amber, Colors.amber.shade700],
+                      ),
+                    ),
+                    padding:
+                        const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                    child: Text(
+                        "${playerTurnProv == ref.read(userIdProvider) ? "Your" : playerTurnProv} turn"),
                   ),
                 ],
               ),

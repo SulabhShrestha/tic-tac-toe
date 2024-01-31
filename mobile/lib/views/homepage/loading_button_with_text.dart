@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/providers/waiting_for_connection_provider.dart';
-import 'package:mobile/services/socket_web_services.dart';
 
 class LoadingButtonWithText extends ConsumerStatefulWidget {
   final String text;

@@ -1,6 +1,4 @@
 import 'dart:developer';
-import 'dart:io';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,7 +6,7 @@ import 'package:mobile/providers/room_details_provider.dart';
 import 'package:mobile/providers/user_id_provider.dart';
 import 'package:mobile/providers/waiting_for_connection_provider.dart';
 import 'package:mobile/services/socket_web_services.dart';
-import 'package:mobile/views/game_page/game_page.dart';
+import 'package:mobile/views/game_page/widgets/player_profile_card.dart';
 import 'package:mobile/views/homepage/loading_button_with_text.dart';
 
 class HomePage extends ConsumerWidget {
@@ -24,6 +22,7 @@ class HomePage extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              const SizedBox(height: 20),
               LoadingButtonWithText(
                 text: "Create Game",
                 onTap: () {
@@ -64,32 +63,32 @@ class HomePage extends ConsumerWidget {
   }
 
   Widget _askForRoomId(BuildContext context, WidgetRef ref) {
-    final TextEditingController _roomIDController = TextEditingController();
+    final TextEditingController roomIDController = TextEditingController();
     return AlertDialog(
       title: const Text("Enter Room ID"),
       content: TextField(
-        controller: _roomIDController,
+        controller: roomIDController,
         decoration: const InputDecoration(hintText: "Enter Room ID"),
       ),
       actions: [
         LoadingButtonWithText(
             text: "Join",
             onTap: () {
-              debugPrint(_roomIDController.text);
+              debugPrint(roomIDController.text);
 
               // joining the user to the game
               SocketWebServices socketWebServices = SocketWebServices()
                 ..init()
                 ..joinRoom(
                     myUid: ref.read(userIdProvider),
-                    roomID: _roomIDController.text);
+                    roomID: roomIDController.text);
 
               // when room not found
               socketWebServices.socket.on("room-not-found", (data) {
                 debugPrint("Room not found");
                 Navigator.pop(context);
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(SnackBar(content: Text("Room not found")));
+                ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Room not found")));
               });
 
               // joining the game on correct room id
@@ -97,7 +96,7 @@ class HomePage extends ConsumerWidget {
                 debugPrint("Game init $players");
 
                 ref.read(roomDetailsProvider.notifier).state =
-                    _roomIDController.text;
+                    roomIDController.text;
 
                 Navigator.of(context).pushNamed("/game", arguments: {
                   "socketWebServices": socketWebServices,

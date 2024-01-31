@@ -171,11 +171,17 @@ io.on("connection", (socket) => {
 
   // handles the play again event sent accepted by the other person
   socket.on("play-again-accepted", ({ roomID }) => {
+    let selectedCells = getSelectedCellsInfoByRoomID(roomID);
+    console.log("Selected cells: ", selectedCells);
+
+    // the second person to play game is the first to initate the game now
+    let gameInitiater = selectedCells[1].selectedBy;
+
     // clearing the selected cells info
     clearSelectedCellsInfoByRoomID(roomID);
 
-    // sending the event to the connected clients
-    io.to(roomID).emit("play-again-accepted");
+    // sending the event to the connected clients, and the player turn as well
+    io.to(roomID).emit("play-again-accepted", gameInitiater);
   });
 
   // Function to generate a unique room ID

@@ -39,7 +39,7 @@ class PlayerProfileCard extends ConsumerWidget {
             children: [
               const SizedBox(height: 10),
               Text(
-                playerInfo.key,
+                myUid == playerInfo.value ? "You" : playerInfo.key,
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w500,

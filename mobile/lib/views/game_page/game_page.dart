@@ -11,10 +11,12 @@ import 'package:mobile/providers/tic_tac_providers.dart';
 import 'package:mobile/providers/user_id_provider.dart';
 import 'package:mobile/providers/waiting_for_connection_provider.dart';
 import 'package:mobile/services/socket_web_services.dart';
+import 'package:mobile/utils/colors.dart';
 import 'package:mobile/utils/tic_tac_utils.dart';
 import 'package:mobile/views/game_page/widgets/player_icon.dart';
 import 'package:mobile/views/game_page/widgets/player_profile_card.dart';
 import 'package:mobile/views/game_page/widgets/waiting_loading_indicator.dart';
+import 'package:r_dotted_line_border/r_dotted_line_border.dart';
 
 import 'widgets/display_game_conclusion.dart';
 
@@ -199,6 +201,7 @@ class _HomePageState extends ConsumerState<GamePage> {
         await _showBackDialog();
       },
       child: Scaffold(
+        backgroundColor: const Color(0xFFFDDCE6),
         appBar: AppBar(
           title: const Text("Tic Tac Toe"),
           leading: IconButton(
@@ -219,25 +222,41 @@ class _HomePageState extends ConsumerState<GamePage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // for (final entry in ref.read(allPlayersProvider).entries)
-                      //   PlayerIcon(
-                      //       playerTitle: entry.key, playerUid: entry.value),
-
                       for (final entry in ref.read(allPlayersProvider).entries)
                         PlayerProfileCard(playerInfo: entry),
                     ],
                   ),
 
-                  GridView(
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: 12, vertical: 24),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: ConstantColors.red,
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(
+                        color: Colors.white,
+                        width: 8,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 14,
+                          spreadRadius: 1,
+                          blurStyle: BlurStyle.outer,
+                        ),
+                      ],
                     ),
-                    children: [
-                      for (int a = 0; a < 9; a++) _buildGridCell(a),
-                    ],
+                    child: GridView(
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                      ),
+                      children: [
+                        for (int a = 0; a < 9; a++) _buildGridCell(a),
+                      ],
+                    ),
                   ),
 
                   // who's turn
@@ -253,7 +272,7 @@ class _HomePageState extends ConsumerState<GamePage> {
                     padding:
                         const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                     child: Text(
-                        "${playerTurnProv == ref.read(userIdProvider) ? "Your" : playerTurnProv} turn"),
+                        "${playerTurnProv == ref.read(userIdProvider) ? "Your" : getKeyFromValue(playerTurnProv)} turn"),
                   ),
                 ],
               ),
@@ -288,6 +307,16 @@ class _HomePageState extends ConsumerState<GamePage> {
     );
   }
 
+  String? getKeyFromValue(dynamic targetValue) {
+    var map = ref.read(allPlayersProvider);
+    for (var entry in map.entries) {
+      if (entry.value == targetValue) {
+        return entry.key;
+      }
+    }
+    return null;
+  }
+
   Widget _buildGridCell(int index) {
     var ticTacProv = ref.watch(ticTacProvider);
     var playerTurn = ref.watch(playerTurnProvider);
@@ -300,6 +329,10 @@ class _HomePageState extends ConsumerState<GamePage> {
               uid: "xx",
               selectedIndex: -1,
             ));
+
+    // list of indexes for border
+    List<int> borderBottomIndexes = [0, 1, 2, 3, 4, 5];
+    List<int> borderRightIndexes = [0, 1, 3, 4, 6, 7];
 
     return GestureDetector(
       // it should be both player turn and cell should be empty
@@ -315,7 +348,22 @@ class _HomePageState extends ConsumerState<GamePage> {
 
       child: Container(
         decoration: BoxDecoration(
-          border: Border.all(),
+          border: RDottedLineBorder(
+            dottedLength: 6,
+            dottedSpace: 4,
+            right: borderRightIndexes.contains(index)
+                ? const BorderSide(
+                    color: ConstantColors.white,
+                    width: 1,
+                  )
+                : BorderSide.none,
+            bottom: borderBottomIndexes.contains(index)
+                ? const BorderSide(
+                    color: ConstantColors.white,
+                    width: 1,
+                  )
+                : BorderSide.none,
+          ),
         ),
         child: Center(
           child: model.selectedIndex == index
@@ -327,9 +375,8 @@ class _HomePageState extends ConsumerState<GamePage> {
   }
 
   Widget _buildSomething(String selectedBy, String myUid) {
-    return Icon(
-      selectedBy == myUid ? Icons.done : Icons.close,
-      size: 54,
-    );
+    return Image.asset(
+        selectedBy == myUid ? "images/close.png" : "images/circle.png",
+        height: 54);
   }
 }

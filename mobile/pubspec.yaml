@@ -38,6 +38,8 @@ dependencies:
   socket_io_client: ^2.0.3+1
   flutter_riverpod: ^2.4.9
   flutter_dotenv: ^5.1.0
+  dotted_decoration: ^2.0.0
+  r_dotted_line_border: ^0.1.1
 
 dev_dependencies:
   flutter_test:

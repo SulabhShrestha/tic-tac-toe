@@ -131,8 +131,8 @@ class _HomePageState extends ConsumerState<GamePage> {
               TextButton(
                 onPressed: () {
                   Navigator.pop(context);
-                  widget.socketWebServices.sendPlayAgainEvent(
-                      roomID: ref.read(roomDetailsProvider));
+
+                  widget.socketWebServices.sendPlayAgainAccepted(roomID: ref.read(roomDetailsProvider));
                 },
                 child: const Text("Yes"),
               ),

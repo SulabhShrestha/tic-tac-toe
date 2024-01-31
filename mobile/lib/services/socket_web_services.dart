@@ -57,22 +57,25 @@ class SocketWebServices {
     });
   }
 
-  void sendPlayAgainEvent({required String roomID}) {
+  void sendPlayAgainEvent({
+    required String roomID,
+    required String uid,
+  }) {
     log("Sending play again event");
 
     socket.emit('play-again', {
       "roomID": roomID,
+      "uid": uid,
     });
   }
 
-  void sendPlayAgainAccepted({required String roomID}){
+  void sendPlayAgainAccepted({required String roomID}) {
     log("Sending play again accepted event");
 
     socket.emit('play-again-accepted', {
       "roomID": roomID,
     });
   }
-
 
   void sendData({required Map<String, dynamic> data}) {
     socket.emit("event", data);

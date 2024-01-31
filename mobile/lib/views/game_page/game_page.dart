@@ -131,8 +131,9 @@ class _HomePageState extends ConsumerState<GamePage> {
               TextButton(
                 onPressed: () {
                   Navigator.pop(context);
-
-                  widget.socketWebServices.sendPlayAgainAccepted(roomID: ref.read(roomDetailsProvider));
+                  ref.watch(ticTacProvider.notifier).removeAll();
+                  widget.socketWebServices.sendPlayAgainAccepted(
+                      roomID: ref.read(roomDetailsProvider));
                 },
                 child: const Text("Yes"),
               ),
@@ -279,7 +280,9 @@ class _HomePageState extends ConsumerState<GamePage> {
                           ElevatedButton(
                             onPressed: () {
                               widget.socketWebServices.sendPlayAgainEvent(
-                                  roomID: ref.read(roomDetailsProvider));
+                                roomID: ref.read(roomDetailsProvider),
+                                uid: ref.read(userIdProvider),
+                              );
                             },
                             child: const Text("Play Again"),
                           ),

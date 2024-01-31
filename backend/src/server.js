@@ -166,7 +166,7 @@ io.on("connection", (socket) => {
   // handling the play again event and sending to the other person
   socket.on("play-again", ({ roomID, uid }) => {
     // sending the event to the connected clients
-    io.to(roomID).emit("play-again", uid);
+    socket.broadcast.to(roomID).emit("play-again", uid);
   });
 
   // handles the play again event sent accepted by the other person

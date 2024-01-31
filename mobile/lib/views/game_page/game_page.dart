@@ -17,6 +17,8 @@ import 'package:mobile/views/game_page/widgets/player_icon.dart';
 import 'package:mobile/views/game_page/widgets/waiting_loading_indicator.dart';
 import 'package:mobile/views/homepage/home_page.dart';
 
+import 'widgets/display_game_conclusion.dart';
+
 class GamePage extends ConsumerStatefulWidget {
   final SocketWebServices socketWebServices;
 
@@ -97,6 +99,17 @@ class _HomePageState extends ConsumerState<GamePage> {
         ref.watch(waitingForConnectionProvider.notifier).state = false;
       });
     }
+
+    // when play again is accepted
+    widget.socketWebServices.socket.on("play-again-accepted", (playerTurn) {
+      debugPrint("Play again accepted $playerTurn");
+
+      // resetting
+      ref.read(gameConclusionProvider.notifier).state = {};
+      ref.watch(ticTacProvider.notifier).removeAll();
+
+      ref.watch(playerTurnProvider.notifier).state = playerTurn;
+    });
     super.initState();
   }
 
@@ -131,7 +144,7 @@ class _HomePageState extends ConsumerState<GamePage> {
               TextButton(
                 onPressed: () {
                   Navigator.pop(context);
-                  ref.watch(ticTacProvider.notifier).removeAll();
+
                   widget.socketWebServices.sendPlayAgainAccepted(
                       roomID: ref.read(roomDetailsProvider));
                 },
@@ -177,9 +190,9 @@ class _HomePageState extends ConsumerState<GamePage> {
 
   @override
   Widget build(BuildContext context) {
-    var playerTurnProv = ref.read(playerTurnProvider);
+    var playerTurnProv = ref.watch(playerTurnProvider);
 
-    debugPrint("Player turn: ${ref.read(allPlayersProvider)}");
+    debugPrint("Player turn: $playerTurnProv");
 
     return PopScope(
       canPop: false,
@@ -252,45 +265,8 @@ class _HomePageState extends ConsumerState<GamePage> {
 
               // show either win or draw
               if (ref.watch(gameConclusionProvider).isNotEmpty)
-                BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-                  child: Center(
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [Colors.blue.shade600, Colors.green],
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // conclusion text
-                          if (ref.watch(gameConclusionProvider)["conclusion"] ==
-                              GameConclusion.draw)
-                            const Text("Draw"),
-
-                          if (ref.watch(gameConclusionProvider)["conclusion"] ==
-                              GameConclusion.win)
-                            Text(
-                                "${ref.watch(gameConclusionProvider)["winner"]} won the game"),
-                          ElevatedButton(
-                            onPressed: () {
-                              widget.socketWebServices.sendPlayAgainEvent(
-                                roomID: ref.read(roomDetailsProvider),
-                                uid: ref.read(userIdProvider),
-                              );
-                            },
-                            child: const Text("Play Again"),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
+                DisplayGameConclusion(
+                    socketWebServices: widget.socketWebServices),
             ],
           ),
         ),

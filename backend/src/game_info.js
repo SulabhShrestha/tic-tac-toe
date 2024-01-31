@@ -40,6 +40,7 @@ module.exports = {
 
   // remove all the selected cells from the game info
   clearSelectedCellsInfoByRoomID: (roomID) => {
+    console.log("before clearing selected cells info: ", game_info);
     game_info = game_info.map((game) => {
       // Check if the room property matches the provided room
       if (game.roomID === roomID) {
@@ -51,7 +52,7 @@ module.exports = {
       return game;
     });
 
-    console.log("Game info: ", game_info);
+    console.log("clear selected cells info: ", game_info);
   },
 
   // New method to add selected cells to the game info

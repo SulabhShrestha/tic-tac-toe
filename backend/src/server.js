@@ -11,6 +11,7 @@ const {
   getGameInfoByUserId,
   addSelectedCellInfo,
   getSelectedCellsInfoByRoomID,
+  clearSelectedCellsInfoByRoomID,
 } = require("./game_info");
 
 const app = express();
@@ -166,6 +167,15 @@ io.on("connection", (socket) => {
   socket.on("play-again", ({ roomID, uid }) => {
     // sending the event to the connected clients
     io.to(roomID).emit("play-again", uid);
+  });
+
+  // handles the play again event sent accepted by the other person
+  socket.on("play-again-accepted", ({ roomID }) => {
+    // clearing the selected cells info
+    clearSelectedCellsInfoByRoomID(roomID);
+
+    // sending the event to the connected clients
+    io.to(roomID).emit("play-again-accepted");
   });
 
   // Function to generate a unique room ID

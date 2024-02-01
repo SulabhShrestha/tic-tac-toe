@@ -28,27 +28,33 @@ class _LoadingButtonWithTextState extends ConsumerState<LoadingButtonWithText> {
 
     return GradientButton(
       onTap: () {
-        setState(() {
-          isLoading = true;
-        });
-        widget.onTap();
+        // when not loading
+        if (!isLoading) {
+          setState(() {
+            isLoading = true;
+          });
+          widget.onTap();
+        }
       },
       linearGradient: LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [ConstantColors.yellow, ConstantColors.red],
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (ref.read(waitingForConnectionProvider))
-            const CircularProgressIndicator(),
-          Text(
-            widget.text,
-            style: TextStyle(color: Colors.white),
-          ),
-        ],
-      ),
+      child: isLoading
+          ? SizedBox(
+              width: 24,
+              height: 24,
+              child: const CircularProgressIndicator(),
+            )
+          : FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                widget.text,
+                style: TextStyle(color: Colors.white),
+                overflow: TextOverflow.fade,
+              ),
+            ),
     );
   }
 }

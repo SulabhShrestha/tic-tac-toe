@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/providers/room_details_provider.dart';
+import 'package:mobile/utils/colors.dart';
 
 class WaitingLoadingIndicator extends ConsumerStatefulWidget {
   const WaitingLoadingIndicator({super.key});
@@ -47,8 +48,8 @@ class _WaitingLoadingIndicatorState
         CircularProgressIndicator(
           valueColor: _controller.drive(
             ColorTween(
-              begin: Colors.white,
-              end: Colors.green,
+              begin: ConstantColors.red,
+              end: Colors.white,
             ),
           ),
         ),

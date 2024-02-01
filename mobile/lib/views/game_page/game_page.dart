@@ -332,7 +332,10 @@ class _HomePageState extends ConsumerState<GamePage> {
                           gradient: LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
-                            colors: [Colors.blue.shade600, Colors.green],
+                            colors: [
+                              Colors.amber.shade300,
+                              Colors.amber.shade700
+                            ],
                           ),
                           borderRadius: BorderRadius.circular(10),
                         ),

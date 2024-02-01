@@ -16,6 +16,9 @@ class _WaitingLoadingIndicatorState
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
+  // if the room id is copied
+  bool isCopied = false;
+
   @override
   void initState() {
     super.initState();
@@ -38,8 +41,7 @@ class _WaitingLoadingIndicatorState
       children: [
         const Text(
           "Waiting for opponent",
-          style: TextStyle(
-              fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 10),
         CircularProgressIndicator(
@@ -56,13 +58,25 @@ class _WaitingLoadingIndicatorState
           children: [
             secondWordBold("Room ID: ", ref.watch(roomDetailsProvider)),
             IconButton(
-                onPressed: () {
-                  Clipboard.setData(
-                      ClipboardData(text: ref.watch(roomDetailsProvider)));
-                },
-                icon: const Icon(
+                onPressed: isCopied
+                    ? null
+                    : () {
+                        setState(() {
+                          isCopied = true;
+                        });
+                        // showing snackbar
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Copied to clipboard"),
+                          ),
+                        );
+                        Clipboard.setData(ClipboardData(
+                            text: ref.watch(roomDetailsProvider)));
+                      },
+                icon: Icon(
                   Icons.content_copy,
-                  color: Colors.grey,
+                  color:
+                      isCopied ? Colors.grey.shade500 : const Color(0xFF2D4BFF),
                 )),
           ],
         ),
@@ -75,14 +89,12 @@ class _WaitingLoadingIndicatorState
       text: TextSpan(
         children: <TextSpan>[
           TextSpan(
-            text: firstWord,
-            style: const TextStyle(color: Colors.white),
-          ),
+              text: firstWord, style: const TextStyle(color: Colors.black)),
           TextSpan(
             text: secondWord,
             style: const TextStyle(
-              color: Colors.white,
               fontWeight: FontWeight.bold,
+              color: Colors.black,
             ),
           ),
         ],

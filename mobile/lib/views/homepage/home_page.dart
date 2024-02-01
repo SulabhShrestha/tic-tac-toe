@@ -8,6 +8,7 @@ import 'package:mobile/providers/waiting_for_connection_provider.dart';
 import 'package:mobile/services/socket_web_services.dart';
 import 'package:mobile/views/game_page/widgets/player_profile_card.dart';
 import 'package:mobile/views/homepage/loading_button_with_text.dart';
+import 'package:mobile/views/homepage/widgets/gradient_button.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -15,6 +16,7 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
+      backgroundColor: const Color(0xFFFDDCE6),
       body: SafeArea(
         child: SizedBox(
           width: double.infinity,
@@ -22,10 +24,10 @@ class HomePage extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 20),
               LoadingButtonWithText(
                 text: "Create Game",
                 onTap: () {
+                  debugPrint("Loading");
                   var socketWebServices = SocketWebServices()
                     ..init()
                     ..createRoom(myUid: ref.read(userIdProvider));
@@ -42,19 +44,21 @@ class HomePage extends ConsumerWidget {
                   });
                 },
               ),
-              ElevatedButton(
-                onPressed: () {
-                  log("Ref: ${ref.read(userIdProvider)}");
+              const SizedBox(height: 20),
+              GradientButton(
+                  linearGradient: const LinearGradient(
+                      colors: [Colors.deepPurple, Colors.deepOrange]),
+                  onTap: () {
+                    log("Ref: ${ref.read(userIdProvider)}");
 
-                  // alert dialog
-                  showDialog(
-                      context: context,
-                      builder: (context) {
-                        return _askForRoomId(context, ref);
-                      });
-                },
-                child: const Text("Join Game"),
-              ),
+                    // alert dialog
+                    showDialog(
+                        context: context,
+                        builder: (context) {
+                          return _askForRoomId(context, ref);
+                        });
+                  },
+                  child: const Text("Join Game"))
             ],
           ),
         ),

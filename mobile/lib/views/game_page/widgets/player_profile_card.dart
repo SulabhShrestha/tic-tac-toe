@@ -13,9 +13,13 @@ class PlayerProfileCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    var playerAbbreviation = playerInfo.key.split(" ")[0][0] +
-        playerInfo.key.split(" ")[1][0]; // Player 1 -> P1
     var myUid = ref.read(userIdProvider);
+
+    // Player 1 -> P1
+    var playerAbbreviation =
+        playerInfo.key.split(" ")[0][0] + playerInfo.key.split(" ")[1][0];
+
+    playerAbbreviation = playerInfo.value == myUid ? "You" : playerAbbreviation;
     return Column(
       children: [
         // card

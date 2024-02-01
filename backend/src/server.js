@@ -116,8 +116,8 @@ io.on("connection", (socket) => {
 
       // sending the game initialized event to the room
       io.to(roomID).emit("game-init", {
-        player1,
-        player2,
+        "Player 1": player1,
+        "Player 2": player2,
       });
 
       //
@@ -179,6 +179,11 @@ io.on("connection", (socket) => {
 
     // clearing the selected cells info
     clearSelectedCellsInfoByRoomID(roomID);
+
+    // updating player turn
+    updateGameInfoByRoomId(roomID, {
+      "player-turn": gameInitiater,
+    });
 
     // sending the event to the connected clients, and the player turn as well
     io.to(roomID).emit("play-again-accepted", gameInitiater);

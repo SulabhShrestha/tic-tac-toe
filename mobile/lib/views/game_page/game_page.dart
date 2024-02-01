@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/models/tic_tac_model.dart';
 import 'package:mobile/providers/all_players_provider.dart';
 import 'package:mobile/providers/game_conclusion_provider.dart';
+import 'package:mobile/providers/game_details_provider.dart';
 import 'package:mobile/providers/player_turn_provider.dart';
 import 'package:mobile/providers/room_details_provider.dart';
 import 'package:mobile/providers/tic_tac_providers.dart';
@@ -51,6 +52,12 @@ class _HomePageState extends ConsumerState<GamePage> {
     });
 
     widget.socketWebServices.socket.on("winner", (user) {
+      if (user == ref.read(allPlayersProvider)["Player 1"].toString()) {
+        ref.watch(gameDetailsProvider.notifier).incrementPlayer1Won();
+      } else {
+        ref.watch(gameDetailsProvider.notifier).incrementPlayer2Won();
+      }
+
       ref.watch(gameConclusionProvider.notifier).state = {
         "winner": user,
         "conclusion": GameConclusion.win,
@@ -110,6 +117,9 @@ class _HomePageState extends ConsumerState<GamePage> {
       ref.watch(ticTacProvider.notifier).removeAll();
 
       ref.watch(playerTurnProvider.notifier).state = playerTurn;
+
+      // incrementing game round
+      ref.watch(gameDetailsProvider.notifier).incrementRound();
     });
     super.initState();
   }
@@ -192,6 +202,7 @@ class _HomePageState extends ConsumerState<GamePage> {
   @override
   Widget build(BuildContext context) {
     var playerTurnProv = ref.watch(playerTurnProvider);
+    var allPlayersEntries = ref.watch(allPlayersProvider).entries;
 
     debugPrint("Player turn: $playerTurnProv");
 
@@ -202,79 +213,112 @@ class _HomePageState extends ConsumerState<GamePage> {
       },
       child: Scaffold(
         backgroundColor: const Color(0xFFFDDCE6),
-        appBar: AppBar(
-          title: const Text("Tic Tac Toe"),
-          leading: IconButton(
-            onPressed: () async {
-              await _showBackDialog();
-            },
-            icon: const Icon(Icons.arrow_back),
-          ),
-        ),
         body: SafeArea(
           child: Stack(
             children: [
-              // game grid
-              Column(
-                mainAxisSize: MainAxisSize.max,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      for (final entry in ref.read(allPlayersProvider).entries)
-                        PlayerProfileCard(playerInfo: entry),
-                    ],
-                  ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (allPlayersEntries.isNotEmpty)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          PlayerProfileCard(
+                              playerInfo: allPlayersEntries.first),
 
-                  Container(
-                    margin: EdgeInsets.symmetric(horizontal: 12, vertical: 24),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: ConstantColors.red,
-                      borderRadius: BorderRadius.circular(24),
-                      border: Border.all(
-                        color: Colors.white,
-                        width: 8,
+                          // Round indicator
+                          Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [Colors.amber, Colors.amber.shade700],
+                              ),
+                            ),
+                            margin: const EdgeInsets.only(bottom: 32),
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              children: [
+                                const Text("Round",
+                                    style: TextStyle(fontSize: 16)),
+                                Text(
+                                  ref.watch(gameDetailsProvider)["round"],
+                                  style: const TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          PlayerProfileCard(playerInfo: allPlayersEntries.last),
+                        ],
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 14,
-                          spreadRadius: 1,
-                          blurStyle: BlurStyle.outer,
+
+                    const SizedBox(height: 28),
+
+                    Container(
+                      decoration: BoxDecoration(
+                        border: RDottedLineBorder.all(
+                          color: ConstantColors.red,
                         ),
-                      ],
-                    ),
-                    child: GridView(
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(24)),
                       ),
-                      children: [
-                        for (int a = 0; a < 9; a++) _buildGridCell(a),
-                      ],
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: ConstantColors.red,
+                          borderRadius: BorderRadius.all(Radius.circular(24)),
+                          border: Border.all(
+                            color: Colors.white,
+                            width: 8,
+                          ),
+                        ),
+                        child: GridView(
+                          physics: const NeverScrollableScrollPhysics(),
+                          shrinkWrap: true,
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3,
+                          ),
+                          children: [
+                            for (int a = 0; a < 9; a++) _buildGridCell(a),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
 
-                  // who's turn
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [Colors.amber, Colors.amber.shade700],
+                    const SizedBox(height: 28),
+
+                    // who's turn
+                    if (playerTurnProv.isNotEmpty)
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Colors.amber, Colors.amber.shade700],
+                          ),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 16),
+                        child: Text(
+                          "${playerTurnProv == ref.read(userIdProvider) ? "Your" : getKeyFromValue(playerTurnProv)} turn",
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ),
-                    ),
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                    child: Text(
-                        "${playerTurnProv == ref.read(userIdProvider) ? "Your" : getKeyFromValue(playerTurnProv)} turn"),
-                  ),
-                ],
+                  ],
+                ),
               ),
 
               // show loading indicator when waiting for opponent, and make background blur

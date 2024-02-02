@@ -12,10 +12,18 @@ class GameDetails extends StateNotifier<Map<String, dynamic>> {
           "round": "1",
           "player1Won": "0",
           "player2Won": "0",
+          "leftChat": "" // stores UID of the player who left the chat
         });
 
   void reset() {
     state = {};
+  }
+
+  void setLeftChat(String uid) {
+    state = {
+      ...state,
+      "leftChat": uid,
+    };
   }
 
   void incrementPlayer1Won() {

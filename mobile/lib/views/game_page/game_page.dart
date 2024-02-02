@@ -72,6 +72,7 @@ class _HomePageState extends ConsumerState<GamePage> {
 
     widget.socketWebServices.socket.on("user-disconnected", (uid) {
       debugPrint("User disconnected: $uid");
+      ref.watch(gameDetailsProvider.notifier).setLeftChat(uid);
       if (!snackBarShown) {
         snackBarShown = true;
         ScaffoldMessenger.of(context).showSnackBar(

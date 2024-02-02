@@ -9,6 +9,7 @@ import 'package:mobile/services/socket_web_services.dart';
 import 'package:mobile/views/game_page/widgets/player_profile_card.dart';
 import 'package:mobile/views/homepage/widgets/loading_button_with_text.dart';
 import 'package:mobile/views/homepage/widgets/gradient_button.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class HomePage extends ConsumerWidget {
@@ -70,7 +71,34 @@ class HomePage extends ConsumerWidget {
   Widget _askForRoomId(BuildContext context, WidgetRef ref) {
     final TextEditingController roomIDController = TextEditingController();
     return AlertDialog(
-      title: const Text("Enter Room ID"),
+      title: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text("Enter Room ID"),
+          IconButton(
+            onPressed: () {
+              showDialog(
+                  context: context,
+                  builder: (_) {
+                    return Dialog(
+                      child: SizedBox(
+                        height: 250,
+                        width: 250,
+                        child: MobileScanner(
+                          fit: BoxFit.cover,
+                          onDetect: (capturedData) {
+                            debugPrint(
+                                "Captured Data: ${capturedData.barcodes.first.displayValue}");
+                          },
+                        ),
+                      ),
+                    );
+                  });
+            },
+            icon: Icon(Icons.qr_code_scanner),
+          )
+        ],
+      ),
       content: TextField(
         controller: roomIDController,
         decoration: const InputDecoration(hintText: "Enter Room ID"),

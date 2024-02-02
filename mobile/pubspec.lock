@@ -99,6 +99,11 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  flutter_web_plugins:
+    dependency: transitive
+    description: flutter
+    source: sdk
+    version: "0.0.0"
   js:
     dependency: transitive
     description:
@@ -147,6 +152,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.10.0"
+  mobile_scanner:
+    dependency: "direct main"
+    description:
+      name: mobile_scanner
+      sha256: "619ed5fd43ca9007a151f00c3dc43feedeaf235fe5647735d0237c38849d49dc"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.0"
   path:
     dependency: transitive
     description:
@@ -282,4 +295,4 @@ packages:
     version: "0.3.0"
 sdks:
   dart: ">=3.2.3 <4.0.0"
-  flutter: ">=3.7.0"
+  flutter: ">=3.13.0"

@@ -28,8 +28,7 @@ class PlayerProfileCard extends ConsumerWidget {
           children: [
             Container(
               height: 134,
-              width: 134,
-              padding: const EdgeInsets.only(bottom: 12.0),
+              padding: const EdgeInsets.only(bottom: 12.0, left: 24, right: 24),
               decoration: BoxDecoration(
                 boxShadow: [
                   BoxShadow(

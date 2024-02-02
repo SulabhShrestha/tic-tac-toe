@@ -10,7 +10,7 @@ import 'package:mobile/providers/user_id_provider.dart';
 import 'package:mobile/services/socket_web_services.dart';
 import 'package:mobile/utils/tic_tac_utils.dart';
 import 'package:mobile/views/game_page/widgets/bold_first_word.dart';
-import 'package:mobile/views/homepage/loading_button_with_text.dart';
+import 'package:mobile/views/homepage/widgets/loading_button_with_text.dart';
 
 class DisplayGameConclusion extends ConsumerStatefulWidget {
   final SocketWebServices socketWebServices;

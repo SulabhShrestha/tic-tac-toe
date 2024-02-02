@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/providers/room_details_provider.dart';
 import 'package:mobile/utils/colors.dart';
+import 'package:mobile/views/homepage/widgets/gradient_button.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 class WaitingLoadingIndicator extends ConsumerStatefulWidget {
   const WaitingLoadingIndicator({super.key});
@@ -40,6 +42,7 @@ class _WaitingLoadingIndicatorState
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        SizedBox(height: 12),
         const Text(
           "Waiting for opponent",
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -80,6 +83,39 @@ class _WaitingLoadingIndicatorState
                       isCopied ? Colors.grey.shade500 : const Color(0xFF2D4BFF),
                 )),
           ],
+        ),
+        SizedBox(
+          height: 12,
+        ),
+        GradientButton(
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (context) {
+                return Dialog(
+                  child: Container(
+                    width: 100,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      gradient: const LinearGradient(
+                        colors: [
+                          ConstantColors.yellow,
+                          ConstantColors.yellow,
+                          Colors.lime,
+                        ],
+                      ),
+                    ),
+                    padding: const EdgeInsets.all(8.0),
+                    child: QrImageView(
+                      data: ref.watch(roomDetailsProvider),
+                      version: QrVersions.auto,
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+          child: Text("Show QR"),
         ),
       ],
     );

@@ -200,9 +200,9 @@ io.on("connection", (socket) => {
       result += characters.charAt(randomIndex);
     }
 
-    // return result;
+    return result;
 
-    return "sulabhRoom";
+    // return "sulabhRoom";
   }
 });
 

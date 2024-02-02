@@ -422,8 +422,11 @@ class _HomePageState extends ConsumerState<GamePage> {
   }
 
   Widget _buildSomething(String selectedBy, String myUid) {
+    var allPlayers = ref.read(allPlayersProvider);
     return Image.asset(
-        selectedBy == myUid ? "images/close.png" : "images/circle.png",
+        selectedBy == allPlayers["Player 1"]
+            ? "images/close.png"
+            : "images/circle.png",
         height: 54);
   }
 }

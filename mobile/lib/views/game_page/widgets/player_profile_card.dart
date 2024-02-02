@@ -62,7 +62,7 @@ class PlayerProfileCard extends ConsumerWidget {
                     padding:
                         const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                     child: Image.asset(
-                        playerInfo.value == myUid
+                        playerInfo.key == "Player 1"
                             ? "images/close.png"
                             : "images/circle.png",
                         height: 24),

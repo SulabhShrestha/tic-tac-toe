@@ -122,6 +122,12 @@ class _HomePageState extends ConsumerState<GamePage> {
       // incrementing game round
       ref.watch(gameDetailsProvider.notifier).incrementRound();
     });
+
+    widget.socketWebServices.socket.on("qr-scanned", (data) {
+      debugPrint("QR scanned event received");
+      Navigator.pop(context);
+    });
+
     super.initState();
   }
 

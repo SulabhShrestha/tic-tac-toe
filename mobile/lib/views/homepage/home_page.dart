@@ -87,15 +87,21 @@ class HomePage extends ConsumerWidget {
                         child: MobileScanner(
                           fit: BoxFit.cover,
                           onDetect: (capturedData) {
+                            Navigator.pop(context);
+
                             debugPrint(
-                                "Captured Data: ${capturedData.barcodes.first.displayValue}");
+                                "Captured data: ${capturedData.barcodes.first.displayValue!}");
+
+                            joinSocketRoom(context, ref,
+                                capturedData.barcodes.first.displayValue!,
+                                isFromQR: true);
                           },
                         ),
                       ),
                     );
                   });
             },
-            icon: Icon(Icons.qr_code_scanner),
+            icon: const Icon(Icons.qr_code_scanner),
           )
         ],
       ),
@@ -108,36 +114,44 @@ class HomePage extends ConsumerWidget {
             text: "Join",
             onTap: () {
               debugPrint(roomIDController.text);
-
-              // joining the user to the game
-              SocketWebServices socketWebServices = SocketWebServices()
-                ..init()
-                ..joinRoom(
-                    myUid: ref.read(userIdProvider),
-                    roomID: roomIDController.text);
-
-              // when room not found
-              socketWebServices.socket.on("room-not-found", (data) {
-                debugPrint("Room not found");
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Room not found")));
-              });
-
-              // joining the game on correct room id
-              socketWebServices.socket.on("game-init", (players) {
-                debugPrint("Game init $players");
-
-                ref.read(roomDetailsProvider.notifier).state =
-                    roomIDController.text;
-
-                Navigator.of(context).pushNamed("/game", arguments: {
-                  "socketWebServices": socketWebServices,
-                  "players": players,
-                });
-              });
+              joinSocketRoom(context, ref, roomIDController.text);
             }),
       ],
     );
+  }
+
+  void joinSocketRoom(BuildContext context, WidgetRef ref, String roomID,
+      {bool isFromQR = false}) {
+    // joining the user to the game
+    SocketWebServices socketWebServices = SocketWebServices()
+      ..init()
+      ..joinRoom(myUid: ref.read(userIdProvider), roomID: roomID);
+
+    // when room not found
+    socketWebServices.socket.on("room-not-found", (data) {
+      debugPrint("Room not found");
+      Navigator.pop(context);
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Room not found")));
+    });
+
+    // joining the game on correct room id
+    socketWebServices.socket.on("game-init", (players) {
+      debugPrint("Game init $players");
+
+      // sending qr scanned event to pop the qr diplayed on other device
+      if (isFromQR) {
+        debugPrint("Sent qr scanned event");
+        socketWebServices.sendQRscannedEvent(roomID: roomID);
+      }
+
+      ref.read(roomDetailsProvider.notifier).state = roomID;
+
+      Navigator.of(context).pushNamed("/game", arguments: {
+        "socketWebServices": socketWebServices,
+        "players": players,
+      });
+    });
   }
 }

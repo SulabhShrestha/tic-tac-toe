@@ -49,7 +49,7 @@ class SocketWebServices {
   }
 
   void joinRoom({required String myUid, required String roomID}) {
-    log("Joining room");
+    log("Joining room $myUid $roomID");
 
     socket.emit('join-room', {
       "uid": myUid,
@@ -79,5 +79,12 @@ class SocketWebServices {
 
   void sendData({required Map<String, dynamic> data}) {
     socket.emit("event", data);
+  }
+
+  void sendQRscannedEvent({required String roomID}) {
+    log("Sending QR scanned event");
+    socket.emit("qr-scanned", {
+      "roomID": roomID,
+    });
   }
 }

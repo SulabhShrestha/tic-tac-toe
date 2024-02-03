@@ -169,6 +169,13 @@ io.on("connection", (socket) => {
     socket.broadcast.to(roomID).emit("play-again", uid);
   });
 
+  // forwarding qr scanned event to other device
+  socket.on("qr-scanned", ({ roomID }) => {
+    console.log("qr scanned");
+
+    socket.broadcast.to(roomID).emit("qr-scanned");
+  });
+
   // handles the play again event sent accepted by the other person
   socket.on("play-again-accepted", ({ roomID }) => {
     let selectedCells = getSelectedCellsInfoByRoomID(roomID);
@@ -195,7 +202,7 @@ io.on("connection", (socket) => {
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*()+=[]{}<>?";
     let result = "";
 
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 5; i++) {
       const randomIndex = Math.floor(Math.random() * characters.length);
       result += characters.charAt(randomIndex);
     }

@@ -136,7 +136,7 @@ class PlayerProfileCard extends ConsumerWidget {
               children: [
                 Text("Won: "),
                 Text(
-                  playerInfo.value == myUid
+                  playerInfo.key == "Player 1"
                       ? ref.watch(gameDetailsProvider)["player1Won"].toString()
                       : ref.watch(gameDetailsProvider)["player2Won"].toString(),
                   style: const TextStyle(

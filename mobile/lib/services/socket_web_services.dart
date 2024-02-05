@@ -10,8 +10,8 @@ class SocketWebServices {
   /// adds the userId in the header location
   void init() {
     socket = IO.io(
-        // dotenv.env['URL'],
-        "http://192.168.1.73:3000",
+        dotenv.env['URL'],
+        // "http://192.168.1.73:3000",
         IO.OptionBuilder()
             .setTransports(['websocket'])
             .disableAutoConnect()

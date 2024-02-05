@@ -53,7 +53,7 @@ class _DisplayGameConclusionState extends ConsumerState<DisplayGameConclusion> {
 
               if (gameConclusion["conclusion"] == GameConclusion.win)
                 BoldFirstWord(
-                  boldWord: getKeyFromValue(gameConclusion["winner"])!,
+                  boldWord: getWinner()!,
                   remainingWords: " won the game",
                 ),
 
@@ -74,13 +74,25 @@ class _DisplayGameConclusionState extends ConsumerState<DisplayGameConclusion> {
     );
   }
 
-  String? getKeyFromValue(dynamic targetValue) {
+  // return either Player 1 or Player 2 or You
+  String? getWinner() {
+    var gameConclusion = ref.watch(gameConclusionProvider);
+    var uid = ref.read(userIdProvider);
+
+    if (gameConclusion["conclusion"] == GameConclusion.win &&
+        uid == gameConclusion["winner"]) {
+      return "You";
+    }
+
+    var winner = gameConclusion["winner"];
     var map = ref.read(allPlayersProvider);
+
     for (var entry in map.entries) {
-      if (entry.value == targetValue) {
+      if (entry.value == winner) {
         return entry.key;
       }
     }
+
     return null;
   }
 }

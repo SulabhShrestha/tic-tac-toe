@@ -40,11 +40,19 @@ class GamePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<GamePage> {
   bool snackBarShown = false;
 
+  // for preventing multiple cells to be triggered at once when clicking multiple
+  bool isCellSelected = false;
+
   @override
   void initState() {
     widget.socketWebServices.socket.on("event", (data) {
       // changing player state
       ref.watch(playerTurnProvider.notifier).state = data["player-turn"];
+
+      if (data["player-turn"] == ref.read(userIdProvider)) {
+        debugPrint("Player turn: ${data["player-turn"]}");
+        isCellSelected = false;
+      }
 
       // adding to selected
       ref.watch(ticTacProvider.notifier).addTicTac(
@@ -235,6 +243,8 @@ class _HomePageState extends ConsumerState<GamePage> {
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      Text("Ref: ${ref.read(userIdProvider)}"),
+
                       if (allPlayersEntries.isNotEmpty)
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -396,15 +406,22 @@ class _HomePageState extends ConsumerState<GamePage> {
     List<int> borderBottomIndexes = [0, 1, 2, 3, 4, 5];
     List<int> borderRightIndexes = [0, 1, 3, 4, 6, 7];
 
+    debugPrint(
+        " building something; $index s: ${model.selectedIndex} pt:${playerTurn} cell: ${isCellSelected}");
+
     return GestureDetector(
       // it should be both player turn and cell should be empty
       onTap: model.selectedIndex != index && playerTurn == userIdProv
           ? () {
+              if (isCellSelected) return;
+
               widget.socketWebServices.sendData(data: {
                 "uid": userIdProv,
                 "roomID": ref.watch(roomDetailsProvider),
                 "selectedIndex": index,
               });
+
+              isCellSelected = true;
             }
           : null,
 

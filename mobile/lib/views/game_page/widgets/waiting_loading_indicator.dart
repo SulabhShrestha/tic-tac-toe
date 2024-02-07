@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile/providers/qr_closed_provider.dart';
 import 'package:mobile/providers/room_details_provider.dart';
 import 'package:mobile/utils/colors.dart';
 import 'package:mobile/views/homepage/widgets/gradient_button.dart';
@@ -89,6 +90,8 @@ class _WaitingLoadingIndicatorState
         ),
         GradientButton(
           onTap: () {
+            ref.read(qrClosedProvider.notifier).state = true;
+
             showDialog(
               barrierDismissible: false,
               context: context,
@@ -145,6 +148,8 @@ class _WaitingLoadingIndicatorState
                             ),
                             child: IconButton(
                               onPressed: () {
+                                ref.read(qrClosedProvider.notifier).state =
+                                    true;
                                 Navigator.pop(context);
                               },
                               icon: const Icon(Icons.close),

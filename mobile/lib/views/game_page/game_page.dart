@@ -7,6 +7,7 @@ import 'package:mobile/providers/all_players_provider.dart';
 import 'package:mobile/providers/game_conclusion_provider.dart';
 import 'package:mobile/providers/game_details_provider.dart';
 import 'package:mobile/providers/player_turn_provider.dart';
+import 'package:mobile/providers/qr_closed_provider.dart';
 import 'package:mobile/providers/room_details_provider.dart';
 import 'package:mobile/providers/tic_tac_providers.dart';
 import 'package:mobile/providers/user_id_provider.dart';
@@ -133,7 +134,9 @@ class _HomePageState extends ConsumerState<GamePage> {
 
     widget.socketWebServices.socket.on("qr-scanned", (data) {
       debugPrint("QR scanned event received");
-      Navigator.pop(context);
+      if (ref.read(qrClosedProvider)) {
+        Navigator.pop(context);
+      }
     });
 
     super.initState();
@@ -223,8 +226,8 @@ class _HomePageState extends ConsumerState<GamePage> {
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) async {
-        await _showBackDialog();
+      onPopInvoked: (didPop) {
+        _showBackDialog();
       },
       child: Scaffold(
         backgroundColor: const Color(0xFFFDDCE6),
@@ -296,7 +299,8 @@ class _HomePageState extends ConsumerState<GamePage> {
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: ConstantColors.red,
-                            borderRadius: BorderRadius.all(Radius.circular(24)),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(24)),
                             border: Border.all(
                               color: Colors.white,
                               width: 8,
@@ -405,7 +409,7 @@ class _HomePageState extends ConsumerState<GamePage> {
     List<int> borderRightIndexes = [0, 1, 3, 4, 6, 7];
 
     debugPrint(
-        " building something; $index s: ${model.selectedIndex} pt:${playerTurn} cell: ${isCellSelected}");
+        " building something; $index s: ${model.selectedIndex} pt:$playerTurn cell: $isCellSelected");
 
     return GestureDetector(
       // it should be both player turn and cell should be empty

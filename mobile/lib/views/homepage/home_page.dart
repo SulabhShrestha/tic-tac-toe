@@ -6,6 +6,7 @@ import 'package:mobile/providers/room_details_provider.dart';
 import 'package:mobile/providers/user_id_provider.dart';
 import 'package:mobile/providers/waiting_for_connection_provider.dart';
 import 'package:mobile/services/socket_web_services.dart';
+import 'package:mobile/utils/colors.dart';
 import 'package:mobile/views/game_page/widgets/player_profile_card.dart';
 import 'package:mobile/views/homepage/widgets/loading_button_with_text.dart';
 import 'package:mobile/views/homepage/widgets/gradient_button.dart';

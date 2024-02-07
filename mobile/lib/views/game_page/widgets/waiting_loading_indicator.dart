@@ -42,7 +42,7 @@ class _WaitingLoadingIndicatorState
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        SizedBox(height: 12),
+        const SizedBox(height: 12),
         const Text(
           "Waiting for opponent",
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -84,38 +84,81 @@ class _WaitingLoadingIndicatorState
                 )),
           ],
         ),
-        SizedBox(
+        const SizedBox(
           height: 12,
         ),
         GradientButton(
           onTap: () {
             showDialog(
+              barrierDismissible: false,
               context: context,
               builder: (context) {
                 return Dialog(
-                  child: Container(
-                    width: 100,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      gradient: const LinearGradient(
-                        colors: [
-                          ConstantColors.yellow,
-                          ConstantColors.yellow,
-                          Colors.lime,
-                        ],
-                      ),
-                    ),
-                    padding: const EdgeInsets.all(8.0),
-                    child: QrImageView(
-                      data: ref.watch(roomDetailsProvider),
-                      version: QrVersions.auto,
+                  backgroundColor: Colors.transparent,
+                  child: SizedBox(
+                    width: 400,
+                    height: 400,
+                    child: Stack(
+                      children: [
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          top: 50,
+                          bottom: 0,
+                          child: Container(
+                            height: 200,
+                            width: 200,
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              gradient: const LinearGradient(
+                                colors: [
+                                  ConstantColors.yellow,
+                                  ConstantColors.yellow,
+                                  Colors.lime,
+                                ],
+                              ),
+                            ),
+                            child: QrImageView(
+                              data: ref.watch(roomDetailsProvider),
+                              version: QrVersions.auto,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          right: 0,
+                          top: 12,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(colors: [
+                                Colors.red.shade200,
+                                Colors.red.shade600
+                              ]),
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.white.withOpacity(0.2),
+                                  spreadRadius: 2,
+                                  blurRadius: 2,
+                                ),
+                              ],
+                            ),
+                            child: IconButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                              icon: const Icon(Icons.close),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 );
               },
             );
           },
-          child: Text("Show QR"),
+          child: const Text("Show QR"),
         ),
       ],
     );

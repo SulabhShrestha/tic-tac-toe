@@ -70,6 +70,7 @@ class HomePage extends ConsumerWidget {
 
   Widget _askForRoomId(BuildContext context, WidgetRef ref) {
     final TextEditingController roomIDController = TextEditingController();
+    final FocusNode focusNode = FocusNode();
     return AlertDialog(
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -107,13 +108,14 @@ class HomePage extends ConsumerWidget {
       ),
       content: TextField(
         controller: roomIDController,
+        focusNode: focusNode,
         decoration: const InputDecoration(hintText: "Enter Room ID"),
       ),
       actions: [
         LoadingButtonWithText(
             text: "Join",
             onTap: () {
-              debugPrint(roomIDController.text);
+              focusNode.unfocus();
               joinSocketRoom(context, ref, roomIDController.text);
             }),
       ],

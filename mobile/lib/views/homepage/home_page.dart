@@ -1,7 +1,9 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile/providers/join_button_loading_provider.dart';
 import 'package:mobile/providers/room_details_provider.dart';
 import 'package:mobile/providers/user_id_provider.dart';
 import 'package:mobile/providers/waiting_for_connection_provider.dart';
@@ -62,6 +64,7 @@ class HomePage extends ConsumerWidget {
                         });
                   },
                   child: const Text("Join Game")),
+
             ],
           ),
         ),
@@ -124,7 +127,12 @@ class HomePage extends ConsumerWidget {
   }
 
   void joinSocketRoom(BuildContext context, WidgetRef ref, String roomID,
-      {bool isFromQR = false}) {
+      {bool isFromQR = false}){
+
+    if(isFromQR){
+      // triggering loading button
+      ref.read(joinButtonLoadingProvider.notifier).state = true;
+    }
     // joining the user to the game
     SocketWebServices socketWebServices = SocketWebServices()
       ..init()
@@ -140,16 +148,24 @@ class HomePage extends ConsumerWidget {
     });
 
     // joining the game on correct room id
-    socketWebServices.socket.on("game-init", (players) {
+    socketWebServices.socket.on("game-init", (players)async{
       debugPrint("Game init $players");
 
-      // sending qr scanned event to pop the qr diplayed on other device
+      // sending qr scanned event to pop the qr displayed on other device
       if (isFromQR) {
         debugPrint("Sent qr scanned event");
         socketWebServices.sendQRscannedEvent(roomID: roomID);
+
+        // resetting the loading button
+        ref.read(joinButtonLoadingProvider.notifier).state = false;
+
       }
 
       ref.read(roomDetailsProvider.notifier).state = roomID;
+
+      // vibrating the device
+      await HapticFeedback.vibrate();
+      await SystemSound.play(SystemSoundType.click);
 
       Navigator.of(context).pushNamed("/game", arguments: {
         "socketWebServices": socketWebServices,

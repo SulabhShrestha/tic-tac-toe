@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/models/tic_tac_model.dart';
 import 'package:mobile/providers/all_players_provider.dart';
@@ -102,7 +103,11 @@ class _HomePageState extends ConsumerState<GamePage> {
     // when coming after creating game, game-init event is triggered
     // joining game has already triggered game-init event
     if (widget.players.isEmpty) {
-      widget.socketWebServices.socket.on("game-init", (gameInit) {
+      widget.socketWebServices.socket.on("game-init", (gameInit) async {
+        // vibrating the device
+        await HapticFeedback.heavyImpact();
+        await SystemSound.play(SystemSoundType.alert);
+
         debugPrint("Inside game init $gameInit");
 
         ref.watch(allPlayersProvider.notifier).addPlayers(gameInit);

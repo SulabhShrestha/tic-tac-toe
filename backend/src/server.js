@@ -33,7 +33,7 @@ app.get("/", (req, res) => {
 const onlinePlayers = {};
 
 // for storing the play again requests made in particular roomID
-const playAgainRequests = [];
+let playAgainRequests = [];
 
 io.on("connection", (socket) => {
   console.log(`a user connected ${socket.id}`);
@@ -186,6 +186,10 @@ io.on("connection", (socket) => {
 
   // handles the play again event sent accepted by the other person
   socket.on("play-again-accepted", ({ roomID }) => {
+
+    // removing the room from the play again requests
+    playAgainRequests = playAgainRequests.filter((room) => room != roomID);
+
     let selectedCells = getSelectedCellsInfoByRoomID(roomID);
     console.log("Selected cells: ", selectedCells);
 

@@ -20,12 +20,12 @@ function checkForConclusion(selectedCellsInfo, io, roomID) {
     }
   }
 
-  // and then, checking for draw
-  // but the combine should be = 36, as 0+...8
+  // and then, checking for draw, adding index 0 leads to same previous result so
+  //the combine should be = 45, as 1+...9
   if (
     Object.values(groupedBySelectedBy)
       .flat()
-      .reduce((sum, index) => sum + index, 0) === 36
+      .reduce((sum, index) => sum + (index + 1), 0) === 45
   ) {
     io.to(roomID).emit("draw", "Game is draw");
   }

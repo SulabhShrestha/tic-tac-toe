@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/models/tic_tac_model.dart';
 import 'package:mobile/providers/all_players_provider.dart';
+import 'package:mobile/providers/any_button_clicked.dart';
 import 'package:mobile/providers/game_conclusion_provider.dart';
 import 'package:mobile/providers/game_details_provider.dart';
 import 'package:mobile/providers/player_turn_provider.dart';
@@ -130,6 +131,7 @@ class _HomePageState extends ConsumerState<GamePage> {
       // resetting
       ref.read(gameConclusionProvider.notifier).state = {};
       ref.watch(ticTacProvider.notifier).removeAll();
+      ref.read(anyButtonClickedProvider.notifier).state = false;
 
       ref.watch(playerTurnProvider.notifier).state = playerTurn;
 

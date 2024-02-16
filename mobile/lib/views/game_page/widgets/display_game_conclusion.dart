@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/providers/all_players_provider.dart';
+import 'package:mobile/providers/any_button_clicked.dart';
 import 'package:mobile/providers/game_conclusion_provider.dart';
 import 'package:mobile/providers/room_details_provider.dart';
 
@@ -61,12 +62,16 @@ class _DisplayGameConclusionState extends ConsumerState<DisplayGameConclusion> {
 
               LoadingButtonWithText(
                   text: "Play Again",
-                  onTap: () {
-                    widget.socketWebServices.sendPlayAgainEvent(
-                      roomID: ref.read(roomDetailsProvider),
-                      uid: ref.read(userIdProvider),
-                    );
-                  }),
+                  onTap: ref.read(anyButtonClickedProvider)
+                      ? null
+                      : () {
+                          ref.read(anyButtonClickedProvider.notifier).state =
+                              true;
+                          widget.socketWebServices.sendPlayAgainEvent(
+                            roomID: ref.read(roomDetailsProvider),
+                            uid: ref.read(userIdProvider),
+                          );
+                        }),
             ],
           ),
         ),

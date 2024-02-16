@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile/providers/any_button_clicked.dart';
 import 'package:mobile/providers/join_button_loading_provider.dart';
 import 'package:mobile/providers/room_details_provider.dart';
 import 'package:mobile/providers/user_id_provider.dart';
@@ -20,6 +21,8 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    var anyButtonClickedProv = ref.watch(anyButtonClickedProvider);
+
     return Scaffold(
       backgroundColor: const Color(0xFFFDDCE6),
       body: SafeArea(
@@ -31,40 +34,53 @@ class HomePage extends ConsumerWidget {
             children: [
               LoadingButtonWithText(
                 text: "Create Game",
-                onTap: () {
-                  debugPrint("Loading");
-                  var socketWebServices = SocketWebServices()
-                    ..init()
-                    ..createRoom(myUid: ref.read(userIdProvider));
+                onTap: anyButtonClickedProv
+                    ? null
+                    : () {
+                        // setting the value of any button clicked
+                        ref.read(anyButtonClickedProvider.notifier).state =
+                            true;
 
-                  socketWebServices.onRoomCreated((roomId) {
-                    ref.read(roomDetailsProvider.notifier).state = roomId;
-                    ref.read(waitingForConnectionProvider.notifier).state =
-                        true;
+                        debugPrint("Loading");
+                        var socketWebServices = SocketWebServices()
+                          ..init()
+                          ..createRoom(myUid: ref.read(userIdProvider));
 
-                    Navigator.of(context).pushNamed("/game", arguments: {
-                      "socketWebServices": socketWebServices,
-                      "players": <String, dynamic>{},
-                    });
-                  });
-                },
+                        socketWebServices.onRoomCreated((roomId) {
+                          ref.read(roomDetailsProvider.notifier).state = roomId;
+
+                          // resetting the button clicked value
+                          ref.read(anyButtonClickedProvider.notifier).state =
+                              false;
+
+                          ref
+                              .read(waitingForConnectionProvider.notifier)
+                              .state = true;
+
+                          Navigator.of(context).pushNamed("/game", arguments: {
+                            "socketWebServices": socketWebServices,
+                            "players": <String, dynamic>{},
+                          });
+                        });
+                      },
               ),
               const SizedBox(height: 20),
               GradientButton(
                   linearGradient: const LinearGradient(
                       colors: [Colors.deepPurple, Colors.deepOrange]),
-                  onTap: () {
-                    log("Ref: ${ref.read(userIdProvider)}");
+                  onTap: anyButtonClickedProv
+                      ? () {}
+                      : () {
+                          log("Ref: ${ref.read(userIdProvider)}");
 
-                    // alert dialog
-                    showDialog(
-                        context: context,
-                        builder: (context) {
-                          return _askForRoomId(context, ref);
-                        });
-                  },
+                          // alert dialog
+                          showDialog(
+                              context: context,
+                              builder: (context) {
+                                return _askForRoomId(context, ref);
+                              });
+                        },
                   child: const Text("Join Game")),
-
             ],
           ),
         ),
@@ -127,9 +143,10 @@ class HomePage extends ConsumerWidget {
   }
 
   void joinSocketRoom(BuildContext context, WidgetRef ref, String roomID,
-      {bool isFromQR = false}){
+      {bool isFromQR = false}) {
+    ref.read(anyButtonClickedProvider.notifier).state = true;
 
-    if(isFromQR){
+    if (isFromQR) {
       // triggering loading button
       ref.read(joinButtonLoadingProvider.notifier).state = true;
     }
@@ -143,13 +160,19 @@ class HomePage extends ConsumerWidget {
       debugPrint("Room not found");
       Navigator.pop(context);
 
+      // resetting value
+      ref.read(anyButtonClickedProvider.notifier).state = false;
+
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text("Room not found")));
     });
 
     // joining the game on correct room id
-    socketWebServices.socket.on("game-init", (players)async{
+    socketWebServices.socket.on("game-init", (players) async {
       debugPrint("Game init $players");
+
+      // resetting value
+      ref.read(anyButtonClickedProvider.notifier).state = false;
 
       // sending qr scanned event to pop the qr displayed on other device
       if (isFromQR) {
@@ -158,7 +181,6 @@ class HomePage extends ConsumerWidget {
 
         // resetting the loading button
         ref.read(joinButtonLoadingProvider.notifier).state = false;
-
       }
 
       ref.read(roomDetailsProvider.notifier).state = roomID;

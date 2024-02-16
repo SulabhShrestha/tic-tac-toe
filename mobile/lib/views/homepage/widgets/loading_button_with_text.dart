@@ -7,12 +7,12 @@ import 'package:mobile/views/homepage/widgets/gradient_button.dart';
 
 class LoadingButtonWithText extends ConsumerStatefulWidget {
   final String text;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const LoadingButtonWithText({
     super.key,
     required this.text,
-    required this.onTap,
+    this.onTap,
   });
 
   @override
@@ -25,9 +25,7 @@ class _LoadingButtonWithTextState extends ConsumerState<LoadingButtonWithText> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint("should load: $isLoading");
-
-    if(ref.watch(joinButtonLoadingProvider) != null) {
+    if (ref.watch(joinButtonLoadingProvider) != null) {
       isLoading = ref.watch(joinButtonLoadingProvider)!;
     }
 
@@ -38,7 +36,9 @@ class _LoadingButtonWithTextState extends ConsumerState<LoadingButtonWithText> {
           setState(() {
             isLoading = true;
           });
-          widget.onTap();
+          if (widget.onTap != null) {
+            widget.onTap!();
+          }
         }
       },
       linearGradient: LinearGradient(

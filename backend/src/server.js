@@ -5,7 +5,6 @@ const { checkForConclusion } = require("./utils");
 const {
   addGameInfo,
   getGameInfoByRoomId,
-
   updateGameInfoByRoomId,
   deleteGameInfoByUserId,
   getGameInfoByUserId,
@@ -32,6 +31,9 @@ app.get("/", (req, res) => {
 
 // socket id : actual user id
 const onlinePlayers = {};
+
+// for storing the play again requests made in particular roomID
+const playAgainRequests = [];
 
 io.on("connection", (socket) => {
   console.log(`a user connected ${socket.id}`);
@@ -165,6 +167,12 @@ io.on("connection", (socket) => {
 
   // handling the play again event and sending to the other person
   socket.on("play-again", ({ roomID, uid }) => {
+
+    // checking if the play again request is already made
+    if (playAgainRequests.includes(roomID)) return;
+
+    playAgainRequests.push(roomID);
+
     // sending the event to the connected clients
     socket.broadcast.to(roomID).emit("play-again", uid);
   });

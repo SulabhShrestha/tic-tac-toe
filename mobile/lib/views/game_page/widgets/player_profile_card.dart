@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:mobile/providers/emoji_received_provider.dart';
 import 'package:mobile/providers/game_details_provider.dart';
 import 'package:mobile/providers/user_id_provider.dart';
 import 'package:mobile/utils/colors.dart';
@@ -13,7 +15,9 @@ class PlayerProfileCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final emojiReceivedProv = ref.watch(emojiReceivedProvider);
     var myUid = ref.read(userIdProvider);
+
     // Player 1 -> P1
     var playerAbbreviation =
         playerInfo.key.split(" ")[0][0] + playerInfo.key.split(" ")[1][0];
@@ -22,6 +26,7 @@ class PlayerProfileCard extends ConsumerWidget {
     playerAbbreviation = playerInfo.value == myUid ? "You" : playerAbbreviation;
 
     var gameDetails = ref.watch(gameDetailsProvider);
+
     return Opacity(
       opacity: gameDetails["leftChat"] == playerInfo.value ? 0.5 : 1,
       child: Column(
@@ -115,38 +120,54 @@ class PlayerProfileCard extends ConsumerWidget {
 
           // score
           const SizedBox(height: 12),
-          Container(
-            decoration: BoxDecoration(
-              color: ConstantColors.white,
-              border: Border.all(
-                color: ConstantColors.blue,
-                width: 1,
-              ),
-              borderRadius: const BorderRadius.all(Radius.circular(12)),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 9,
-                  blurStyle: BlurStyle.outer,
-                ),
-              ],
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            child: Row(
-              children: [
-                Text("Won: "),
-                Text(
-                  playerInfo.key == "Player 1"
-                      ? ref.watch(gameDetailsProvider)["player1Won"].toString()
-                      : ref.watch(gameDetailsProvider)["player2Won"].toString(),
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: ConstantColors.white,
+                  border: Border.all(
                     color: ConstantColors.blue,
+                    width: 1,
                   ),
+                  borderRadius: const BorderRadius.all(Radius.circular(12)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 9,
+                      blurStyle: BlurStyle.outer,
+                    ),
+                  ],
                 ),
-              ],
-            ),
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Row(
+                  children: [
+                    Text("Won: "),
+                    Text(
+                      playerInfo.key == "Player 1"
+                          ? ref
+                              .watch(gameDetailsProvider)["player1Won"]
+                              .toString()
+                          : ref
+                              .watch(gameDetailsProvider)["player2Won"]
+                              .toString(),
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: ConstantColors.blue,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (emojiReceivedProv.isNotEmpty &&
+                  emojiReceivedProv["sender"] == playerInfo.value)
+                AnimatedPositioned(
+                  top: -32,
+                  duration: Duration(seconds: 1),
+                  child: SvgPicture.asset(emojiReceivedProv["emojiPath"]),
+                ),
+            ],
           ),
         ],
       ),

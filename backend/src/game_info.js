@@ -32,7 +32,7 @@ module.exports = {
 
   // delete game
   deleteGameInfoByUserId: (uid) => {
-    console.log("Before: ", game_info);
+    
     game_info = game_info.filter((game) => !game.players.includes(uid));
 
     console.log("After: ", game_info);
@@ -40,7 +40,7 @@ module.exports = {
 
   // remove all the selected cells from the game info
   clearSelectedCellsInfoByRoomID: (roomID) => {
-    console.log("before clearing selected cells info: ", game_info);
+    
     game_info = game_info.map((game) => {
       // Check if the room property matches the provided room
       if (game.roomID === roomID) {
@@ -51,8 +51,6 @@ module.exports = {
       // If the room doesn't match, return the original object
       return game;
     });
-
-    console.log("clear selected cells info: ", game_info);
   },
 
   // New method to add selected cells to the game info

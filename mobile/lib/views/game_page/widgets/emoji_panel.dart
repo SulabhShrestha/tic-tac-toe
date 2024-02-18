@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mobile/providers/room_details_provider.dart';
 import 'package:mobile/providers/socket_web_service_provider.dart';
+import 'package:mobile/providers/user_id_provider.dart';
 
 class EmojiPanel extends ConsumerWidget {
   EmojiPanel({super.key});
@@ -47,7 +48,8 @@ class EmojiPanel extends ConsumerWidget {
 
                         socketWebServices.sendEmojiEvent(
                             roomID: ref.read(roomDetailsProvider),
-                            emojiPath: emoji);
+                            emojiPath: emoji,
+                            uid: ref.read(userIdProvider));
                       },
                       child: SvgPicture.asset(
                         emoji,

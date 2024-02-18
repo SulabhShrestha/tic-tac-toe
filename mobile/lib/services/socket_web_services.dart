@@ -88,11 +88,15 @@ class SocketWebServices {
     });
   }
 
-  void sendEmojiEvent({required String roomID, required String emojiPath}) {
+  void sendEmojiEvent(
+      {required String roomID,
+      required String emojiPath,
+      required String uid}) {
     log("Sending emoji event");
     socket.emit("emoji", {
       "roomID": roomID,
       "emojiPath": emojiPath,
+      "sender": uid,
     });
   }
 }

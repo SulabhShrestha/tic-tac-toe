@@ -7,6 +7,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mobile/models/tic_tac_model.dart';
 import 'package:mobile/providers/all_players_provider.dart';
 import 'package:mobile/providers/any_button_clicked.dart';
+import 'package:mobile/providers/emoji_received_provider.dart';
 import 'package:mobile/providers/game_conclusion_provider.dart';
 import 'package:mobile/providers/game_details_provider.dart';
 import 'package:mobile/providers/player_turn_provider.dart';
@@ -152,6 +153,12 @@ class _HomePageState extends ConsumerState<GamePage> {
       if (ref.read(qrClosedProvider)) {
         Navigator.pop(context);
       }
+    });
+
+    socketWebServices.socket.on("emoji", (data) {
+      debugPrint("Emoji data: $data");
+
+      ref.read(emojiReceivedProvider.notifier).addEmoji(data);
     });
 
     super.initState();

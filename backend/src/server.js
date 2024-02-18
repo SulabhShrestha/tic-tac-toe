@@ -102,7 +102,7 @@ io.on("connection", (socket) => {
     else if (roomDetails && roomDetails.players.length == 1) {
       socket.join(roomID);
       // combining joined and waiting players
-      const players = [roomDetails.players[0], uid];
+      let players = [roomDetails.players[0], uid];
 
       // picking player 1
       let randomIndex = Math.floor(Math.random() * 100);
@@ -111,7 +111,7 @@ io.on("connection", (socket) => {
 
       // updating the game info
       updateGameInfoByRoomId(roomID, {
-        players: players,
+        players: [player1, player2],
         "player-turn": player1,
       });
       console.log("Room info: ", getGameInfoByRoomId(roomID));
@@ -204,9 +204,19 @@ io.on("connection", (socket) => {
       "player-turn": gameInitiater,
     });
 
+    console.log("Play again accepted:", getGameInfoByRoomId(roomID))
+
     // sending the event to the connected clients, and the player turn as well
     io.to(roomID).emit("play-again-accepted", gameInitiater);
   });
+
+  // handles the user sending emoji event
+  socket.on("emoji", ({ roomID, emojiPath, sender }) => { 
+    console.log("Emoji: ", roomID, emojiPath);
+
+    // sending the event to the connected clients
+    io.to(roomID).emit("emoji", { emojiPath, sender});
+  }); 
 
   // Function to generate a unique room ID
   function generateRoomID() {
@@ -219,8 +229,8 @@ io.on("connection", (socket) => {
       result += characters.charAt(randomIndex);
     }
 
-    return result;
-    // return "sulabhRoom";
+    // return result;
+    return "sulabhRoom";
   }
 });
 

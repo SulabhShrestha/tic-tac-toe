@@ -6,6 +6,7 @@ import 'package:mobile/providers/all_players_provider.dart';
 import 'package:mobile/providers/any_button_clicked.dart';
 import 'package:mobile/providers/game_conclusion_provider.dart';
 import 'package:mobile/providers/room_details_provider.dart';
+import 'package:mobile/providers/socket_web_service_provider.dart';
 
 import 'package:mobile/providers/user_id_provider.dart';
 import 'package:mobile/services/socket_web_services.dart';
@@ -14,11 +15,7 @@ import 'package:mobile/views/game_page/widgets/bold_first_word.dart';
 import 'package:mobile/views/homepage/widgets/loading_button_with_text.dart';
 
 class DisplayGameConclusion extends ConsumerStatefulWidget {
-  final SocketWebServices socketWebServices;
-  const DisplayGameConclusion({
-    super.key,
-    required this.socketWebServices,
-  });
+  const DisplayGameConclusion({super.key});
 
   @override
   ConsumerState<DisplayGameConclusion> createState() =>
@@ -31,6 +28,7 @@ class _DisplayGameConclusionState extends ConsumerState<DisplayGameConclusion> {
   @override
   Widget build(BuildContext context) {
     var gameConclusion = ref.watch(gameConclusionProvider);
+    final socketWebServices = ref.read(socketWebServiceProvider);
 
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
@@ -67,7 +65,7 @@ class _DisplayGameConclusionState extends ConsumerState<DisplayGameConclusion> {
                       : () {
                           ref.read(anyButtonClickedProvider.notifier).state =
                               true;
-                          widget.socketWebServices.sendPlayAgainEvent(
+                          socketWebServices.sendPlayAgainEvent(
                             roomID: ref.read(roomDetailsProvider),
                             uid: ref.read(userIdProvider),
                           );

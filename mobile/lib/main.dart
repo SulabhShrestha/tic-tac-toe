@@ -42,9 +42,6 @@ class MyApp extends ConsumerWidget {
       case '/game':
         return MaterialPageRoute(
           builder: (_) => GamePage(
-              socketWebServices: (settings.arguments
-                      as Map<String, dynamic>)["socketWebServices"]
-                  as SocketWebServices,
               players: (settings.arguments as Map<String, dynamic>)["players"]
                   as Map<String, dynamic>),
         );

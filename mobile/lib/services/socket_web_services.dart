@@ -11,7 +11,7 @@ class SocketWebServices {
   void init() {
     socket = IO.io(
         // dotenv.env['URL'],
-        "http://192.168.1.67:3000",
+        "http://10.0.2.2:3000",
         IO.OptionBuilder()
             .setTransports(['websocket'])
             .disableAutoConnect()
@@ -85,6 +85,14 @@ class SocketWebServices {
     log("Sending QR scanned event");
     socket.emit("qr-scanned", {
       "roomID": roomID,
+    });
+  }
+
+  void sendEmojiEvent({required String roomID, required String emojiPath}) {
+    log("Sending emoji event");
+    socket.emit("emoji", {
+      "roomID": roomID,
+      "emojiPath": emojiPath,
     });
   }
 }

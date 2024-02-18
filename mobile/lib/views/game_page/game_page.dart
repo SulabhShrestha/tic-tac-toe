@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mobile/models/tic_tac_model.dart';
 import 'package:mobile/providers/all_players_provider.dart';
 import 'package:mobile/providers/any_button_clicked.dart';
@@ -11,12 +12,14 @@ import 'package:mobile/providers/game_details_provider.dart';
 import 'package:mobile/providers/player_turn_provider.dart';
 import 'package:mobile/providers/qr_closed_provider.dart';
 import 'package:mobile/providers/room_details_provider.dart';
+import 'package:mobile/providers/socket_web_service_provider.dart';
 import 'package:mobile/providers/tic_tac_providers.dart';
 import 'package:mobile/providers/user_id_provider.dart';
 import 'package:mobile/providers/waiting_for_connection_provider.dart';
 import 'package:mobile/services/socket_web_services.dart';
 import 'package:mobile/utils/colors.dart';
 import 'package:mobile/utils/tic_tac_utils.dart';
+import 'package:mobile/views/game_page/widgets/emoji_panel.dart';
 import 'package:mobile/views/game_page/widgets/player_icon.dart';
 import 'package:mobile/views/game_page/widgets/player_profile_card.dart';
 import 'package:mobile/views/game_page/widgets/waiting_loading_indicator.dart';
@@ -25,14 +28,11 @@ import 'package:r_dotted_line_border/r_dotted_line_border.dart';
 import 'widgets/display_game_conclusion.dart';
 
 class GamePage extends ConsumerStatefulWidget {
-  final SocketWebServices socketWebServices;
-
   // players value is only available when joining game
   final Map<String, dynamic> players;
 
   const GamePage({
     super.key,
-    required this.socketWebServices,
     required this.players,
   });
 
@@ -46,9 +46,16 @@ class _HomePageState extends ConsumerState<GamePage> {
   // for preventing multiple cells to be triggered at once when clicking multiple
   bool isCellSelected = false;
 
+  bool showEmojiContainer = false;
+
+  // for controlling emoji panel
+  final MenuController _emojiMenuController = MenuController();
+
   @override
   void initState() {
-    widget.socketWebServices.socket.on("event", (data) {
+    final socketWebServices = ref.read(socketWebServiceProvider);
+
+    socketWebServices.socket.on("event", (data) {
       // changing player state
       ref.watch(playerTurnProvider.notifier).state = data["player-turn"];
 
@@ -62,7 +69,7 @@ class _HomePageState extends ConsumerState<GamePage> {
           TicTacModel(uid: data["uid"], selectedIndex: data["selectedIndex"]));
     });
 
-    widget.socketWebServices.socket.on("winner", (user) {
+    socketWebServices.socket.on("winner", (user) {
       if (user == ref.read(allPlayersProvider)["Player 1"].toString()) {
         ref.watch(gameDetailsProvider.notifier).incrementPlayer1Won();
       } else {
@@ -75,13 +82,13 @@ class _HomePageState extends ConsumerState<GamePage> {
       };
     });
 
-    widget.socketWebServices.socket.on("draw", (_) {
+    socketWebServices.socket.on("draw", (_) {
       ref.watch(gameConclusionProvider.notifier).state = {
         "conclusion": GameConclusion.draw,
       };
     });
 
-    widget.socketWebServices.socket.on("user-disconnected", (uid) {
+    socketWebServices.socket.on("user-disconnected", (uid) {
       debugPrint("User disconnected: $uid");
       ref.watch(gameDetailsProvider.notifier).setLeftChat(uid);
       if (!snackBarShown) {
@@ -92,7 +99,7 @@ class _HomePageState extends ConsumerState<GamePage> {
       }
     });
 
-    widget.socketWebServices.socket.on("play-again", (uid) {
+    socketWebServices.socket.on("play-again", (uid) {
       String whichPlayer = ref
           .read(allPlayersProvider)
           .entries
@@ -104,7 +111,7 @@ class _HomePageState extends ConsumerState<GamePage> {
     // when coming after creating game, game-init event is triggered
     // joining game has already triggered game-init event
     if (widget.players.isEmpty) {
-      widget.socketWebServices.socket.on("game-init", (gameInit) async {
+      socketWebServices.socket.on("game-init", (gameInit) async {
         // vibrating the device
         await HapticFeedback.heavyImpact();
         await SystemSound.play(SystemSoundType.alert);
@@ -125,13 +132,14 @@ class _HomePageState extends ConsumerState<GamePage> {
     }
 
     // when play again is accepted
-    widget.socketWebServices.socket.on("play-again-accepted", (playerTurn) {
+    socketWebServices.socket.on("play-again-accepted", (playerTurn) {
       debugPrint("Play again accepted $playerTurn");
 
       // resetting
       ref.read(gameConclusionProvider.notifier).state = {};
       ref.watch(ticTacProvider.notifier).removeAll();
       ref.read(anyButtonClickedProvider.notifier).state = false;
+      isCellSelected = false;
 
       ref.watch(playerTurnProvider.notifier).state = playerTurn;
 
@@ -139,7 +147,7 @@ class _HomePageState extends ConsumerState<GamePage> {
       ref.watch(gameDetailsProvider.notifier).incrementRound();
     });
 
-    widget.socketWebServices.socket.on("qr-scanned", (data) {
+    socketWebServices.socket.on("qr-scanned", (data) {
       debugPrint("QR scanned event received");
       if (ref.read(qrClosedProvider)) {
         Navigator.pop(context);
@@ -150,7 +158,7 @@ class _HomePageState extends ConsumerState<GamePage> {
   }
 
   void resetAllStateAndMoveBack() {
-    widget.socketWebServices.disconnect();
+    ref.read(socketWebServiceProvider).disconnect();
 
     // removing global state data
     ref.read(roomDetailsProvider.notifier).state = "";
@@ -159,6 +167,7 @@ class _HomePageState extends ConsumerState<GamePage> {
     ref.read(ticTacProvider.notifier).removeAll();
     ref.read(playerTurnProvider.notifier).state = "";
     ref.read(allPlayersProvider.notifier).empty();
+    ref.read(anyButtonClickedProvider.notifier).state = false;
 
     Navigator.pushNamedAndRemoveUntil(context, "/", (route) => true);
   }
@@ -181,7 +190,7 @@ class _HomePageState extends ConsumerState<GamePage> {
                 onPressed: () {
                   Navigator.pop(context);
 
-                  widget.socketWebServices.sendPlayAgainAccepted(
+                  ref.read(socketWebServiceProvider).sendPlayAgainAccepted(
                       roomID: ref.read(roomDetailsProvider));
                 },
                 child: const Text("Yes"),
@@ -253,6 +262,7 @@ class _HomePageState extends ConsumerState<GamePage> {
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      Text(ref.watch(userIdProvider).toString()),
                       if (allPlayersEntries.isNotEmpty)
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -331,24 +341,38 @@ class _HomePageState extends ConsumerState<GamePage> {
 
                       // who's turn
                       if (playerTurnProv.isNotEmpty)
-                        Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [Colors.amber, Colors.amber.shade700],
+                        Stack(
+                          children: [
+                            Align(
+                              alignment: Alignment.center,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(10),
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [
+                                      Colors.amber,
+                                      Colors.amber.shade700
+                                    ],
+                                  ),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 8, horizontal: 16),
+                                child: Text(
+                                  "${playerTurnProv == ref.read(userIdProvider) ? "Your" : getKeyFromValue(playerTurnProv)} turn",
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 8, horizontal: 16),
-                          child: Text(
-                            "${playerTurnProv == ref.read(userIdProvider) ? "Your" : getKeyFromValue(playerTurnProv)} turn",
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
+                            Align(
+                              alignment: Alignment.bottomRight,
+                              child: EmojiPanel(),
                             ),
-                          ),
+                          ],
                         ),
                     ],
                   ),
@@ -379,8 +403,7 @@ class _HomePageState extends ConsumerState<GamePage> {
 
               // show either win or draw
               if (ref.watch(gameConclusionProvider).isNotEmpty)
-                DisplayGameConclusion(
-                    socketWebServices: widget.socketWebServices),
+                const DisplayGameConclusion(),
             ],
           ),
         ),
@@ -402,6 +425,7 @@ class _HomePageState extends ConsumerState<GamePage> {
     var ticTacProv = ref.watch(ticTacProvider);
     var playerTurn = ref.watch(playerTurnProvider);
     var userIdProv = ref.watch(userIdProvider);
+    final socketWebServices = ref.read(socketWebServiceProvider);
 
     TicTacModel? model = ticTacProv.firstWhere((ticTac) {
       return ticTac.selectedIndex == index;
@@ -424,7 +448,7 @@ class _HomePageState extends ConsumerState<GamePage> {
           ? () {
               if (isCellSelected) return;
 
-              widget.socketWebServices.sendData(data: {
+              socketWebServices.sendData(data: {
                 "uid": userIdProv,
                 "roomID": ref.watch(roomDetailsProvider),
                 "selectedIndex": index,
@@ -432,7 +456,9 @@ class _HomePageState extends ConsumerState<GamePage> {
 
               isCellSelected = true;
             }
-          : null,
+          : () {
+              debugPrint("Cell already selected");
+            },
 
       child: Container(
         decoration: BoxDecoration(

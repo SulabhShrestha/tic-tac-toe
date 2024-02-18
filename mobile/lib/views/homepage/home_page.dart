@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/providers/any_button_clicked.dart';
 import 'package:mobile/providers/join_button_loading_provider.dart';
 import 'package:mobile/providers/room_details_provider.dart';
+import 'package:mobile/providers/socket_web_service_provider.dart';
 import 'package:mobile/providers/user_id_provider.dart';
 import 'package:mobile/providers/waiting_for_connection_provider.dart';
 import 'package:mobile/services/socket_web_services.dart';
@@ -22,6 +23,7 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var anyButtonClickedProv = ref.watch(anyButtonClickedProvider);
+    final socketWebServices = ref.read(socketWebServiceProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFFDDCE6),
@@ -42,9 +44,8 @@ class HomePage extends ConsumerWidget {
                             true;
 
                         debugPrint("Loading");
-                        var socketWebServices = SocketWebServices()
-                          ..init()
-                          ..createRoom(myUid: ref.read(userIdProvider));
+                        socketWebServices.createRoom(
+                            myUid: ref.read(userIdProvider));
 
                         socketWebServices.onRoomCreated((roomId) {
                           ref.read(roomDetailsProvider.notifier).state = roomId;
@@ -145,15 +146,14 @@ class HomePage extends ConsumerWidget {
   void joinSocketRoom(BuildContext context, WidgetRef ref, String roomID,
       {bool isFromQR = false}) {
     ref.read(anyButtonClickedProvider.notifier).state = true;
+    final socketWebServices = ref.read(socketWebServiceProvider);
 
     if (isFromQR) {
       // triggering loading button
       ref.read(joinButtonLoadingProvider.notifier).state = true;
     }
     // joining the user to the game
-    SocketWebServices socketWebServices = SocketWebServices()
-      ..init()
-      ..joinRoom(myUid: ref.read(userIdProvider), roomID: roomID);
+    socketWebServices.joinRoom(myUid: ref.read(userIdProvider), roomID: roomID);
 
     // when room not found
     socketWebServices.socket.on("room-not-found", (data) {

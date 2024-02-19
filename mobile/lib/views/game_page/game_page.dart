@@ -269,7 +269,6 @@ class _HomePageState extends ConsumerState<GamePage> {
                     mainAxisSize: MainAxisSize.max,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(ref.watch(userIdProvider).toString()),
                       if (allPlayersEntries.isNotEmpty)
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,

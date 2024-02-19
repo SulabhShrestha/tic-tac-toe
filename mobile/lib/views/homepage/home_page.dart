@@ -82,6 +82,18 @@ class HomePage extends ConsumerWidget {
                               });
                         },
                   child: const Text("Join Game")),
+
+              // Playing with Bot
+              const SizedBox(height: 42),
+              GradientButton(
+                  linearGradient:
+                      const LinearGradient(colors: [Colors.green, Colors.blue]),
+                  onTap: anyButtonClickedProv
+                      ? () {}
+                      : () {
+                          Navigator.of(context).pushNamed("/bot-game");
+                        },
+                  child: const Text("Play with Bot")),
             ],
           ),
         ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/providers/user_id_provider.dart';
 import 'package:mobile/services/socket_web_services.dart';
+import 'package:mobile/views/bot_game_page/bot_game_page.dart';
 import 'package:mobile/views/game_page/game_page.dart';
 
 import 'views/homepage/home_page.dart';
@@ -39,16 +40,20 @@ class MyApp extends ConsumerWidget {
 
   Route<dynamic>? generateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case '/':
+        return MaterialPageRoute(
+          builder: (_) => const HomePage(),
+        );
+
       case '/game':
         return MaterialPageRoute(
           builder: (_) => GamePage(
               players: (settings.arguments as Map<String, dynamic>)["players"]
                   as Map<String, dynamic>),
         );
-      case '/':
-        return MaterialPageRoute(
-          builder: (_) => const HomePage(),
-        );
+
+      case "/bot-game":
+        return MaterialPageRoute(builder: (_) => const BotGamePage());
       default:
         // Handle unknown routes
         return null;

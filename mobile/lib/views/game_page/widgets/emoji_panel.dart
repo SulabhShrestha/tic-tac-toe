@@ -7,14 +7,20 @@ import 'package:mobile/providers/socket_web_service_provider.dart';
 import 'package:mobile/providers/user_id_provider.dart';
 
 class EmojiPanel extends ConsumerWidget {
-  EmojiPanel({super.key});
-
-  final _emojiMenuController = MenuController();
-
-  List<String> emojis = ["images/emojis/cry.svg", "images/emojis/laugh.svg"];
+  const EmojiPanel({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final _emojiMenuController = MenuController();
+
+    List<String> emojis = [
+      "images/emojis/cry.svg",
+      "images/emojis/laugh.svg",
+      "images/emojis/angry.svg",
+      "images/emojis/joker.svg",
+      "images/emojis/poop.svg",
+      "images/emojis/squinting.svg",
+    ];
     final socketWebServices = ref.read(socketWebServiceProvider);
     return MenuAnchor(
       controller: _emojiMenuController,

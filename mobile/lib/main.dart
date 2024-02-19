@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/providers/user_id_provider.dart';
 import 'package:mobile/services/socket_web_services.dart';
+import 'package:mobile/views/bot_game_page/bloc/socket_bloc.dart';
 import 'package:mobile/views/bot_game_page/bot_game_page.dart';
+import 'package:mobile/views/bot_game_page/socket_data_provider/socket_data_provider.dart';
 import 'package:mobile/views/game_page/game_page.dart';
 
+import 'views/bot_game_page/bloc/socket_bloc_observer.dart';
+import 'views/bot_game_page/repository/socket_repository.dart';
 import 'views/homepage/home_page.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
+  Bloc.observer = SocketBlocObserver();
   await dotenv.load(fileName: ".env");
   runApp(const ProviderScope(child: MyApp()));
 
@@ -21,20 +27,28 @@ class MyApp extends ConsumerWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return MaterialApp(
-      title: 'Tic Tac Toe',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            foregroundColor: Colors.white,
-            backgroundColor: Colors.deepPurple,
+    return RepositoryProvider<SocketRepository>(
+      create: (context) => SocketRepository(
+        SocketDataProvider(),
+      ),
+      child: BlocProvider(
+        create: (context) => SocketBloc(context.read<SocketRepository>()),
+        child: MaterialApp(
+          title: 'Tic Tac Toe',
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+            useMaterial3: true,
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.deepPurple,
+              ),
+            ),
           ),
+          initialRoute: "/",
+          onGenerateRoute: generateRoute,
         ),
       ),
-      initialRoute: "/",
-      onGenerateRoute: generateRoute,
     );
   }
 

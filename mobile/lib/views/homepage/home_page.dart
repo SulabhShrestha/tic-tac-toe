@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/providers/any_button_clicked.dart';
 import 'package:mobile/providers/join_button_loading_provider.dart';
@@ -11,6 +12,7 @@ import 'package:mobile/providers/user_id_provider.dart';
 import 'package:mobile/providers/waiting_for_connection_provider.dart';
 import 'package:mobile/services/socket_web_services.dart';
 import 'package:mobile/utils/colors.dart';
+import 'package:mobile/views/bot_game_page/bloc/socket_bloc.dart';
 import 'package:mobile/views/game_page/widgets/player_profile_card.dart';
 import 'package:mobile/views/homepage/widgets/loading_button_with_text.dart';
 import 'package:mobile/views/homepage/widgets/gradient_button.dart';
@@ -30,71 +32,75 @@ class HomePage extends ConsumerWidget {
       body: SafeArea(
         child: SizedBox(
           width: double.infinity,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              LoadingButtonWithText(
-                text: "Create Game",
-                onTap: anyButtonClickedProv
-                    ? null
-                    : () {
-                        // setting the value of any button clicked
-                        ref.read(anyButtonClickedProvider.notifier).state =
-                            true;
+          child: BlocConsumer<SocketBloc, SocketState>(
+            listener: (context, state) {
+              if (state is RoomCreated) {
+                ref.read(roomDetailsProvider.notifier).state = state.roomID;
 
-                        debugPrint("Loading");
-                        socketWebServices.createRoom(
-                            myUid: ref.read(userIdProvider));
+                // resetting the button clicked value
+                ref.read(anyButtonClickedProvider.notifier).state = false;
 
-                        socketWebServices.onRoomCreated((roomId) {
-                          ref.read(roomDetailsProvider.notifier).state = roomId;
+                ref.read(waitingForConnectionProvider.notifier).state = true;
 
-                          // resetting the button clicked value
-                          ref.read(anyButtonClickedProvider.notifier).state =
-                              false;
+                Navigator.of(context).pushNamed("/game", arguments: {
+                  "players": <String, dynamic>{},
+                });
+              }
+            },
+            builder: (context, state) {
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  LoadingButtonWithText(
+                    text: "Create Game",
+                    onTap: anyButtonClickedProv
+                        ? null
+                        : () {
+                            // setting the value of any button clicked
+                            ref.read(anyButtonClickedProvider.notifier).state =
+                                true;
 
-                          ref
-                              .read(waitingForConnectionProvider.notifier)
-                              .state = true;
+                            debugPrint("Loading");
 
-                          Navigator.of(context).pushNamed("/game", arguments: {
-                            "socketWebServices": socketWebServices,
-                            "players": <String, dynamic>{},
-                          });
-                        });
-                      },
-              ),
-              const SizedBox(height: 20),
-              GradientButton(
-                  linearGradient: const LinearGradient(
-                      colors: [Colors.deepPurple, Colors.deepOrange]),
-                  onTap: anyButtonClickedProv
-                      ? () {}
-                      : () {
-                          log("Ref: ${ref.read(userIdProvider)}");
+                            context.read<SocketBloc>().add(InitSocket());
+                            context
+                                .read<SocketBloc>()
+                                .add(CreateRoom(myUid: 'uid1'));
+                          },
+                  ),
+                  const SizedBox(height: 20),
+                  GradientButton(
+                      linearGradient: const LinearGradient(
+                          colors: [Colors.deepPurple, Colors.deepOrange]),
+                      onTap: anyButtonClickedProv
+                          ? () {}
+                          : () {
+                              log("Ref: ${ref.read(userIdProvider)}");
 
-                          // alert dialog
-                          showDialog(
-                              context: context,
-                              builder: (context) {
-                                return _askForRoomId(context, ref);
-                              });
-                        },
-                  child: const Text("Join Game")),
+                              // alert dialog
+                              showDialog(
+                                  context: context,
+                                  builder: (context) {
+                                    return _askForRoomId(context, ref);
+                                  });
+                            },
+                      child: const Text("Join Game")),
 
-              // Playing with Bot
-              const SizedBox(height: 42),
-              GradientButton(
-                  linearGradient:
-                      const LinearGradient(colors: [Colors.green, Colors.blue]),
-                  onTap: anyButtonClickedProv
-                      ? () {}
-                      : () {
-                          Navigator.of(context).pushNamed("/bot-game");
-                        },
-                  child: const Text("Play with Bot")),
-            ],
+                  // Playing with Bot
+                  const SizedBox(height: 42),
+                  GradientButton(
+                      linearGradient: const LinearGradient(
+                          colors: [Colors.green, Colors.blue]),
+                      onTap: anyButtonClickedProv
+                          ? () {}
+                          : () {
+                              Navigator.of(context).pushNamed("/bot-game");
+                            },
+                      child: const Text("Play with Bot")),
+                ],
+              );
+            },
           ),
         ),
       ),

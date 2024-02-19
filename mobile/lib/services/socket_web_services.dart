@@ -7,7 +7,6 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 class SocketWebServices {
   late IO.Socket socket;
 
-  /// adds the userId in the header location
   void init() {
     socket = IO.io(
         // dotenv.env['URL'],

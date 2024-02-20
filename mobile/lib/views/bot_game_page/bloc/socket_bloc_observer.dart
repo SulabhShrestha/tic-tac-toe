@@ -16,6 +16,13 @@ class SocketBlocObserver extends BlocObserver {
   }
 
   @override
+  void onTransition(Bloc bloc, Transition transition) {
+    debugPrint(
+        "SocketBlocObserver: ${bloc.runtimeType} is transitioning ${transition.toString()}");
+    super.onTransition(bloc, transition);
+  }
+
+  @override
   void onError(BlocBase bloc, Object error, StackTrace stackTrace) {
     debugPrint("SocketBlocObserver: ${bloc.runtimeType} has error $error");
     super.onError(bloc, error, stackTrace);

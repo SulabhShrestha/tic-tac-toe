@@ -27,6 +27,11 @@ class SocketDataProvider {
     });
   }
 
+  /// Disconnect the socket
+  void disconnect() {
+    socket.disconnect();
+  }
+
   /// Creates room
   void createRoom({required String uid}) {
     debugPrint("Creating room");
@@ -42,6 +47,39 @@ class SocketDataProvider {
 
     socket.on("room-created", (roomID) {
       controller.add(roomID);
+    });
+
+    controller.onCancel = (() {
+      debugPrint("Closing the listen to event controller");
+      controller.close();
+    });
+
+    // Return the stream from the StreamController
+    return controller.stream;
+  }
+
+  /// listen to room not found event
+  Stream<dynamic> listenToRoomNotFound() {
+    StreamController<dynamic> controller = StreamController<dynamic>();
+
+    socket.on("room-not-found", (roomID) {
+      controller.add(roomID);
+    });
+
+    controller.onCancel = (() {
+      controller.close();
+    });
+
+    // Return the stream from the StreamController
+    return controller.stream;
+  }
+
+  /// Listen to game-init event
+  Stream<dynamic> listenToGameInit() {
+    StreamController<dynamic> controller = StreamController<dynamic>();
+
+    socket.on("game-init", (data) {
+      controller.add(data);
     });
 
     controller.onCancel = (() {
@@ -72,12 +110,19 @@ class SocketDataProvider {
     return controller.stream;
   }
 
-  void joinRoom() {
+  void joinRoom({required String roomID, required String uid}) {
     debugPrint("Joining room");
 
     socket.emit('join-room', {
-      "uid": "myUid",
-      "roomID": "sulabhRoom",
+      "uid": "sulabhhh",
+      "roomID": roomID,
+    });
+  }
+
+  void sendQrScannedEvent({required String roomID}) {
+    debugPrint("Sending QR scanned event");
+    socket.emit("qr-scanned", {
+      "roomID": roomID,
     });
   }
 

@@ -14,7 +14,6 @@ class TicTacProvider extends StateNotifier<List<TicTacModel>> {
 
   void addTicTac(TicTacModel model) {
     state = [...state, model];
-    log("inside private chat notifier: $model");
   }
 
   void removeAll() {

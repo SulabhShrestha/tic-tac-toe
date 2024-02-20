@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mobile/models/tic_tac_model.dart';
@@ -20,6 +21,7 @@ import 'package:mobile/providers/waiting_for_connection_provider.dart';
 import 'package:mobile/services/socket_web_services.dart';
 import 'package:mobile/utils/colors.dart';
 import 'package:mobile/utils/tic_tac_utils.dart';
+import 'package:mobile/views/bot_game_page/bloc/socket_bloc.dart';
 import 'package:mobile/views/game_page/widgets/emoji_panel.dart';
 import 'package:mobile/views/game_page/widgets/player_icon.dart';
 import 'package:mobile/views/game_page/widgets/player_profile_card.dart';
@@ -112,17 +114,6 @@ class _HomePageState extends ConsumerState<GamePage> {
     // when coming after creating game, game-init event is triggered
     // joining game has already triggered game-init event
     if (widget.players.isEmpty) {
-      socketWebServices.socket.on("game-init", (gameInit) async {
-        // vibrating the device
-        await HapticFeedback.heavyImpact();
-        await SystemSound.play(SystemSoundType.alert);
-
-        debugPrint("Inside game init $gameInit");
-
-        ref.watch(allPlayersProvider.notifier).addPlayers(gameInit);
-        ref.watch(playerTurnProvider.notifier).state = gameInit["Player 1"];
-        ref.watch(waitingForConnectionProvider.notifier).state = false;
-      });
     } else {
       Future(() {
         ref.watch(allPlayersProvider.notifier).addPlayers(widget.players);
@@ -255,162 +246,184 @@ class _HomePageState extends ConsumerState<GamePage> {
       child: Scaffold(
         backgroundColor: const Color(0xFFFDDCE6),
         body: SafeArea(
-          child: Stack(
-            children: [
-              // Opacity when needed
-              Opacity(
-                opacity: ref.watch(waitingForConnectionProvider) ||
-                        ref.watch(gameConclusionProvider).isNotEmpty
-                    ? 0.5
-                    : 1,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      if (allPlayersEntries.isNotEmpty)
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            PlayerProfileCard(
-                                playerInfo: allPlayersEntries.first),
+          child: BlocConsumer<SocketBloc, SocketState>(
+            listener: (context, state) async {
+              if (state is GameStart) {
+                debugPrint("Bloc game started: ${state.playersInfo}");
+                // vibrating the device
+                await HapticFeedback.heavyImpact();
+                await SystemSound.play(SystemSoundType.alert);
 
-                            // Round indicator
-                            Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                gradient: LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [Colors.amber, Colors.amber.shade700],
-                                ),
-                              ),
-                              margin: const EdgeInsets.only(bottom: 32),
-                              padding: const EdgeInsets.all(16),
-                              child: Column(
-                                children: [
-                                  const Text("Round",
-                                      style: TextStyle(fontSize: 16)),
-                                  Text(
-                                    ref.watch(gameDetailsProvider)["round"],
-                                    style: const TextStyle(
-                                        fontSize: 24,
-                                        fontWeight: FontWeight.w500),
+                ref
+                    .watch(allPlayersProvider.notifier)
+                    .addPlayers(state.playersInfo);
+                ref.watch(playerTurnProvider.notifier).state =
+                    state.playersInfo["Player 1"];
+                ref.watch(waitingForConnectionProvider.notifier).state = false;
+              }
+            },
+            builder: (context, state) {
+              return Stack(
+                children: [
+                  // Opacity when needed
+                  Opacity(
+                    opacity: ref.watch(waitingForConnectionProvider) ||
+                            ref.watch(gameConclusionProvider).isNotEmpty
+                        ? 0.5
+                        : 1,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          if (allPlayersEntries.isNotEmpty)
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                PlayerProfileCard(
+                                    playerInfo: allPlayersEntries.first),
+
+                                // Round indicator
+                                Container(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                      colors: [
+                                        Colors.amber,
+                                        Colors.amber.shade700
+                                      ],
+                                    ),
                                   ),
-                                ],
-                              ),
-                            ),
-
-                            PlayerProfileCard(
-                                playerInfo: allPlayersEntries.last),
-                          ],
-                        ),
-
-                      const SizedBox(height: 28),
-
-                      Container(
-                        decoration: BoxDecoration(
-                          border: RDottedLineBorder.all(
-                            color: ConstantColors.red,
-                          ),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(24)),
-                        ),
-                        child: Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: ConstantColors.red,
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(24)),
-                            border: Border.all(
-                              color: Colors.white,
-                              width: 8,
-                            ),
-                          ),
-                          child: GridView(
-                            physics: const NeverScrollableScrollPhysics(),
-                            shrinkWrap: true,
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 3,
-                            ),
-                            children: [
-                              for (int a = 0; a < 9; a++) _buildGridCell(a),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 28),
-
-                      // who's turn
-                      if (playerTurnProv.isNotEmpty)
-                        Stack(
-                          children: [
-                            Align(
-                              alignment: Alignment.center,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10),
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    colors: [
-                                      Colors.amber,
-                                      Colors.amber.shade700
+                                  margin: const EdgeInsets.only(bottom: 32),
+                                  padding: const EdgeInsets.all(16),
+                                  child: Column(
+                                    children: [
+                                      const Text("Round",
+                                          style: TextStyle(fontSize: 16)),
+                                      Text(
+                                        ref.watch(gameDetailsProvider)["round"],
+                                        style: const TextStyle(
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.w500),
+                                      ),
                                     ],
                                   ),
                                 ),
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 8, horizontal: 16),
-                                child: Text(
-                                  "${playerTurnProv == ref.read(userIdProvider) ? "Your" : getKeyFromValue(playerTurnProv)} turn",
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                  ),
+
+                                PlayerProfileCard(
+                                    playerInfo: allPlayersEntries.last),
+                              ],
+                            ),
+
+                          const SizedBox(height: 28),
+
+                          Container(
+                            decoration: BoxDecoration(
+                              border: RDottedLineBorder.all(
+                                color: ConstantColors.red,
+                              ),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(24)),
+                            ),
+                            child: Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: ConstantColors.red,
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(24)),
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 8,
                                 ),
                               ),
+                              child: GridView(
+                                physics: const NeverScrollableScrollPhysics(),
+                                shrinkWrap: true,
+                                gridDelegate:
+                                    const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 3,
+                                ),
+                                children: [
+                                  for (int a = 0; a < 9; a++) _buildGridCell(a),
+                                ],
+                              ),
                             ),
-                            Align(
-                              alignment: Alignment.bottomRight,
-                              child: EmojiPanel(),
-                            ),
-                          ],
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // show loading indicator when waiting for opponent, and make background blur
-              if (ref.watch(waitingForConnectionProvider))
-                BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-                    child: Center(
-                      child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Colors.amber.shade300,
-                              Colors.amber.shade700
-                            ],
                           ),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const WaitingLoadingIndicator(),
-                      ),
-                    )),
 
-              // show either win or draw
-              if (ref.watch(gameConclusionProvider).isNotEmpty)
-                const DisplayGameConclusion(),
-            ],
+                          const SizedBox(height: 28),
+
+                          // who's turn
+                          if (playerTurnProv.isNotEmpty)
+                            Stack(
+                              children: [
+                                Align(
+                                  alignment: Alignment.center,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                      gradient: LinearGradient(
+                                        begin: Alignment.topCenter,
+                                        end: Alignment.bottomCenter,
+                                        colors: [
+                                          Colors.amber,
+                                          Colors.amber.shade700
+                                        ],
+                                      ),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 8, horizontal: 16),
+                                    child: Text(
+                                      "${playerTurnProv == ref.read(userIdProvider) ? "Your" : getKeyFromValue(playerTurnProv)} turn",
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Align(
+                                  alignment: Alignment.bottomRight,
+                                  child: EmojiPanel(),
+                                ),
+                              ],
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // show loading indicator when waiting for opponent, and make background blur
+                  if (ref.watch(waitingForConnectionProvider))
+                    BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                        child: Center(
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Colors.amber.shade300,
+                                  Colors.amber.shade700
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const WaitingLoadingIndicator(),
+                          ),
+                        )),
+
+                  // show either win or draw
+                  if (ref.watch(gameConclusionProvider).isNotEmpty)
+                    const DisplayGameConclusion(),
+                ],
+              );
+            },
           ),
         ),
       ),
@@ -444,9 +457,6 @@ class _HomePageState extends ConsumerState<GamePage> {
     // list of indexes for border
     List<int> borderBottomIndexes = [0, 1, 2, 3, 4, 5];
     List<int> borderRightIndexes = [0, 1, 3, 4, 6, 7];
-
-    debugPrint(
-        " building something; $index s: ${model.selectedIndex} pt:$playerTurn cell: $isCellSelected");
 
     return GestureDetector(
       // it should be both player turn and cell should be empty

@@ -15,16 +15,46 @@ class SocketBloc extends Bloc<SocketEvent, SocketState> {
     on<InitSocket>((event, emit) {
       debugPrint("InitSocket event called");
       socketRepository.init();
-      emit(GameStart());
 
       socketRepository.createRoom(uid: "12");
     });
 
     on<CreateRoom>((event, emit) async {
-      // socketRepository.createRoom(uid: event.myUid);
+      socketRepository.createRoom(uid: event.myUid);
 
       final roomID = await socketRepository.listenToRoomCreated().first;
       emit(RoomCreated(roomID: roomID));
+
+      final gameInitData = await socketRepository.listenToGameInit().first;
+      emit(GameStart(playersInfo: gameInitData));
+    });
+
+    on<JoinRoom>((event, emit) async {
+      debugPrint("JoinRoom event called");
+      socketRepository.joinRoom(event.roomID, event.myUid);
+
+      final roomNotFound = await socketRepository.listenToRoomNotFound().first;
+      debugPrint("Room not found $roomNotFound");
+      if (roomNotFound != null) {
+        emit(RoomNotFound(message: roomNotFound));
+      }
+
+      // listening to game init event
+      final gameInitData = await socketRepository.listenToGameInit().first;
+      debugPrint("Game init data $gameInitData");
+      emit(GameStart(playersInfo: gameInitData));
+    });
+
+    on<QrScanned>((event, emit) {
+      debugPrint("QrScanned event called");
+      socketRepository.sendQrScannedEvent(roomID: event.roomID);
+    });
+
+    on<UpdateGameDetails>((event, emit) {
+      debugPrint("UpdateGameDetails event called");
+      emit(GameDetails(roomID: event.roomID));
+
+      debugPrint("UpdateGameDetails event called ${GameDetails().toString()}");
     });
 
     on<ListenToEvent>((event, emit) async {
@@ -34,14 +64,14 @@ class SocketBloc extends Bloc<SocketEvent, SocketState> {
       }
     });
 
-    on<JoinRoom>((event, emit) {
-      debugPrint("JoinRoom event called");
-      socketRepository.joinRoom();
-    });
-
     on<SendEvent>((event, emit) {
       debugPrint("SendEvent event called");
       socketRepository.sendEvent();
+    });
+
+    on<DisconnectSocket>((event, emit) {
+      debugPrint("DisconnectSocket event called");
+      socketRepository.disconnect();
     });
   }
 }

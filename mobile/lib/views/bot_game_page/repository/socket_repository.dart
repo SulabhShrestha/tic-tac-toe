@@ -11,6 +11,11 @@ class SocketRepository {
     socketDataProvider.init();
   }
 
+  /// Disconnect the socket
+  void disconnect() {
+    socketDataProvider.disconnect();
+  }
+
   /// Creates room
   void createRoom({required String uid}) {
     socketDataProvider.createRoom(uid: uid);
@@ -24,6 +29,42 @@ class SocketRepository {
       streamController.add(roomID);
     });
 
+    streamController.onCancel = (() {
+      debugPrint("Closing the listen to event controller");
+      streamController.close();
+    });
+
+    return streamController.stream;
+  }
+
+  /// listen to room not found event
+  Stream<dynamic> listenToRoomNotFound() {
+    final streamController = StreamController<dynamic>();
+    socketDataProvider.listenToRoomNotFound().listen((roomID) {
+      debugPrint("Bloc Room not found $roomID");
+      streamController.add(roomID);
+    });
+
+    streamController.onCancel = (() {
+      streamController.close();
+    });
+
+    return streamController.stream;
+  }
+
+  /// Listen to game-init event
+  Stream<dynamic> listenToGameInit() {
+    final streamController = StreamController<dynamic>();
+    socketDataProvider.listenToGameInit().listen((data) {
+      debugPrint("Bloc Game init $data");
+      streamController.add(data);
+    });
+
+    streamController.onCancel = (() {
+      debugPrint("Closing the listen to event controller");
+      streamController.close();
+    });
+
     return streamController.stream;
   }
 
@@ -35,11 +76,20 @@ class SocketRepository {
       streamController.add(event["text"]);
     });
 
+    streamController.onCancel = (() {
+      debugPrint("Closing the listen to event controller");
+      streamController.close();
+    });
+
     return streamController.stream;
   }
 
-  void joinRoom() {
-    socketDataProvider.joinRoom();
+  void joinRoom(String roomID, String myUid) {
+    socketDataProvider.joinRoom(roomID: roomID, uid: myUid);
+  }
+
+  void sendQrScannedEvent({required String roomID}) {
+    socketDataProvider.sendQrScannedEvent(roomID: roomID);
   }
 
   void sendEvent() {

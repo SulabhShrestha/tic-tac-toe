@@ -25,7 +25,6 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     var anyButtonClickedProv = ref.watch(anyButtonClickedProvider);
-    final socketWebServices = ref.read(socketWebServiceProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFFDDCE6),
@@ -110,107 +109,96 @@ class HomePage extends ConsumerWidget {
   Widget _askForRoomId(BuildContext context, WidgetRef ref) {
     final TextEditingController roomIDController = TextEditingController();
     final FocusNode focusNode = FocusNode();
-    return AlertDialog(
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text("Enter Room ID"),
-          IconButton(
-            onPressed: () {
-              showDialog(
-                  context: context,
-                  builder: (_) {
-                    return Dialog(
-                      child: SizedBox(
-                        height: 250,
-                        width: 250,
-                        child: MobileScanner(
-                          fit: BoxFit.cover,
-                          onDetect: (capturedData) {
-                            Navigator.pop(context);
+    return BlocConsumer<SocketBloc, SocketState>(
+      listener: (context, state) {
+        if (state is GameStart) {
+          debugPrint("Game started");
+          ref.read(roomDetailsProvider.notifier).state = "";
 
-                            debugPrint(
-                                "Captured data: ${capturedData.barcodes.first.displayValue!}");
+          // vibrating the device
+          Future(() async {
+            await HapticFeedback.vibrate();
+            await SystemSound.play(SystemSoundType.click);
+          });
 
-                            joinSocketRoom(context, ref,
-                                capturedData.barcodes.first.displayValue!,
-                                isFromQR: true);
-                          },
-                        ),
-                      ),
-                    );
-                  });
-            },
-            icon: const Icon(Icons.qr_code_scanner),
-          )
-        ],
-      ),
-      content: TextField(
-        controller: roomIDController,
-        focusNode: focusNode,
-        decoration: const InputDecoration(hintText: "Enter Room ID"),
-      ),
-      actions: [
-        LoadingButtonWithText(
-            text: "Join",
-            onTap: () {
-              focusNode.unfocus();
-              joinSocketRoom(context, ref, roomIDController.text);
-            }),
-      ],
+          Navigator.of(context).pushNamed("/game", arguments: {
+            "players": state.playersInfo,
+          });
+        } else if (state is RoomNotFound) {
+          debugPrint("Room not found");
+          Navigator.pop(context);
+
+          // resetting value
+          ref.read(anyButtonClickedProvider.notifier).state = false;
+
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text("Room not found")));
+        }
+      },
+      builder: (context, state) {
+        return AlertDialog(
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text("Enter Room ID"),
+              IconButton(
+                onPressed: () {
+                  showDialog(
+                      context: context,
+                      builder: (_) {
+                        return Dialog(
+                          child: SizedBox(
+                            height: 250,
+                            width: 250,
+                            child: MobileScanner(
+                              fit: BoxFit.cover,
+                              onDetect: (capturedData) {
+                                Navigator.pop(context);
+
+                                joinSocketRoom(context, ref,
+                                    capturedData.barcodes.first.displayValue!,
+                                    isFromQR: true);
+                              },
+                            ),
+                          ),
+                        );
+                      });
+                },
+                icon: const Icon(Icons.qr_code_scanner),
+              )
+            ],
+          ),
+          content: TextField(
+            controller: roomIDController,
+            focusNode: focusNode,
+            decoration: const InputDecoration(hintText: "Enter Room ID"),
+          ),
+          actions: [
+            LoadingButtonWithText(
+                text: "Join",
+                onTap: () {
+                  focusNode.unfocus();
+                  joinSocketRoom(context, ref, roomIDController.text);
+                }),
+          ],
+        );
+      },
     );
   }
 
   void joinSocketRoom(BuildContext context, WidgetRef ref, String roomID,
       {bool isFromQR = false}) {
     ref.read(anyButtonClickedProvider.notifier).state = true;
-    final socketWebServices = ref.read(socketWebServiceProvider);
 
     if (isFromQR) {
       // triggering loading button
       ref.read(joinButtonLoadingProvider.notifier).state = true;
     }
-    // joining the user to the game
-    socketWebServices.joinRoom(myUid: ref.read(userIdProvider), roomID: roomID);
+    context.read<SocketBloc>().add(InitSocket());
+    context
+        .read<SocketBloc>()
+        .add(JoinRoom(roomID: roomID, myUid: ref.read(userIdProvider)));
 
-    // when room not found
-    socketWebServices.socket.on("room-not-found", (data) {
-      debugPrint("Room not found");
-      Navigator.pop(context);
-
-      // resetting value
-      ref.read(anyButtonClickedProvider.notifier).state = false;
-
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("Room not found")));
-    });
-
-    // joining the game on correct room id
-    socketWebServices.socket.on("game-init", (players) async {
-      debugPrint("Game init $players");
-
-      // resetting value
-      ref.read(anyButtonClickedProvider.notifier).state = false;
-
-      // sending qr scanned event to pop the qr displayed on other device
-      if (isFromQR) {
-        debugPrint("Sent qr scanned event");
-        socketWebServices.sendQRscannedEvent(roomID: roomID);
-
-        // resetting the loading button
-        ref.read(joinButtonLoadingProvider.notifier).state = false;
-      }
-
-      ref.read(roomDetailsProvider.notifier).state = roomID;
-
-      // vibrating the device
-      await HapticFeedback.vibrate();
-      await SystemSound.play(SystemSoundType.click);
-
-      Navigator.of(context).pushNamed("/game", arguments: {
-        "socketWebServices": socketWebServices,
-        "players": players,
-      });
-    });
+    context.read<SocketBloc>().add(UpdateGameDetails(roomID: roomID));
   }
 }

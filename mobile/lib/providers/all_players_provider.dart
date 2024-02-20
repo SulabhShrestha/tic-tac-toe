@@ -13,7 +13,6 @@ class AllPlayersProvider extends StateNotifier<Map<String, dynamic>> {
 
   void addPlayers(Map<String, dynamic> allPlayers) {
     state = allPlayers;
-    log("inside private chat notifier: $allPlayers");
   }
 
   void empty() {

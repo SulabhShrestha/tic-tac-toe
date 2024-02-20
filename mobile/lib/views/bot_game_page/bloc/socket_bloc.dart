@@ -22,10 +22,10 @@ class SocketBloc extends Bloc<SocketEvent, SocketState> {
     on<CreateRoom>((event, emit) async {
       socketRepository.createRoom(uid: event.myUid);
 
-      final roomID = await socketRepository.listenToRoomCreated().first;
+      final roomID = await socketRepository.listenToRoomCreated();
       emit(RoomCreated(roomID: roomID));
 
-      final gameInitData = await socketRepository.listenToGameInit().first;
+      final gameInitData = await socketRepository.listenToGameInit();
       emit(GameStart(playersInfo: gameInitData));
     });
 
@@ -33,14 +33,14 @@ class SocketBloc extends Bloc<SocketEvent, SocketState> {
       debugPrint("JoinRoom event called");
       socketRepository.joinRoom(event.roomID, event.myUid);
 
-      final roomNotFound = await socketRepository.listenToRoomNotFound().first;
+      final roomNotFound = await socketRepository.listenToRoomNotFound();
       debugPrint("Room not found $roomNotFound");
       if (roomNotFound != null) {
-        emit(RoomNotFound(message: roomNotFound));
+        emit(RoomNotFound());
       }
 
       // listening to game init event
-      final gameInitData = await socketRepository.listenToGameInit().first;
+      final gameInitData = await socketRepository.listenToGameInit();
       debugPrint("Game init data $gameInitData");
       emit(GameStart(playersInfo: gameInitData));
     });

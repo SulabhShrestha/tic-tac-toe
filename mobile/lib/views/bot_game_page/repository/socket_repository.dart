@@ -21,51 +21,29 @@ class SocketRepository {
     socketDataProvider.createRoom(uid: uid);
   }
 
-  /// Listen to room created event
-  Stream<dynamic> listenToRoomCreated() {
-    final streamController = StreamController<dynamic>();
-    socketDataProvider.listenToRoomCreated().listen((roomID) {
-      debugPrint("Bloc Room created $roomID");
-      streamController.add(roomID);
-    });
+  /// Listen to room created event, and return roomID
+  Future<String> listenToRoomCreated() async {
+    final roomID = await socketDataProvider.listenToRoomCreated().first;
 
-    streamController.onCancel = (() {
-      debugPrint("Closing the listen to event controller");
-      streamController.close();
-    });
-
-    return streamController.stream;
+    return roomID;
   }
 
-  /// listen to room not found event
-  Stream<dynamic> listenToRoomNotFound() {
-    final streamController = StreamController<dynamic>();
-    socketDataProvider.listenToRoomNotFound().listen((roomID) {
-      debugPrint("Bloc Room not found $roomID");
-      streamController.add(roomID);
-    });
+  /// listen to room not found event, true means not found
+  /// false means found
+  Future<bool> listenToRoomNotFound() async {
+    final roomNotFound = await socketDataProvider.listenToRoomNotFound().first;
 
-    streamController.onCancel = (() {
-      streamController.close();
-    });
-
-    return streamController.stream;
+    if (roomNotFound != null) {
+      return true;
+    }
+    return false;
   }
 
   /// Listen to game-init event
-  Stream<dynamic> listenToGameInit() {
-    final streamController = StreamController<dynamic>();
-    socketDataProvider.listenToGameInit().listen((data) {
-      debugPrint("Bloc Game init $data");
-      streamController.add(data);
-    });
+  Future<Map<String, dynamic>> listenToGameInit() async {
+    final gamePlayersData = await socketDataProvider.listenToGameInit().first;
 
-    streamController.onCancel = (() {
-      debugPrint("Closing the listen to event controller");
-      streamController.close();
-    });
-
-    return streamController.stream;
+    return gamePlayersData;
   }
 
   Stream<String> listenToEvent() {

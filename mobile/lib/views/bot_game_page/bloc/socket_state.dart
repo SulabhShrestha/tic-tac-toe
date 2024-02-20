@@ -11,11 +11,7 @@ class RoomCreated extends SocketState {
   RoomCreated({required this.roomID});
 }
 
-class RoomNotFound extends SocketState {
-  final String message;
-
-  RoomNotFound({required this.message});
-}
+class RoomNotFound extends SocketState {}
 
 class GameStart extends SocketState {
   final Map<String, dynamic> playersInfo;

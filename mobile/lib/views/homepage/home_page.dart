@@ -12,6 +12,7 @@ import 'package:mobile/providers/user_id_provider.dart';
 import 'package:mobile/providers/waiting_for_connection_provider.dart';
 import 'package:mobile/services/socket_web_services.dart';
 import 'package:mobile/utils/colors.dart';
+import 'package:mobile/views/bloc/user_id_cubit/user_id_cubit.dart';
 import 'package:mobile/views/bot_game_page/bloc/socket_bloc.dart';
 import 'package:mobile/views/game_page/widgets/player_profile_card.dart';
 import 'package:mobile/views/homepage/widgets/loading_button_with_text.dart';
@@ -63,9 +64,9 @@ class HomePage extends ConsumerWidget {
                             debugPrint("Loading");
 
                             context.read<SocketBloc>().add(InitSocket());
-                            context
-                                .read<SocketBloc>()
-                                .add(CreateRoom(myUid: 'uid1'));
+                            context.read<SocketBloc>().add(CreateRoom(
+                                myUid:
+                                    context.read<UserIdCubit>().getUserId()));
                           },
                   ),
                   const SizedBox(height: 20),
@@ -195,9 +196,8 @@ class HomePage extends ConsumerWidget {
       ref.read(joinButtonLoadingProvider.notifier).state = true;
     }
     context.read<SocketBloc>().add(InitSocket());
-    context
-        .read<SocketBloc>()
-        .add(JoinRoom(roomID: roomID, myUid: ref.read(userIdProvider)));
+    context.read<SocketBloc>().add(JoinRoom(
+        roomID: roomID, myUid: context.read<UserIdCubit>().getUserId()));
 
     context.read<SocketBloc>().add(UpdateGameDetails(roomID: roomID));
   }

@@ -32,17 +32,20 @@ class SocketBloc extends Bloc<SocketEvent, SocketState> {
     on<JoinRoom>((event, emit) async {
       debugPrint("JoinRoom event called");
       socketRepository.joinRoom(event.roomID, event.myUid);
+    });
 
+    on<ListenToGameInitEvent>((event, emit) async {
+      final gameInitData = await socketRepository.listenToGameInit();
+      debugPrint("ListenToGameInitEvent event called $gameInitData");
+      emit(GameStart(playersInfo: gameInitData));
+    });
+
+    on<ListenToRoomNotFoundEvent>((event, emit) async {
       final roomNotFound = await socketRepository.listenToRoomNotFound();
-      debugPrint("Room not found $roomNotFound");
-      if (roomNotFound != null) {
+      debugPrint("ListenToRoomNotFoundEvent event called $roomNotFound");
+      if (roomNotFound) {
         emit(RoomNotFound());
       }
-
-      // listening to game init event
-      final gameInitData = await socketRepository.listenToGameInit();
-      debugPrint("Game init data $gameInitData");
-      emit(GameStart(playersInfo: gameInitData));
     });
 
     on<QrScanned>((event, emit) {

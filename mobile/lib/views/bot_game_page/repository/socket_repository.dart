@@ -43,6 +43,12 @@ class SocketRepository {
   Future<Map<String, dynamic>> listenToGameInit() async {
     final gamePlayersData = await socketDataProvider.listenToGameInit().first;
 
+    debugPrint("Socket repository: $gamePlayersData");
+
+    if (gamePlayersData == null) {
+      throw Exception("Room not found");
+    }
+
     return gamePlayersData;
   }
 

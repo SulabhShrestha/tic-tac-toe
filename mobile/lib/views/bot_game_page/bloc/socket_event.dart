@@ -15,6 +15,10 @@ class JoinRoom extends SocketEvent {
   });
 }
 
+class ListenToGameInitEvent extends SocketEvent {}
+
+class ListenToRoomNotFoundEvent extends SocketEvent {}
+
 class CreateRoom extends SocketEvent {
   final String myUid;
 

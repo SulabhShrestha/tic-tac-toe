@@ -198,6 +198,8 @@ class HomePage extends ConsumerWidget {
     context.read<SocketBloc>().add(InitSocket());
     context.read<SocketBloc>().add(JoinRoom(
         roomID: roomID, myUid: context.read<UserIdCubit>().getUserId()));
+    context.read<SocketBloc>().add(ListenToRoomNotFoundEvent());
+    context.read<SocketBloc>().add(ListenToGameInitEvent());
 
     context.read<SocketBloc>().add(UpdateGameDetails(roomID: roomID));
   }

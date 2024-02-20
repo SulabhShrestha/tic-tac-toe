@@ -24,12 +24,12 @@ void main() async {
   generateRandomString(); // generate random uid and stores in cache
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   // This widget is the root of your application.
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return RepositoryProvider<SocketRepository>(
       create: (context) => SocketRepository(
         SocketDataProvider(),

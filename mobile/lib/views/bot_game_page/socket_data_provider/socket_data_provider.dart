@@ -79,12 +79,8 @@ class SocketDataProvider {
     StreamController<dynamic> controller = StreamController<dynamic>();
 
     socket.on("game-init", (data) {
+      debugPrint("Game init socket data provider: $data");
       controller.add(data);
-    });
-
-    controller.onCancel = (() {
-      debugPrint("Closing the listen to event controller");
-      controller.close();
     });
 
     // Return the stream from the StreamController

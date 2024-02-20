@@ -232,6 +232,12 @@ class _HomePageState extends ConsumerState<GamePage> {
   }
 
   @override
+  void dispose() {
+    debugPrint("Disposing game page");
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     var playerTurnProv = ref.watch(playerTurnProvider);
     var allPlayersEntries = ref.watch(allPlayersProvider).entries;

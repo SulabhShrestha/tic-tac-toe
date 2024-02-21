@@ -14,10 +14,6 @@ class BotGamePage extends StatelessWidget {
     final playerInfo = {"Player 1": "uid1", "Player 2": "uid2"}.entries;
     final socketBloc = BlocProvider.of<SocketBloc>(context);
 
-    socketBloc.add(InitSocket());
-    socketBloc.add(SendEvent());
-    socketBloc.add(ListenToEvent());
-    socketBloc.add(CreateRoom(myUid: '11212'));
     return Scaffold(
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,

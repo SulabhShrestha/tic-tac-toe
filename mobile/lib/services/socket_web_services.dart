@@ -7,26 +7,6 @@ import 'package:socket_io_client/socket_io_client.dart' as IO;
 class SocketWebServices {
   late IO.Socket socket;
 
-  void init() {
-    socket = IO.io(
-        // dotenv.env['URL'],
-        "http://10.0.2.2:3000",
-        IO.OptionBuilder()
-            .setTransports(['websocket'])
-            .disableAutoConnect()
-            .enableForceNewConnection()
-            .build());
-
-    socket.connect(); // connect to the server
-    socket.onConnect((_) {
-      log("Connected to the server");
-    });
-
-    socket.onDisconnect((_) {
-      log("Disconnected from the server");
-    });
-  }
-
   /// sending disconnect status to the server
   void disconnect() {
     log("Disconnect server function called");

@@ -76,7 +76,19 @@ class SocketRepository {
     socketDataProvider.sendQrScannedEvent(roomID: roomID);
   }
 
-  void sendEvent() {
-    socketDataProvider.sendEvent();
+  void sendEvent(
+      {required String uid,
+      required String roomID,
+      required int selectedIndex}) {
+    socketDataProvider.sendEvent(
+        uid: uid, roomID: roomID, selectedIndex: selectedIndex);
+  }
+
+  void sendEmojiPath(
+      {required String emojiPath,
+      required String roomID,
+      required String uid}) {
+    socketDataProvider.sendEmojiPath(
+        roomID: roomID, emojiPath: emojiPath, uid: uid);
   }
 }

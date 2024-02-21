@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mobile/providers/emoji_received_provider.dart';
 import 'package:mobile/providers/room_details_provider.dart';
 import 'package:mobile/providers/socket_web_service_provider.dart';
 import 'package:mobile/providers/user_id_provider.dart';
+import 'package:mobile/views/bloc/game_details_cubit/game_details_cubit.dart';
+
+import 'package:mobile/views/bot_game_page/bloc/socket_bloc.dart';
 
 class EmojiPanel extends ConsumerWidget {
   const EmojiPanel({super.key});
@@ -21,7 +25,6 @@ class EmojiPanel extends ConsumerWidget {
       "images/emojis/poop.svg",
       "images/emojis/squinting.svg",
     ];
-    final socketWebServices = ref.read(socketWebServiceProvider);
     return MenuAnchor(
       controller: _emojiMenuController,
       builder:
@@ -55,10 +58,14 @@ class EmojiPanel extends ConsumerWidget {
 
                         _emojiMenuController.close();
 
-                        socketWebServices.sendEmojiEvent(
-                            roomID: ref.read(roomDetailsProvider),
-                            emojiPath: emoji,
-                            uid: ref.read(userIdProvider));
+                        final gameDetailsCubit =
+                            context.read<GameDetailsCubit>();
+
+                        context.read<SocketBloc>().add(SendEmoji(
+                              emojiPath: emoji,
+                              uid: gameDetailsCubit.getUserId(),
+                              roomID: gameDetailsCubit.getRoomID(),
+                            ));
                       },
                       child: SvgPicture.asset(
                         emoji,

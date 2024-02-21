@@ -39,6 +39,24 @@ class UpdateGameDetails extends SocketEvent {
 
 class ListenToEvent extends SocketEvent {}
 
-class SendEvent extends SocketEvent {}
+class SendEvent extends SocketEvent {
+  final String roomID;
+  final int selectedIndex;
+  final String uid;
+
+  SendEvent({
+    required this.roomID,
+    required this.selectedIndex,
+    required this.uid,
+  });
+}
+
+class SendEmoji extends SocketEvent {
+  final String emojiPath;
+  final String roomID;
+  final String uid;
+
+  SendEmoji({required this.emojiPath, required this.uid, required this.roomID});
+}
 
 class DisconnectSocket extends SocketEvent {}

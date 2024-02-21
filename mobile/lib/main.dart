@@ -3,9 +3,8 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mobile/providers/user_id_provider.dart';
-import 'package:mobile/services/socket_web_services.dart';
-import 'package:mobile/views/bloc/user_id_cubit/user_id_cubit.dart';
+import 'package:mobile/views/bloc/game_details_cubit/game_details_cubit.dart';
+
 import 'package:mobile/views/bot_game_page/bloc/socket_bloc.dart';
 import 'package:mobile/views/bot_game_page/bot_game_page.dart';
 import 'package:mobile/views/bot_game_page/socket_data_provider/socket_data_provider.dart';
@@ -37,10 +36,12 @@ class MyApp extends StatelessWidget {
       child: MultiBlocProvider(
         providers: [
           BlocProvider(
-            create: (context) => SocketBloc(context.read<SocketRepository>()),
+            create: (context) =>
+                SocketBloc(context.read<SocketRepository>())..add(InitSocket()),
           ),
           BlocProvider(
-              create: (_) => UserIdCubit()..setUserId(generateRandomString())),
+              create: (_) =>
+                  GameDetailsCubit()..setUserId(generateRandomString())),
         ],
         child: MaterialApp(
           title: 'Tic Tac Toe',

@@ -28,7 +28,6 @@ class _DisplayGameConclusionState extends ConsumerState<DisplayGameConclusion> {
   @override
   Widget build(BuildContext context) {
     var gameConclusion = ref.watch(gameConclusionProvider);
-    final socketWebServices = ref.read(socketWebServiceProvider);
 
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
@@ -65,10 +64,10 @@ class _DisplayGameConclusionState extends ConsumerState<DisplayGameConclusion> {
                       : () {
                           ref.read(anyButtonClickedProvider.notifier).state =
                               true;
-                          socketWebServices.sendPlayAgainEvent(
-                            roomID: ref.read(roomDetailsProvider),
-                            uid: ref.read(userIdProvider),
-                          );
+                          // socketWebServices.sendPlayAgainEvent(
+                          //   roomID: ref.read(roomDetailsProvider),
+                          //   uid: ref.read(userIdProvider),
+                          // );
                         }),
             ],
           ),

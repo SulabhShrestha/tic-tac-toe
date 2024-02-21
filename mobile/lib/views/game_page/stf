@@ -1,0 +1,100 @@
+  @override
+  void initState() {
+    final socketWebServices = ref.read(socketWebServiceProvider);
+
+    socketWebServices.socket.on("event", (data) {
+      // changing player state
+      ref.watch(playerTurnProvider.notifier).state = data["player-turn"];
+
+      if (data["player-turn"] == ref.read(userIdProvider)) {
+        debugPrint("Player turn: ${data["player-turn"]}");
+        isCellSelected = false;
+      }
+
+      // adding to selected
+      ref.watch(ticTacProvider.notifier).addTicTac(
+          TicTacModel(uid: data["uid"], selectedIndex: data["selectedIndex"]));
+    });
+
+    socketWebServices.socket.on("winner", (user) {
+      if (user == ref.read(allPlayersProvider)["Player 1"].toString()) {
+        ref.watch(gameDetailsProvider.notifier).incrementPlayer1Won();
+      } else {
+        ref.watch(gameDetailsProvider.notifier).incrementPlayer2Won();
+      }
+
+      ref.watch(gameConclusionProvider.notifier).state = {
+        "winner": user,
+        "conclusion": GameConclusion.win,
+      };
+    });
+
+    socketWebServices.socket.on("draw", (_) {
+      ref.watch(gameConclusionProvider.notifier).state = {
+        "conclusion": GameConclusion.draw,
+      };
+    });
+
+    socketWebServices.socket.on("user-disconnected", (uid) {
+      debugPrint("User disconnected: $uid");
+      ref.watch(gameDetailsProvider.notifier).setLeftChat(uid);
+      if (!snackBarShown) {
+        snackBarShown = true;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Other player left the game.")),
+        );
+      }
+    });
+
+    socketWebServices.socket.on("play-again", (uid) {
+      String whichPlayer = ref
+          .read(allPlayersProvider)
+          .entries
+          .firstWhere((element) => element.value == uid)
+          .key;
+      _showPlayAgainDialog(whichPlayer);
+    });
+
+    // when coming after creating game, game-init event is triggered
+    // joining game has already triggered game-init event
+    if (widget.players.isEmpty) {
+    } else {
+      Future(() {
+        ref.watch(allPlayersProvider.notifier).addPlayers(widget.players);
+        ref.watch(playerTurnProvider.notifier).state =
+            widget.players["Player 1"];
+        ref.watch(waitingForConnectionProvider.notifier).state = false;
+      });
+    }
+
+    // when play again is accepted
+    socketWebServices.socket.on("play-again-accepted", (playerTurn) {
+      debugPrint("Play again accepted $playerTurn");
+
+      // resetting
+      ref.read(gameConclusionProvider.notifier).state = {};
+      ref.watch(ticTacProvider.notifier).removeAll();
+      ref.read(anyButtonClickedProvider.notifier).state = false;
+      isCellSelected = false;
+
+      ref.watch(playerTurnProvider.notifier).state = playerTurn;
+
+      // incrementing game round
+      ref.watch(gameDetailsProvider.notifier).incrementRound();
+    });
+
+    socketWebServices.socket.on("qr-scanned", (data) {
+      debugPrint("QR scanned event received");
+      if (ref.read(qrClosedProvider)) {
+        Navigator.pop(context);
+      }
+    });
+
+    socketWebServices.socket.on("emoji", (data) {
+      debugPrint("Emoji data: $data");
+
+      ref.read(emojiReceivedProvider.notifier).addEmoji(data);
+    });
+
+    super.initState();
+  }

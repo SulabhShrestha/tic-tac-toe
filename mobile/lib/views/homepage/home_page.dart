@@ -7,18 +7,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/providers/any_button_clicked.dart';
 import 'package:mobile/providers/join_button_loading_provider.dart';
 import 'package:mobile/providers/room_details_provider.dart';
-import 'package:mobile/providers/socket_web_service_provider.dart';
-import 'package:mobile/providers/user_id_provider.dart';
+
 import 'package:mobile/providers/waiting_for_connection_provider.dart';
-import 'package:mobile/services/socket_web_services.dart';
-import 'package:mobile/utils/colors.dart';
-import 'package:mobile/views/bloc/user_id_cubit/user_id_cubit.dart';
+
+import 'package:mobile/views/bloc/game_details_cubit/game_details_cubit.dart';
 import 'package:mobile/views/bot_game_page/bloc/socket_bloc.dart';
-import 'package:mobile/views/game_page/widgets/player_profile_card.dart';
 import 'package:mobile/views/homepage/widgets/loading_button_with_text.dart';
 import 'package:mobile/views/homepage/widgets/gradient_button.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -36,6 +32,8 @@ class HomePage extends ConsumerWidget {
             listener: (context, state) {
               if (state is RoomCreated) {
                 ref.read(roomDetailsProvider.notifier).state = state.roomID;
+
+                context.read<GameDetailsCubit>().setRoomID(state.roomID);
 
                 // resetting the button clicked value
                 ref.read(anyButtonClickedProvider.notifier).state = false;
@@ -63,10 +61,10 @@ class HomePage extends ConsumerWidget {
 
                             debugPrint("Loading");
 
-                            context.read<SocketBloc>().add(InitSocket());
                             context.read<SocketBloc>().add(CreateRoom(
-                                myUid:
-                                    context.read<UserIdCubit>().getUserId()));
+                                myUid: context
+                                    .read<GameDetailsCubit>()
+                                    .getUserId()));
                           },
                   ),
                   const SizedBox(height: 20),
@@ -76,8 +74,6 @@ class HomePage extends ConsumerWidget {
                       onTap: anyButtonClickedProv
                           ? () {}
                           : () {
-                              log("Ref: ${ref.read(userIdProvider)}");
-
                               // alert dialog
                               showDialog(
                                   context: context,
@@ -195,12 +191,11 @@ class HomePage extends ConsumerWidget {
       // triggering loading button
       ref.read(joinButtonLoadingProvider.notifier).state = true;
     }
-    context.read<SocketBloc>().add(InitSocket());
     context.read<SocketBloc>().add(JoinRoom(
-        roomID: roomID, myUid: context.read<UserIdCubit>().getUserId()));
+        roomID: roomID, myUid: context.read<GameDetailsCubit>().getUserId()));
     context.read<SocketBloc>().add(ListenToRoomNotFoundEvent());
     context.read<SocketBloc>().add(ListenToGameInitEvent());
 
-    context.read<SocketBloc>().add(UpdateGameDetails(roomID: roomID));
+    context.read<GameDetailsCubit>().setRoomID(roomID);
   }
 }

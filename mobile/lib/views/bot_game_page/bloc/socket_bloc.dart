@@ -13,10 +13,7 @@ class SocketBloc extends Bloc<SocketEvent, SocketState> {
 
   SocketBloc(this.socketRepository) : super(SocketInitial()) {
     on<InitSocket>((event, emit) {
-      debugPrint("InitSocket event called");
       socketRepository.init();
-
-      socketRepository.createRoom(uid: "12");
     });
 
     on<CreateRoom>((event, emit) async {
@@ -53,12 +50,12 @@ class SocketBloc extends Bloc<SocketEvent, SocketState> {
       socketRepository.sendQrScannedEvent(roomID: event.roomID);
     });
 
-    on<UpdateGameDetails>((event, emit) {
-      debugPrint("UpdateGameDetails event called");
-      emit(GameDetails(roomID: event.roomID));
-
-      debugPrint("UpdateGameDetails event called ${GameDetails().toString()}");
-    });
+    // on<UpdateGameDetails>((event, emit) {
+    //   debugPrint("UpdateGameDetails event called");
+    //   emit(GameDetails(roomID: event.roomID));
+    //
+    //   debugPrint("UpdateGameDetails event called ${GameDetails().toString()}");
+    // });
 
     on<ListenToEvent>((event, emit) async {
       debugPrint("ListenToEvent event called");
@@ -69,7 +66,20 @@ class SocketBloc extends Bloc<SocketEvent, SocketState> {
 
     on<SendEvent>((event, emit) {
       debugPrint("SendEvent event called");
-      socketRepository.sendEvent();
+      socketRepository.sendEvent(
+          uid: event.uid,
+          roomID: event.roomID,
+          selectedIndex: event.selectedIndex);
+    });
+
+    on<SendEmoji>((event, emit) {
+      debugPrint(
+          "SendEmoji event called ${event.roomID}, ${event.uid}, ${event.emojiPath}");
+      socketRepository.sendEmojiPath(
+        emojiPath: event.emojiPath,
+        roomID: "sulabhRoom",
+        uid: event.uid,
+      );
     });
 
     on<DisconnectSocket>((event, emit) {

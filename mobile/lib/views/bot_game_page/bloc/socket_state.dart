@@ -20,9 +20,15 @@ class GameStart extends SocketState {
 }
 
 class GameDetails extends SocketState {
-  final String? roomID;
+  final int round;
+  final Map<String, int> score;
+  final String playerTurn;
 
-  GameDetails({this.roomID});
+  GameDetails({
+    this.round = 1,
+    this.score = const {},
+    required this.playerTurn,
+  });
 }
 
 class GameEnd extends SocketState {}

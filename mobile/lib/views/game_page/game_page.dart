@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mobile/models/tic_tac_model.dart';
 import 'package:mobile/providers/all_players_provider.dart';
 import 'package:mobile/providers/any_button_clicked.dart';
@@ -21,7 +20,9 @@ import 'package:mobile/providers/waiting_for_connection_provider.dart';
 import 'package:mobile/services/socket_web_services.dart';
 import 'package:mobile/utils/colors.dart';
 import 'package:mobile/utils/tic_tac_utils.dart';
+import 'package:mobile/views/bloc/game_details_cubit/game_details_cubit.dart';
 import 'package:mobile/views/bot_game_page/bloc/socket_bloc.dart';
+import 'package:mobile/views/bot_game_page/widget/round_indicator.dart';
 import 'package:mobile/views/game_page/widgets/emoji_panel.dart';
 import 'package:mobile/views/game_page/widgets/player_icon.dart';
 import 'package:mobile/views/game_page/widgets/player_profile_card.dart';
@@ -51,112 +52,8 @@ class _HomePageState extends ConsumerState<GamePage> {
 
   bool showEmojiContainer = false;
 
-  // for controlling emoji panel
-  final MenuController _emojiMenuController = MenuController();
-
-  @override
-  void initState() {
-    final socketWebServices = ref.read(socketWebServiceProvider);
-
-    socketWebServices.socket.on("event", (data) {
-      // changing player state
-      ref.watch(playerTurnProvider.notifier).state = data["player-turn"];
-
-      if (data["player-turn"] == ref.read(userIdProvider)) {
-        debugPrint("Player turn: ${data["player-turn"]}");
-        isCellSelected = false;
-      }
-
-      // adding to selected
-      ref.watch(ticTacProvider.notifier).addTicTac(
-          TicTacModel(uid: data["uid"], selectedIndex: data["selectedIndex"]));
-    });
-
-    socketWebServices.socket.on("winner", (user) {
-      if (user == ref.read(allPlayersProvider)["Player 1"].toString()) {
-        ref.watch(gameDetailsProvider.notifier).incrementPlayer1Won();
-      } else {
-        ref.watch(gameDetailsProvider.notifier).incrementPlayer2Won();
-      }
-
-      ref.watch(gameConclusionProvider.notifier).state = {
-        "winner": user,
-        "conclusion": GameConclusion.win,
-      };
-    });
-
-    socketWebServices.socket.on("draw", (_) {
-      ref.watch(gameConclusionProvider.notifier).state = {
-        "conclusion": GameConclusion.draw,
-      };
-    });
-
-    socketWebServices.socket.on("user-disconnected", (uid) {
-      debugPrint("User disconnected: $uid");
-      ref.watch(gameDetailsProvider.notifier).setLeftChat(uid);
-      if (!snackBarShown) {
-        snackBarShown = true;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Other player left the game.")),
-        );
-      }
-    });
-
-    socketWebServices.socket.on("play-again", (uid) {
-      String whichPlayer = ref
-          .read(allPlayersProvider)
-          .entries
-          .firstWhere((element) => element.value == uid)
-          .key;
-      _showPlayAgainDialog(whichPlayer);
-    });
-
-    // when coming after creating game, game-init event is triggered
-    // joining game has already triggered game-init event
-    if (widget.players.isEmpty) {
-    } else {
-      Future(() {
-        ref.watch(allPlayersProvider.notifier).addPlayers(widget.players);
-        ref.watch(playerTurnProvider.notifier).state =
-            widget.players["Player 1"];
-        ref.watch(waitingForConnectionProvider.notifier).state = false;
-      });
-    }
-
-    // when play again is accepted
-    socketWebServices.socket.on("play-again-accepted", (playerTurn) {
-      debugPrint("Play again accepted $playerTurn");
-
-      // resetting
-      ref.read(gameConclusionProvider.notifier).state = {};
-      ref.watch(ticTacProvider.notifier).removeAll();
-      ref.read(anyButtonClickedProvider.notifier).state = false;
-      isCellSelected = false;
-
-      ref.watch(playerTurnProvider.notifier).state = playerTurn;
-
-      // incrementing game round
-      ref.watch(gameDetailsProvider.notifier).incrementRound();
-    });
-
-    socketWebServices.socket.on("qr-scanned", (data) {
-      debugPrint("QR scanned event received");
-      if (ref.read(qrClosedProvider)) {
-        Navigator.pop(context);
-      }
-    });
-
-    socketWebServices.socket.on("emoji", (data) {
-      debugPrint("Emoji data: $data");
-
-      ref.read(emojiReceivedProvider.notifier).addEmoji(data);
-    });
-
-    super.initState();
-  }
-
   void resetAllStateAndMoveBack() {
-    ref.read(socketWebServiceProvider).disconnect();
+    // ref.read(socketWebServiceProvider).disconnect();
 
     // removing global state data
     ref.read(roomDetailsProvider.notifier).state = "";
@@ -188,8 +85,8 @@ class _HomePageState extends ConsumerState<GamePage> {
                 onPressed: () {
                   Navigator.pop(context);
 
-                  ref.read(socketWebServiceProvider).sendPlayAgainAccepted(
-                      roomID: ref.read(roomDetailsProvider));
+                  // ref.read(socketWebServiceProvider).sendPlayAgainAccepted(
+                  //    roomID: ref.read(roomDetailsProvider));
                 },
                 child: const Text("Yes"),
               ),
@@ -253,22 +150,22 @@ class _HomePageState extends ConsumerState<GamePage> {
         backgroundColor: const Color(0xFFFDDCE6),
         body: SafeArea(
           child: BlocConsumer<SocketBloc, SocketState>(
-            listener: (context, state) async {
-              if (state is GameStart) {
-                debugPrint("Bloc game started: ${state.playersInfo}");
+            listener: (context, socketBlocState) async {
+              if (socketBlocState is GameStart) {
+                debugPrint("Bloc game started: ${socketBlocState.playersInfo}");
                 // vibrating the device
                 await HapticFeedback.heavyImpact();
                 await SystemSound.play(SystemSoundType.alert);
 
                 ref
                     .watch(allPlayersProvider.notifier)
-                    .addPlayers(state.playersInfo);
+                    .addPlayers(socketBlocState.playersInfo);
                 ref.watch(playerTurnProvider.notifier).state =
-                    state.playersInfo["Player 1"];
+                    socketBlocState.playersInfo["Player 1"];
                 ref.watch(waitingForConnectionProvider.notifier).state = false;
               }
             },
-            builder: (context, state) {
+            builder: (context, socketBlocState) {
               return Stack(
                 children: [
                   // Opacity when needed
@@ -283,45 +180,21 @@ class _HomePageState extends ConsumerState<GamePage> {
                         mainAxisSize: MainAxisSize.max,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          if (allPlayersEntries.isNotEmpty)
+                          if (socketBlocState is GameStart)
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 PlayerProfileCard(
-                                    playerInfo: allPlayersEntries.first),
+                                    playerInfo: socketBlocState
+                                        .playersInfo.entries.first),
 
                                 // Round indicator
-                                Container(
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topCenter,
-                                      end: Alignment.bottomCenter,
-                                      colors: [
-                                        Colors.amber,
-                                        Colors.amber.shade700
-                                      ],
-                                    ),
-                                  ),
-                                  margin: const EdgeInsets.only(bottom: 32),
-                                  padding: const EdgeInsets.all(16),
-                                  child: Column(
-                                    children: [
-                                      const Text("Round",
-                                          style: TextStyle(fontSize: 16)),
-                                      Text(
-                                        ref.watch(gameDetailsProvider)["round"],
-                                        style: const TextStyle(
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.w500),
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                                const RoundIndicator(),
 
                                 PlayerProfileCard(
-                                    playerInfo: allPlayersEntries.last),
+                                    playerInfo: socketBlocState
+                                        .playersInfo.entries.last),
                               ],
                             ),
 
@@ -354,7 +227,8 @@ class _HomePageState extends ConsumerState<GamePage> {
                                   crossAxisCount: 3,
                                 ),
                                 children: [
-                                  for (int a = 0; a < 9; a++) _buildGridCell(a),
+                                  for (int a = 0; a < 9; a++)
+                                    _buildGridCell(a, context),
                                 ],
                               ),
                             ),
@@ -363,40 +237,48 @@ class _HomePageState extends ConsumerState<GamePage> {
                           const SizedBox(height: 28),
 
                           // who's turn
-                          if (playerTurnProv.isNotEmpty)
-                            Stack(
-                              children: [
-                                Align(
-                                  alignment: Alignment.center,
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(10),
-                                      gradient: LinearGradient(
-                                        begin: Alignment.topCenter,
-                                        end: Alignment.bottomCenter,
-                                        colors: [
-                                          Colors.amber,
-                                          Colors.amber.shade700
-                                        ],
+                          BlocBuilder<GameDetailsCubit, Map<String, dynamic>>(
+                            builder: (context, state) {
+                              if (state["playerTurn"] != null) {
+                                return Stack(
+                                  children: [
+                                    Align(
+                                      alignment: Alignment.center,
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topCenter,
+                                            end: Alignment.bottomCenter,
+                                            colors: [
+                                              Colors.amber,
+                                              Colors.amber.shade700
+                                            ],
+                                          ),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 8, horizontal: 16),
+                                        child: Text(
+                                          "${state["playerTurn"] == state["uid"] ? "Your" : getKeyFromValue(state["playerTurn"])} turn",
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 8, horizontal: 16),
-                                    child: Text(
-                                      "${playerTurnProv == ref.read(userIdProvider) ? "Your" : getKeyFromValue(playerTurnProv)} turn",
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                      ),
+                                    Align(
+                                      alignment: Alignment.bottomRight,
+                                      child: EmojiPanel(),
                                     ),
-                                  ),
-                                ),
-                                Align(
-                                  alignment: Alignment.bottomRight,
-                                  child: EmojiPanel(),
-                                ),
-                              ],
-                            ),
+                                  ],
+                                );
+                              } else {
+                                return const SizedBox();
+                              }
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -437,8 +319,9 @@ class _HomePageState extends ConsumerState<GamePage> {
   }
 
   String? getKeyFromValue(dynamic targetValue) {
-    var map = ref.read(allPlayersProvider);
-    for (var entry in map.entries) {
+    var gameStartSocketBloc = context.read<SocketBloc>().state as GameStart;
+
+    for (var entry in gameStartSocketBloc.playersInfo.entries) {
       if (entry.value == targetValue) {
         return entry.key;
       }
@@ -446,11 +329,9 @@ class _HomePageState extends ConsumerState<GamePage> {
     return null;
   }
 
-  Widget _buildGridCell(int index) {
+  Widget _buildGridCell(int index, BuildContext context) {
     var ticTacProv = ref.watch(ticTacProvider);
-    var playerTurn = ref.watch(playerTurnProvider);
     var userIdProv = ref.watch(userIdProvider);
-    final socketWebServices = ref.read(socketWebServiceProvider);
 
     TicTacModel? model = ticTacProv.firstWhere((ticTac) {
       return ticTac.selectedIndex == index;
@@ -464,49 +345,53 @@ class _HomePageState extends ConsumerState<GamePage> {
     List<int> borderBottomIndexes = [0, 1, 2, 3, 4, 5];
     List<int> borderRightIndexes = [0, 1, 3, 4, 6, 7];
 
-    return GestureDetector(
-      // it should be both player turn and cell should be empty
-      onTap: model.selectedIndex != index && playerTurn == userIdProv
-          ? () {
-              if (isCellSelected) return;
+    return BlocBuilder<GameDetailsCubit, Map<String, dynamic>>(
+      builder: (context, state) {
+        return GestureDetector(
+          // it should be both player turn and cell should be empty
+          // model.selectedIndex != index && playerTurn == userIdProv
+          onTap: !(state["selectedCells"] as List).contains(index)
+              ? () {
+                  if (isCellSelected) return;
 
-              socketWebServices.sendData(data: {
-                "uid": userIdProv,
-                "roomID": ref.watch(roomDetailsProvider),
-                "selectedIndex": index,
-              });
+                  context.read<SocketBloc>().add(SendEvent(
+                      roomID: state["roomID"],
+                      selectedIndex: index,
+                      uid: state["uid"]));
 
-              isCellSelected = true;
-            }
-          : () {
-              debugPrint("Cell already selected");
-            },
+                  isCellSelected = true;
+                }
+              : () {
+                  debugPrint("Cell already selected");
+                },
 
-      child: Container(
-        decoration: BoxDecoration(
-          border: RDottedLineBorder(
-            dottedLength: 6,
-            dottedSpace: 4,
-            right: borderRightIndexes.contains(index)
-                ? const BorderSide(
-                    color: ConstantColors.white,
-                    width: 1,
-                  )
-                : BorderSide.none,
-            bottom: borderBottomIndexes.contains(index)
-                ? const BorderSide(
-                    color: ConstantColors.white,
-                    width: 1,
-                  )
-                : BorderSide.none,
+          child: Container(
+            decoration: BoxDecoration(
+              border: RDottedLineBorder(
+                dottedLength: 6,
+                dottedSpace: 4,
+                right: borderRightIndexes.contains(index)
+                    ? const BorderSide(
+                        color: ConstantColors.white,
+                        width: 1,
+                      )
+                    : BorderSide.none,
+                bottom: borderBottomIndexes.contains(index)
+                    ? const BorderSide(
+                        color: ConstantColors.white,
+                        width: 1,
+                      )
+                    : BorderSide.none,
+              ),
+            ),
+            child: Center(
+              child: model.selectedIndex == index
+                  ? _buildSomething(model.uid, userIdProv)
+                  : const Text(" "),
+            ),
           ),
-        ),
-        child: Center(
-          child: model.selectedIndex == index
-              ? _buildSomething(model.uid, userIdProv)
-              : const Text(" "),
-        ),
-      ),
+        );
+      },
     );
   }
 

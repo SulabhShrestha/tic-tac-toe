@@ -110,7 +110,7 @@ class SocketDataProvider {
     debugPrint("Joining room");
 
     socket.emit('join-room', {
-      "uid": "sulabhhh",
+      "uid": uid,
       "roomID": roomID,
     });
   }
@@ -122,9 +122,25 @@ class SocketDataProvider {
     });
   }
 
-  void sendEvent() {
-    socket.emit("temp", {
-      "text": "Hello from client",
+  void sendEvent(
+      {required String uid,
+      required String roomID,
+      required int selectedIndex}) {
+    socket.emit("event", {
+      "roomID": roomID,
+      "selectedIndex": selectedIndex,
+      "uid": uid,
+    });
+  }
+
+  void sendEmojiPath(
+      {required String emojiPath,
+      required String roomID,
+      required String uid}) {
+    socket.emit("emoji", {
+      "emojiPath": emojiPath,
+      "roomID": roomID,
+      "sender": uid,
     });
   }
 }

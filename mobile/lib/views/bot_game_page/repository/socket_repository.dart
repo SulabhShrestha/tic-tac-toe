@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
+import 'package:mobile/models/tic_tac_model.dart';
 import 'package:mobile/views/bot_game_page/socket_data_provider/socket_data_provider.dart';
 
 class SocketRepository {
@@ -52,16 +53,21 @@ class SocketRepository {
     return gamePlayersData;
   }
 
-  Stream<String> listenToEvent() {
-    final streamController = StreamController<String>();
+  /// Returns the tic tac model and player-turn
+  Stream<Map<String, dynamic>> listenToEvent() {
+    final streamController = StreamController<Map<String, dynamic>>();
 
     socketDataProvider.listenToEvent().listen((event) {
       debugPrint("Socket repository : $event");
-      streamController.add(event["text"]);
+      streamController.add({
+        'model': TicTacModel(
+            uid: event['uid'], selectedIndex: event['selectedIndex']),
+        "player-turn": event["player-turn"],
+      });
     });
 
     streamController.onCancel = (() {
-      debugPrint("Closing the listen to event controller");
+      debugPrint("Closing the listen to event controller, socketRepository");
       streamController.close();
     });
 

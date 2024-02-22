@@ -110,13 +110,20 @@ class HomePage extends ConsumerWidget {
       listener: (context, state) {
         if (state is GameStart) {
           debugPrint("Game started");
-          ref.read(roomDetailsProvider.notifier).state = "";
-
           // vibrating the device
           Future(() async {
             await HapticFeedback.vibrate();
             await SystemSound.play(SystemSoundType.click);
           });
+
+          // listen to event
+          context.read<SocketBloc>().add(ListenToEvent());
+
+          // adding players info to the game details cubit
+          context.read<GameDetailsCubit>().setPlayers(state.playersInfo);
+          context
+              .read<GameDetailsCubit>()
+              .setPlayerTurn(state.playersInfo["Player 1"]);
 
           Navigator.of(context).pushNamed("/game", arguments: {
             "players": state.playersInfo,

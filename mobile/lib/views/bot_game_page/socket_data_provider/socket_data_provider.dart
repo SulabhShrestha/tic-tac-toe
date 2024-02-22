@@ -50,7 +50,6 @@ class SocketDataProvider {
     });
 
     controller.onCancel = (() {
-      debugPrint("Closing the listen to event controller");
       controller.close();
     });
 
@@ -91,14 +90,14 @@ class SocketDataProvider {
     // Create a StreamController to manage the stream of events
     StreamController<dynamic> controller = StreamController<dynamic>();
 
-    // Register a callback with socket.on to handle "temp" events
-    socket.on("temp", (data) {
-      debugPrint("Data provider: $data");
+    // Register a callback with socket.on to handle click "event"
+    socket.on("event", (data) {
+      debugPrint("Event socket data provider: $data");
       controller.add(data); // Add received data to the stream
     });
 
     controller.onCancel = (() {
-      debugPrint("Closing the listen to event controller");
+      debugPrint("Closing the listen to Event controller, socketDataProvider");
       controller.close();
     });
 

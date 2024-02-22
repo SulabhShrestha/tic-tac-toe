@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
+import 'package:mobile/models/tic_tac_model.dart';
 import 'package:mobile/views/bot_game_page/repository/socket_repository.dart';
 
 part 'socket_event.dart';
@@ -27,7 +28,6 @@ class SocketBloc extends Bloc<SocketEvent, SocketState> {
     });
 
     on<JoinRoom>((event, emit) async {
-      debugPrint("JoinRoom event called");
       socketRepository.joinRoom(event.roomID, event.myUid);
     });
 
@@ -60,7 +60,9 @@ class SocketBloc extends Bloc<SocketEvent, SocketState> {
     on<ListenToEvent>((event, emit) async {
       debugPrint("ListenToEvent event called");
       await for (var eventData in socketRepository.listenToEvent()) {
-        emit(RoomCreated(roomID: "hello world"));
+        emit(CellsDetailsBlocState()
+          ..model = eventData['model']
+          ..playerTurn = eventData['player-turn']);
       }
     });
 

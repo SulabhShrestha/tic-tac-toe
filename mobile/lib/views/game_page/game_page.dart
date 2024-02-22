@@ -13,7 +13,6 @@ import 'package:mobile/providers/game_details_provider.dart';
 import 'package:mobile/providers/player_turn_provider.dart';
 import 'package:mobile/providers/qr_closed_provider.dart';
 import 'package:mobile/providers/room_details_provider.dart';
-import 'package:mobile/providers/socket_web_service_provider.dart';
 import 'package:mobile/providers/tic_tac_providers.dart';
 import 'package:mobile/providers/user_id_provider.dart';
 import 'package:mobile/providers/waiting_for_connection_provider.dart';
@@ -129,18 +128,7 @@ class _HomePageState extends ConsumerState<GamePage> {
   }
 
   @override
-  void dispose() {
-    debugPrint("Disposing game page");
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    var playerTurnProv = ref.watch(playerTurnProvider);
-    var allPlayersEntries = ref.watch(allPlayersProvider).entries;
-
-    debugPrint("Player turn: $playerTurnProv");
-
     return PopScope(
       canPop: false,
       onPopInvoked: (didPop) {
@@ -150,12 +138,23 @@ class _HomePageState extends ConsumerState<GamePage> {
         backgroundColor: const Color(0xFFFDDCE6),
         body: SafeArea(
           child: BlocConsumer<SocketBloc, SocketState>(
-            listener: (context, socketBlocState) async {
+            listener: (context, socketBlocState) {
               if (socketBlocState is GameStart) {
                 debugPrint("Bloc game started: ${socketBlocState.playersInfo}");
+
                 // vibrating the device
-                await HapticFeedback.heavyImpact();
-                await SystemSound.play(SystemSoundType.alert);
+                Future(() async {
+                  await HapticFeedback.heavyImpact();
+                  await SystemSound.play(SystemSoundType.alert);
+                });
+
+                // adding players info to cubit
+                context
+                    .read<GameDetailsCubit>()
+                    .setPlayers(socketBlocState.playersInfo);
+
+                // listening to event
+                context.read<SocketBloc>().add(ListenToEvent());
 
                 ref
                     .watch(allPlayersProvider.notifier)
@@ -163,6 +162,15 @@ class _HomePageState extends ConsumerState<GamePage> {
                 ref.watch(playerTurnProvider.notifier).state =
                     socketBlocState.playersInfo["Player 1"];
                 ref.watch(waitingForConnectionProvider.notifier).state = false;
+              }
+
+              if (socketBlocState is CellsDetailsBlocState) {
+                context
+                    .read<GameDetailsCubit>()
+                    .setPlayerTurn(socketBlocState.playerTurn);
+                context
+                    .read<GameDetailsCubit>()
+                    .addSelectedCells(socketBlocState.model);
               }
             },
             builder: (context, socketBlocState) {
@@ -180,23 +188,28 @@ class _HomePageState extends ConsumerState<GamePage> {
                         mainAxisSize: MainAxisSize.max,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          if (socketBlocState is GameStart)
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                PlayerProfileCard(
-                                    playerInfo: socketBlocState
-                                        .playersInfo.entries.first),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              PlayerProfileCard(
+                                  playerInfo: context
+                                      .read<GameDetailsCubit>()
+                                      .state["players"]
+                                      .entries
+                                      .first),
 
-                                // Round indicator
-                                const RoundIndicator(),
+                              // Round indicator
+                              const RoundIndicator(),
 
-                                PlayerProfileCard(
-                                    playerInfo: socketBlocState
-                                        .playersInfo.entries.last),
-                              ],
-                            ),
+                              PlayerProfileCard(
+                                  playerInfo: context
+                                      .read<GameDetailsCubit>()
+                                      .state["players"]
+                                      .entries
+                                      .last),
+                            ],
+                          ),
 
                           const SizedBox(height: 28),
 
@@ -268,7 +281,7 @@ class _HomePageState extends ConsumerState<GamePage> {
                                         ),
                                       ),
                                     ),
-                                    Align(
+                                    const Align(
                                       alignment: Alignment.bottomRight,
                                       child: EmojiPanel(),
                                     ),
@@ -319,9 +332,9 @@ class _HomePageState extends ConsumerState<GamePage> {
   }
 
   String? getKeyFromValue(dynamic targetValue) {
-    var gameStartSocketBloc = context.read<SocketBloc>().state as GameStart;
+    var players = context.read<GameDetailsCubit>().state["players"];
 
-    for (var entry in gameStartSocketBloc.playersInfo.entries) {
+    for (var entry in players.entries) {
       if (entry.value == targetValue) {
         return entry.key;
       }
@@ -331,7 +344,6 @@ class _HomePageState extends ConsumerState<GamePage> {
 
   Widget _buildGridCell(int index, BuildContext context) {
     var ticTacProv = ref.watch(ticTacProvider);
-    var userIdProv = ref.watch(userIdProvider);
 
     TicTacModel? model = ticTacProv.firstWhere((ticTac) {
       return ticTac.selectedIndex == index;
@@ -345,58 +357,77 @@ class _HomePageState extends ConsumerState<GamePage> {
     List<int> borderBottomIndexes = [0, 1, 2, 3, 4, 5];
     List<int> borderRightIndexes = [0, 1, 3, 4, 6, 7];
 
-    return BlocBuilder<GameDetailsCubit, Map<String, dynamic>>(
-      builder: (context, state) {
-        return GestureDetector(
-          // it should be both player turn and cell should be empty
-          // model.selectedIndex != index && playerTurn == userIdProv
-          onTap: !(state["selectedCells"] as List).contains(index)
-              ? () {
-                  if (isCellSelected) return;
+    return BlocListener<SocketBloc, SocketState>(
+      listener: (context, state) {
+        if (state is CellsDetailsBlocState &&
+            state.playerTurn == context.read<GameDetailsCubit>().getUserId()) {
+          isCellSelected = false;
+        }
+      },
+      child: BlocBuilder<GameDetailsCubit, Map<String, dynamic>>(
+        builder: (context, state) {
+          var selectedCellsDetails = state["selectedCells"]
+              .firstWhere((element) => element.selectedIndex == index,
+                  orElse: () => TicTacModel(
+                        uid: "xx",
+                        selectedIndex: -1,
+                      ));
 
-                  context.read<SocketBloc>().add(SendEvent(
-                      roomID: state["roomID"],
-                      selectedIndex: index,
-                      uid: state["uid"]));
+          return GestureDetector(
+            // it should be both player turn and cell should be empty
+            // model.selectedIndex != index && playerTurn == userIdProv
+            onTap: selectedCellsDetails.selectedIndex == -1 &&
+                    state["playerTurn"] == state["uid"]
+                ? () {
+                    if (isCellSelected) return;
 
-                  isCellSelected = true;
-                }
-              : () {
-                  debugPrint("Cell already selected");
-                },
+                    context.read<SocketBloc>().add(SendEvent(
+                        roomID: state["roomID"],
+                        selectedIndex: index,
+                        uid: state["uid"]));
 
-          child: Container(
-            decoration: BoxDecoration(
-              border: RDottedLineBorder(
-                dottedLength: 6,
-                dottedSpace: 4,
-                right: borderRightIndexes.contains(index)
-                    ? const BorderSide(
-                        color: ConstantColors.white,
-                        width: 1,
-                      )
-                    : BorderSide.none,
-                bottom: borderBottomIndexes.contains(index)
-                    ? const BorderSide(
-                        color: ConstantColors.white,
-                        width: 1,
-                      )
-                    : BorderSide.none,
+                    isCellSelected = true;
+                  }
+                : () {
+                    debugPrint("Cell already selected");
+                  },
+
+            child: Container(
+              decoration: BoxDecoration(
+                border: RDottedLineBorder(
+                  dottedLength: 6,
+                  dottedSpace: 4,
+                  right: borderRightIndexes.contains(index)
+                      ? const BorderSide(
+                          color: ConstantColors.white,
+                          width: 1,
+                        )
+                      : BorderSide.none,
+                  bottom: borderBottomIndexes.contains(index)
+                      ? const BorderSide(
+                          color: ConstantColors.white,
+                          width: 1,
+                        )
+                      : BorderSide.none,
+                ),
+              ),
+              child: Center(
+                child: selectedCellsDetails.selectedIndex != -1
+                    ? _buildSomething(selectedCellsDetails.uid)
+                    : const Text(" "),
               ),
             ),
-            child: Center(
-              child: model.selectedIndex == index
-                  ? _buildSomething(model.uid, userIdProv)
-                  : const Text(" "),
-            ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
-  Widget _buildSomething(String selectedBy, String myUid) {
-    var allPlayers = ref.read(allPlayersProvider);
+  Widget _buildSomething(String selectedBy) {
+    var allPlayers = context.read<GameDetailsCubit>().state["players"];
+    debugPrint(
+        "All players $allPlayers, $selectedBy, ${allPlayers["Player 1"]}");
+
     return Image.asset(
         selectedBy == allPlayers["Player 1"]
             ? "images/close.png"

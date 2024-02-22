@@ -19,16 +19,9 @@ class GameStart extends SocketState {
   GameStart({required this.playersInfo});
 }
 
-class GameDetails extends SocketState {
-  final int round;
-  final Map<String, int> score;
-  final String playerTurn;
-
-  GameDetails({
-    this.round = 1,
-    this.score = const {},
-    required this.playerTurn,
-  });
+class CellsDetailsBlocState extends SocketState {
+  TicTacModel model = TicTacModel.empty();
+  String playerTurn = "";
 }
 
 class GameEnd extends SocketState {}

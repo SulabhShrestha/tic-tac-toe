@@ -10,7 +10,10 @@ class GameDetailsCubit extends Cubit<Map<String, dynamic>> {
           "score": {"Player 1": 11, "Player 2": 22},
           "playerTurn": "4567",
           "selectedCells": <TicTacModel>[],
-          "players": {"Iron Man": "1234", "Spider Man": "4567"},
+          "players": <String, dynamic>{
+            "Iron Man": "1234",
+            "Spider Man": "4567"
+          },
         });
 
   void setUserId(String uid) {
@@ -37,6 +40,10 @@ class GameDetailsCubit extends Cubit<Map<String, dynamic>> {
   void setPlayers(Map<String, dynamic> players) {
     debugPrint("Players added to cubit: $players");
     emit({...state, "players": players}); // setting the state
+  }
+
+  Map<String, dynamic> getPlayers() {
+    return state["players"];
   }
 
   void addSelectedCells(TicTacModel model) {

@@ -16,13 +16,14 @@ class BoldFirstWord extends StatelessWidget {
         text: boldWord,
         style: const TextStyle(
           fontWeight: FontWeight.bold,
-          fontSize: 16,
-          color: Colors.black,
+          fontSize: 22,
+          color: Colors.white,
         ),
         children: [
           TextSpan(
               text: remainingWords,
-              style: const TextStyle(fontWeight: FontWeight.normal)),
+              style:
+                  const TextStyle(fontWeight: FontWeight.normal, fontSize: 18)),
         ],
       ),
     );

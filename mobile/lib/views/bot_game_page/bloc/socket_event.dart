@@ -39,6 +39,8 @@ class UpdateGameDetails extends SocketEvent {
 
 class ListenToEvent extends SocketEvent {}
 
+class ListenToGameConclusion extends SocketEvent {}
+
 class SendEvent extends SocketEvent {
   final String roomID;
   final int selectedIndex;
@@ -57,6 +59,12 @@ class SendEmoji extends SocketEvent {
   final String uid;
 
   SendEmoji({required this.emojiPath, required this.uid, required this.roomID});
+}
+
+class ListenToEmojiEvent extends SocketEvent {
+  final String roomID;
+
+  ListenToEmojiEvent({required this.roomID});
 }
 
 class DisconnectSocket extends SocketEvent {}

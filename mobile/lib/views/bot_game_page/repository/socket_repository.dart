@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
+import 'package:mobile/models/emoji_model.dart';
 import 'package:mobile/models/tic_tac_model.dart';
 import 'package:mobile/views/bot_game_page/socket_data_provider/socket_data_provider.dart';
 
@@ -96,5 +97,30 @@ class SocketRepository {
       required String uid}) {
     socketDataProvider.sendEmojiPath(
         roomID: roomID, emojiPath: emojiPath, uid: uid);
+  }
+
+  /// Listen to emoji event
+  Stream<EmojiModel> listenToEmojiEvent() {
+    final streamController = StreamController<EmojiModel>();
+
+    socketDataProvider.listenToEmojiReceived().listen((event) {
+      debugPrint("Socket repository : $event");
+      streamController.add(EmojiModel(
+          senderUid: event["sender"], emojiPath: event["emojiPath"]));
+    });
+
+    streamController.onCancel = (() {
+      debugPrint("Closing the listen to event controller, socketRepository");
+      streamController.close();
+    });
+
+    return streamController.stream;
+  }
+
+  Future<Map<String, dynamic>> listenToGameConclusion() async {
+    final gameConclusion =
+        await socketDataProvider.listenToGameConclusion().first;
+
+    return gameConclusion;
   }
 }

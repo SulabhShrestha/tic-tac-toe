@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
+import 'package:mobile/models/emoji_model.dart';
 import 'package:mobile/models/tic_tac_model.dart';
 import 'package:mobile/views/bot_game_page/repository/socket_repository.dart';
 
@@ -60,9 +61,8 @@ class SocketBloc extends Bloc<SocketEvent, SocketState> {
     on<ListenToEvent>((event, emit) async {
       debugPrint("ListenToEvent event called");
       await for (var eventData in socketRepository.listenToEvent()) {
-        emit(CellsDetailsBlocState()
-          ..model = eventData['model']
-          ..playerTurn = eventData['player-turn']);
+        emit(CellsDetailsBlocState(
+            model: eventData['model'], playerTurn: eventData['player-turn']));
       }
     });
 
@@ -79,9 +79,27 @@ class SocketBloc extends Bloc<SocketEvent, SocketState> {
           "SendEmoji event called ${event.roomID}, ${event.uid}, ${event.emojiPath}");
       socketRepository.sendEmojiPath(
         emojiPath: event.emojiPath,
-        roomID: "sulabhRoom",
+        roomID: event.roomID,
         uid: event.uid,
       );
+    });
+
+    on<ListenToEmojiEvent>((event, emit) async {
+      debugPrint("ListenToEvent event called");
+      await for (var emojiModel in socketRepository.listenToEmojiEvent()) {
+        emit(EmojiReceivedBlocState(emojiModel: emojiModel));
+
+        Future.delayed(const Duration(seconds: 2), () {
+          emit(EmojiReceivedBlocState(emojiModel: EmojiModel.empty()));
+        });
+      }
+    });
+
+    on<ListenToGameConclusion>((event, emit) async {
+      debugPrint("ListenToGameConclusion event called");
+      final gameConclusion = await socketRepository.listenToGameConclusion();
+      emit(GameEnd(
+          status: gameConclusion['status'], winner: gameConclusion['winner']));
     });
 
     on<DisconnectSocket>((event, emit) {

@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/providers/all_players_provider.dart';
 import 'package:mobile/providers/any_button_clicked.dart';
@@ -10,25 +11,19 @@ import 'package:mobile/providers/socket_web_service_provider.dart';
 
 import 'package:mobile/providers/user_id_provider.dart';
 import 'package:mobile/services/socket_web_services.dart';
-import 'package:mobile/utils/tic_tac_utils.dart';
+import 'package:mobile/views/bloc/game_details_cubit/game_details_cubit.dart';
+
 import 'package:mobile/views/game_page/widgets/bold_first_word.dart';
 import 'package:mobile/views/homepage/widgets/loading_button_with_text.dart';
 
-class DisplayGameConclusion extends ConsumerStatefulWidget {
-  const DisplayGameConclusion({super.key});
+class DisplayGameConclusion extends ConsumerWidget {
+  final String gameConclusion; // win or draw
+  final String? winner; // player id or null
+  const DisplayGameConclusion(
+      {super.key, required this.gameConclusion, this.winner});
 
   @override
-  ConsumerState<DisplayGameConclusion> createState() =>
-      _DisplayGameConclusionState();
-}
-
-class _DisplayGameConclusionState extends ConsumerState<DisplayGameConclusion> {
-  bool hasClicked = false;
-
-  @override
-  Widget build(BuildContext context) {
-    var gameConclusion = ref.watch(gameConclusionProvider);
-
+  Widget build(BuildContext context, WidgetRef ref) {
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
       child: Center(
@@ -46,16 +41,20 @@ class _DisplayGameConclusionState extends ConsumerState<DisplayGameConclusion> {
             mainAxisSize: MainAxisSize.min,
             children: [
               // conclusion text
-              if (gameConclusion["conclusion"] == GameConclusion.draw)
-                const Text("Draw"),
+              if (gameConclusion == "draw")
+                RichText(
+                    text: const TextSpan(
+                        text: "Draw",
+                        style: TextStyle(
+                            fontSize: 22, fontWeight: FontWeight.w500))),
 
-              if (gameConclusion["conclusion"] == GameConclusion.win)
+              if (gameConclusion == "win")
                 BoldFirstWord(
-                  boldWord: getWinner()!,
+                  boldWord: getWinner(context: context)!,
                   remainingWords: " won the game",
                 ),
 
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
 
               LoadingButtonWithText(
                   text: "Play Again",
@@ -77,19 +76,14 @@ class _DisplayGameConclusionState extends ConsumerState<DisplayGameConclusion> {
   }
 
   // return either Player 1 or Player 2 or You
-  String? getWinner() {
-    var gameConclusion = ref.watch(gameConclusionProvider);
-    var uid = ref.read(userIdProvider);
+  String? getWinner({required BuildContext context, String? wonBy}) {
+    var uid = context.read<GameDetailsCubit>().getUserId();
 
-    if (gameConclusion["conclusion"] == GameConclusion.win &&
-        uid == gameConclusion["winner"]) {
+    if (gameConclusion == "win" && uid == wonBy) {
       return "You";
     }
 
-    var winner = gameConclusion["winner"];
-    var map = ref.read(allPlayersProvider);
-
-    for (var entry in map.entries) {
+    for (var entry in context.read<GameDetailsCubit>().getPlayers().entries) {
       if (entry.value == winner) {
         return entry.key;
       }

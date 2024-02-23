@@ -142,4 +142,29 @@ class SocketDataProvider {
       "sender": uid,
     });
   }
+
+  /// Listen to game-init event
+  Stream<dynamic> listenToEmojiReceived() {
+    StreamController<dynamic> controller = StreamController<dynamic>();
+
+    socket.on("emoji", (data) {
+      debugPrint("Emoji received: $data");
+      controller.add(data);
+    });
+
+    // Return the stream from the StreamController
+    return controller.stream;
+  }
+
+  Stream<dynamic> listenToGameConclusion() {
+    StreamController<dynamic> controller = StreamController<dynamic>();
+
+    socket.on("game-conclusion", (data) {
+      debugPrint("Game conclusion: $data");
+      controller.add(data);
+    });
+
+    // Return the stream from the StreamController
+    return controller.stream;
+  }
 }

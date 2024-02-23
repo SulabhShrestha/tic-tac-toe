@@ -18,7 +18,6 @@ import 'package:mobile/providers/user_id_provider.dart';
 import 'package:mobile/providers/waiting_for_connection_provider.dart';
 import 'package:mobile/services/socket_web_services.dart';
 import 'package:mobile/utils/colors.dart';
-import 'package:mobile/utils/tic_tac_utils.dart';
 import 'package:mobile/views/bloc/game_details_cubit/game_details_cubit.dart';
 import 'package:mobile/views/bot_game_page/bloc/socket_bloc.dart';
 import 'package:mobile/views/bot_game_page/widget/round_indicator.dart';
@@ -128,6 +127,14 @@ class _HomePageState extends ConsumerState<GamePage> {
   }
 
   @override
+  void initState() {
+    context.read<SocketBloc>().add(ListenToEmojiEvent(
+        roomID: context.read<GameDetailsCubit>().getRoomID()));
+    context.read<SocketBloc>().add(ListenToGameConclusion());
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
@@ -172,6 +179,29 @@ class _HomePageState extends ConsumerState<GamePage> {
                     .read<GameDetailsCubit>()
                     .addSelectedCells(socketBlocState.model);
               }
+
+              if (socketBlocState is GameEnd) {
+                debugPrint(
+                    "Game conclusion: ${socketBlocState.status}, ${socketBlocState.winner}");
+              }
+            },
+            listenWhen: (previous, current) {
+              if (previous is CellsDetailsBlocState && current is GameEnd) {
+                debugPrint("Previous: $previous, Current: $current");
+
+                showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (_) {
+                      return DisplayGameConclusion(
+                          gameConclusion: current.status,
+                          winner: current.winner);
+                    });
+
+                return false; // no need to listen to listener now
+              }
+
+              return true;
             },
             builder: (context, socketBlocState) {
               return Stack(
@@ -318,10 +348,6 @@ class _HomePageState extends ConsumerState<GamePage> {
                             child: const WaitingLoadingIndicator(),
                           ),
                         )),
-
-                  // show either win or draw
-                  if (ref.watch(gameConclusionProvider).isNotEmpty)
-                    const DisplayGameConclusion(),
                 ],
               );
             },

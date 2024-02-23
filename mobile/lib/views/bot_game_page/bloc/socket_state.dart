@@ -20,10 +20,23 @@ class GameStart extends SocketState {
 }
 
 class CellsDetailsBlocState extends SocketState {
-  TicTacModel model = TicTacModel.empty();
-  String playerTurn = "";
+  final TicTacModel model;
+  final String playerTurn;
+
+  CellsDetailsBlocState({required this.model, required this.playerTurn});
 }
 
-class GameEnd extends SocketState {}
+class EmojiReceivedBlocState extends SocketState {
+  final EmojiModel emojiModel;
+
+  EmojiReceivedBlocState({required this.emojiModel});
+}
+
+class GameEnd extends SocketState {
+  final String status;
+  final String? winner;
+
+  GameEnd({required this.status, this.winner});
+}
 
 class GameError extends SocketState {}

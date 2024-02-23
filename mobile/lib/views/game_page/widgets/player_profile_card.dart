@@ -7,6 +7,7 @@ import 'package:mobile/providers/game_details_provider.dart';
 import 'package:mobile/providers/user_id_provider.dart';
 import 'package:mobile/utils/colors.dart';
 import 'package:mobile/views/bloc/game_details_cubit/game_details_cubit.dart';
+import 'package:mobile/views/bot_game_page/bloc/socket_bloc.dart';
 
 class PlayerProfileCard extends ConsumerWidget {
   final MapEntry<String, dynamic> playerInfo;
@@ -23,13 +24,14 @@ class PlayerProfileCard extends ConsumerWidget {
     var gameDetails = ref.watch(gameDetailsProvider);
 
     return BlocBuilder<GameDetailsCubit, Map<String, dynamic>>(
-      builder: (context, state) {
+      builder: (context, gameDetailsCubitState) {
         // Player 1 -> P1
         var playerAbbreviation =
             playerInfo.key.split(" ")[0][0] + playerInfo.key.split(" ")[1][0];
         // again if the player is me, then show "You"
-        playerAbbreviation =
-            playerInfo.value == state["uid"] ? "You" : playerAbbreviation;
+        playerAbbreviation = playerInfo.value == gameDetailsCubitState["uid"]
+            ? "You"
+            : playerAbbreviation;
 
         return Opacity(
           opacity: gameDetails["leftChat"] == playerInfo.value ? 0.5 : 1,
@@ -60,7 +62,7 @@ class PlayerProfileCard extends ConsumerWidget {
                       children: [
                         const SizedBox(height: 10),
                         Text(
-                          state["uid"] == playerInfo.value
+                          gameDetailsCubitState["uid"] == playerInfo.value
                               ? "You"
                               : playerInfo.key,
                           style: const TextStyle(
@@ -126,48 +128,58 @@ class PlayerProfileCard extends ConsumerWidget {
 
               // score
               const SizedBox(height: 12),
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: ConstantColors.white,
-                      border: Border.all(
-                        color: ConstantColors.blue,
-                        width: 1,
-                      ),
-                      borderRadius: const BorderRadius.all(Radius.circular(12)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 9,
-                          blurStyle: BlurStyle.outer,
-                        ),
-                      ],
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Row(
-                      children: [
-                        const Text("Won: "),
-                        Text(
-                          state["score"][playerInfo.key.toString()].toString(),
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
+              BlocBuilder<SocketBloc, SocketState>(
+                builder: (context, state) {
+                  return Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          color: ConstantColors.white,
+                          border: Border.all(
                             color: ConstantColors.blue,
+                            width: 1,
                           ),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(12)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 9,
+                              blurStyle: BlurStyle.outer,
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                  if (emojiReceivedProv.isNotEmpty &&
-                      emojiReceivedProv["sender"] == playerInfo.value)
-                    AnimatedPositioned(
-                      top: -32,
-                      duration: Duration(seconds: 1),
-                      child: SvgPicture.asset(emojiReceivedProv["emojiPath"]),
-                    ),
-                ],
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Row(
+                          children: [
+                            const Text("Won: "),
+                            Text(
+                              gameDetailsCubitState["score"]
+                                      [playerInfo.key.toString()]
+                                  .toString(),
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: ConstantColors.blue,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // emoji displaying
+                      if (state is EmojiReceivedBlocState &&
+                          state.emojiModel.senderUid ==
+                              playerInfo.value.toString())
+                        AnimatedPositioned(
+                          top: -32,
+                          duration: const Duration(seconds: 1),
+                          child: SvgPicture.asset(state.emojiModel.emojiPath),
+                        ),
+                    ],
+                  );
+                },
               ),
             ],
           ),

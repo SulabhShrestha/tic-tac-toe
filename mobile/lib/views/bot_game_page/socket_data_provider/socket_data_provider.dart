@@ -152,6 +152,10 @@ class SocketDataProvider {
       controller.add(data);
     });
 
+    controller.onCancel = (() {
+      controller.close();
+    });
+
     // Return the stream from the StreamController
     return controller.stream;
   }
@@ -164,7 +168,55 @@ class SocketDataProvider {
       controller.add(data);
     });
 
+    controller.onCancel = (() {
+      controller.close();
+    });
+
     // Return the stream from the StreamController
     return controller.stream;
+  }
+
+  Stream<dynamic> listenToPlayAgainRequest() {
+    StreamController<dynamic> controller = StreamController<dynamic>();
+
+    socket.on("play-again", (data) {
+      debugPrint("Play again request: $data");
+      controller.add(data);
+    });
+
+    controller.onCancel = (() {
+      controller.close();
+    });
+
+    // Return the stream from the StreamController
+    return controller.stream;
+  }
+
+  Stream<dynamic> listenToPlayAgainAccepted() {
+    StreamController<dynamic> controller = StreamController<dynamic>();
+
+    socket.on("play-again-accepted", (data) {
+      debugPrint("Play again response socket data provider: $data");
+      controller.add(data);
+    });
+
+    controller.onCancel = (() {
+      controller.close();
+    });
+
+    // Return the stream from the StreamController
+    return controller.stream;
+  }
+
+  void sendPlayAgainRequest({required String roomID, required String uid}) {
+    debugPrint("Socket Data Provider: $roomID, $uid");
+    socket.emit("play-again", {
+      "roomID": roomID,
+      "uid": uid,
+    });
+  }
+
+  void sendPlayAgainResponse({required String roomID}) {
+    socket.emit("play-again-accepted", {"roomID": roomID});
   }
 }

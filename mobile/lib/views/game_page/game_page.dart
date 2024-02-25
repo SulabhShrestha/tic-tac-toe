@@ -52,16 +52,6 @@ class _HomePageState extends ConsumerState<GamePage> {
 
   void resetAllStateAndMoveBack() {
     // ref.read(socketWebServiceProvider).disconnect();
-
-    // removing global state data
-    ref.read(roomDetailsProvider.notifier).state = "";
-    ref.watch(waitingForConnectionProvider.notifier).state = false;
-    ref.read(gameConclusionProvider.notifier).state = {};
-    ref.read(ticTacProvider.notifier).removeAll();
-    ref.read(playerTurnProvider.notifier).state = "";
-    ref.read(allPlayersProvider.notifier).empty();
-    ref.read(anyButtonClickedProvider.notifier).state = false;
-
     Navigator.pushNamedAndRemoveUntil(context, "/", (route) => true);
   }
 
@@ -81,10 +71,16 @@ class _HomePageState extends ConsumerState<GamePage> {
               ),
               TextButton(
                 onPressed: () {
+                  debugPrint("Initiating play again ");
                   Navigator.pop(context);
 
-                  // ref.read(socketWebServiceProvider).sendPlayAgainAccepted(
-                  //    roomID: ref.read(roomDetailsProvider));
+                  var roomID = context.read<GameDetailsCubit>().getRoomID();
+                  context
+                      .read<SocketBloc>()
+                      .add(SendPlayAgainResponse(roomID: roomID));
+
+                  // resetting to no button is clicked
+                  ref.read(anyButtonClickedProvider.notifier).state = false;
                 },
                 child: const Text("Yes"),
               ),
@@ -131,6 +127,8 @@ class _HomePageState extends ConsumerState<GamePage> {
     context.read<SocketBloc>().add(ListenToEmojiEvent(
         roomID: context.read<GameDetailsCubit>().getRoomID()));
     context.read<SocketBloc>().add(ListenToGameConclusion());
+    context.read<SocketBloc>().add(ListenToPlayAgainRequest());
+    context.read<SocketBloc>().add(ListenToPlayAgainResponse());
     super.initState();
   }
 
@@ -159,6 +157,10 @@ class _HomePageState extends ConsumerState<GamePage> {
                 context
                     .read<GameDetailsCubit>()
                     .setPlayers(socketBlocState.playersInfo);
+                // adding to player turn to cubit
+                context
+                    .read<GameDetailsCubit>()
+                    .setPlayerTurn(socketBlocState.playersInfo["Player 1"]);
 
                 // listening to event
                 context.read<SocketBloc>().add(ListenToEvent());
@@ -180,14 +182,32 @@ class _HomePageState extends ConsumerState<GamePage> {
                     .addSelectedCells(socketBlocState.model);
               }
 
-              if (socketBlocState is GameEnd) {
-                debugPrint(
-                    "Game conclusion: ${socketBlocState.status}, ${socketBlocState.winner}");
+              if (socketBlocState is PlayAgainResponseReceivedState) {
+                debugPrint("inside listen when Play again response");
+
+                // adding to player turn to cubit
+                context.read<GameDetailsCubit>()
+                  ..setPlayerTurn(socketBlocState.playerTurn)
+                  ..incrementRound();
+
+                // resetting to no button is clicked
+                ref.watch(anyButtonClickedProvider.notifier).state = false;
+
+                // resetting all selected cells
+                context.read<GameDetailsCubit>().clearSelectedCells();
               }
             },
             listenWhen: (previous, current) {
-              if (previous is CellsDetailsBlocState && current is GameEnd) {
+              if (previous is CellsDetailsBlocState &&
+                  current is GameEndState) {
                 debugPrint("Previous: $previous, Current: $current");
+
+                // incrementing winner
+                if (current.winner != null) {
+                  context
+                      .read<GameDetailsCubit>()
+                      .incrementWinnerScore(current.winner!);
+                }
 
                 showDialog(
                     context: context,
@@ -199,6 +219,18 @@ class _HomePageState extends ConsumerState<GamePage> {
                     });
 
                 return false; // no need to listen to listener now
+              }
+
+              // other user is requesting to play again
+              else if (current is PlayAgainRequestReceivedState) {
+                debugPrint(
+                    "Previous: $previous, Current: $current let's play again");
+
+                Navigator.pop(context);
+
+                _showPlayAgainDialog(current.playerID);
+
+                return false;
               }
 
               return true;
@@ -280,47 +312,38 @@ class _HomePageState extends ConsumerState<GamePage> {
                           const SizedBox(height: 28),
 
                           // who's turn
-                          BlocBuilder<GameDetailsCubit, Map<String, dynamic>>(
-                            builder: (context, state) {
-                              if (state["playerTurn"] != null) {
-                                return Stack(
-                                  children: [
-                                    Align(
-                                      alignment: Alignment.center,
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius:
-                                              BorderRadius.circular(10),
-                                          gradient: LinearGradient(
-                                            begin: Alignment.topCenter,
-                                            end: Alignment.bottomCenter,
-                                            colors: [
-                                              Colors.amber,
-                                              Colors.amber.shade700
-                                            ],
-                                          ),
-                                        ),
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 8, horizontal: 16),
-                                        child: Text(
-                                          "${state["playerTurn"] == state["uid"] ? "Your" : getKeyFromValue(state["playerTurn"])} turn",
-                                          style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
+                          Stack(
+                            children: [
+                              Align(
+                                alignment: Alignment.center,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                      colors: [
+                                        Colors.amber,
+                                        Colors.amber.shade700
+                                      ],
                                     ),
-                                    const Align(
-                                      alignment: Alignment.bottomRight,
-                                      child: EmojiPanel(),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                      vertical: 8, horizontal: 16),
+                                  child: Text(
+                                    "${getCurrentPlayerTurn()} turn",
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
                                     ),
-                                  ],
-                                );
-                              } else {
-                                return const SizedBox();
-                              }
-                            },
+                                  ),
+                                ),
+                              ),
+                              const Align(
+                                alignment: Alignment.bottomRight,
+                                child: EmojiPanel(),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -357,36 +380,32 @@ class _HomePageState extends ConsumerState<GamePage> {
     );
   }
 
-  String? getKeyFromValue(dynamic targetValue) {
+  String getCurrentPlayerTurn() {
     var players = context.read<GameDetailsCubit>().state["players"];
+    var currentPlayerTurn =
+        context.watch<GameDetailsCubit>().getCurrentPlayerTurn();
+    var myUid = context.read<GameDetailsCubit>().getUserId();
+
+    if (currentPlayerTurn == myUid) {
+      return "Your";
+    }
 
     for (var entry in players.entries) {
-      if (entry.value == targetValue) {
+      if (entry.value == currentPlayerTurn) {
         return entry.key;
       }
     }
-    return null;
+    return "IronMan's ";
   }
 
   Widget _buildGridCell(int index, BuildContext context) {
-    var ticTacProv = ref.watch(ticTacProvider);
-
-    TicTacModel? model = ticTacProv.firstWhere((ticTac) {
-      return ticTac.selectedIndex == index;
-    },
-        orElse: () => TicTacModel(
-              uid: "xx",
-              selectedIndex: -1,
-            ));
-
     // list of indexes for border
     List<int> borderBottomIndexes = [0, 1, 2, 3, 4, 5];
     List<int> borderRightIndexes = [0, 1, 3, 4, 6, 7];
 
-    return BlocListener<SocketBloc, SocketState>(
+    return BlocListener<GameDetailsCubit, Map<String, dynamic>>(
       listener: (context, state) {
-        if (state is CellsDetailsBlocState &&
-            state.playerTurn == context.read<GameDetailsCubit>().getUserId()) {
+        if (state["playerTurn"] == state["uid"]) {
           isCellSelected = false;
         }
       },
@@ -451,9 +470,6 @@ class _HomePageState extends ConsumerState<GamePage> {
 
   Widget _buildSomething(String selectedBy) {
     var allPlayers = context.read<GameDetailsCubit>().state["players"];
-    debugPrint(
-        "All players $allPlayers, $selectedBy, ${allPlayers["Player 1"]}");
-
     return Image.asset(
         selectedBy == allPlayers["Player 1"]
             ? "images/close.png"

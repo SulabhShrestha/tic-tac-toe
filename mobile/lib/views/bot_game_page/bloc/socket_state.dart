@@ -32,11 +32,23 @@ class EmojiReceivedBlocState extends SocketState {
   EmojiReceivedBlocState({required this.emojiModel});
 }
 
-class GameEnd extends SocketState {
+class PlayAgainRequestReceivedState extends SocketState {
+  final String playerID;
+
+  PlayAgainRequestReceivedState({required this.playerID});
+}
+
+class PlayAgainResponseReceivedState extends SocketState {
+  final String playerTurn;
+
+  PlayAgainResponseReceivedState({required this.playerTurn});
+}
+
+class GameEndState extends SocketState {
   final String status;
   final String? winner;
 
-  GameEnd({required this.status, this.winner});
+  GameEndState({required this.status, this.winner});
 }
 
 class GameError extends SocketState {}

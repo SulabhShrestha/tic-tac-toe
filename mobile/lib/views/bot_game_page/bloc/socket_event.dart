@@ -41,6 +41,23 @@ class ListenToEvent extends SocketEvent {}
 
 class ListenToGameConclusion extends SocketEvent {}
 
+class ListenToPlayAgainRequest extends SocketEvent {}
+
+class ListenToPlayAgainResponse extends SocketEvent {}
+
+class SendPlayAgainRequest extends SocketEvent {
+  final String roomID;
+  final String uid;
+
+  SendPlayAgainRequest({required this.roomID, required this.uid});
+}
+
+class SendPlayAgainResponse extends SocketEvent {
+  final String roomID;
+
+  SendPlayAgainResponse({required this.roomID});
+}
+
 class SendEvent extends SocketEvent {
   final String roomID;
   final int selectedIndex;

@@ -51,13 +51,6 @@ class SocketBloc extends Bloc<SocketEvent, SocketState> {
       socketRepository.sendQrScannedEvent(roomID: event.roomID);
     });
 
-    // on<UpdateGameDetails>((event, emit) {
-    //   debugPrint("UpdateGameDetails event called");
-    //   emit(GameDetails(roomID: event.roomID));
-    //
-    //   debugPrint("UpdateGameDetails event called ${GameDetails().toString()}");
-    // });
-
     on<ListenToEvent>((event, emit) async {
       debugPrint("ListenToEvent event called");
       await for (var eventData in socketRepository.listenToEvent()) {
@@ -97,9 +90,43 @@ class SocketBloc extends Bloc<SocketEvent, SocketState> {
 
     on<ListenToGameConclusion>((event, emit) async {
       debugPrint("ListenToGameConclusion event called");
-      final gameConclusion = await socketRepository.listenToGameConclusion();
-      emit(GameEnd(
-          status: gameConclusion['status'], winner: gameConclusion['winner']));
+
+      ListenToPlayAgainRequest();
+
+      await for (var gameConclusion
+          in socketRepository.listenToGameConclusion()) {
+        emit(GameEndState(
+            status: gameConclusion['status'],
+            winner: gameConclusion['winner']));
+      }
+    });
+
+    on<ListenToPlayAgainRequest>((event, emit) async {
+      debugPrint("ListenToPlayAgainRequest event called");
+
+      await for (var playerID in socketRepository.listenToPlayAgainRequest()) {
+        emit(PlayAgainRequestReceivedState(playerID: playerID));
+      }
+    });
+
+    on<SendPlayAgainRequest>((event, emit) {
+      debugPrint("SendPlayAgainRequest event called");
+      socketRepository.sendPlayAgainRequest(
+          roomID: event.roomID, uid: event.uid);
+    });
+
+    on<ListenToPlayAgainResponse>((event, emit) async {
+      debugPrint("ListenToPlayAgainResponse event called");
+
+      await for (var playerTurn
+          in socketRepository.listenToPlayAgainAccepted()) {
+        emit(PlayAgainResponseReceivedState(playerTurn: playerTurn));
+      }
+    });
+
+    on<SendPlayAgainResponse>((event, emit) {
+      debugPrint("SendPlayAgainResponse event called");
+      socketRepository.sendPlayAgainResponse(roomID: event.roomID);
     });
 
     on<DisconnectSocket>((event, emit) {

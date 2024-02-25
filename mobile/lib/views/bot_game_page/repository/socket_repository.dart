@@ -117,10 +117,57 @@ class SocketRepository {
     return streamController.stream;
   }
 
-  Future<Map<String, dynamic>> listenToGameConclusion() async {
-    final gameConclusion =
-        await socketDataProvider.listenToGameConclusion().first;
+  Stream<Map<String, dynamic>> listenToGameConclusion() {
+    final streamController = StreamController<Map<String, dynamic>>();
 
-    return gameConclusion;
+    socketDataProvider.listenToGameConclusion().listen((event) {
+      debugPrint("Socket repository : $event");
+      streamController.add(event);
+    });
+
+    streamController.onCancel = (() {
+      streamController.close();
+    });
+
+    return streamController.stream;
+  }
+
+  Stream<String> listenToPlayAgainRequest() {
+    final streamController = StreamController<String>();
+
+    socketDataProvider.listenToPlayAgainRequest().listen((event) {
+      debugPrint("Socket repository listen to play again request: $event");
+      streamController.add(event);
+    });
+
+    streamController.onCancel = (() {
+      streamController.close();
+    });
+
+    return streamController.stream;
+  }
+
+  /// new player turn is received from the backend
+  Stream<String> listenToPlayAgainAccepted() {
+    final streamController = StreamController<String>();
+
+    socketDataProvider.listenToPlayAgainAccepted().listen((event) {
+      debugPrint("Socket repository listen to play again accepted: $event");
+      streamController.add(event);
+    });
+
+    streamController.onCancel = (() {
+      streamController.close();
+    });
+
+    return streamController.stream;
+  }
+
+  void sendPlayAgainRequest({required String roomID, required String uid}) {
+    socketDataProvider.sendPlayAgainRequest(roomID: roomID, uid: uid);
+  }
+
+  void sendPlayAgainResponse({required String roomID}) {
+    socketDataProvider.sendPlayAgainResponse(roomID: roomID);
   }
 }

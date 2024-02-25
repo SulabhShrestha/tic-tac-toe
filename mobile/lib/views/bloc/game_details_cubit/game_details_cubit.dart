@@ -6,13 +6,13 @@ import 'package:mobile/models/tic_tac_model.dart';
 class GameDetailsCubit extends Cubit<Map<String, dynamic>> {
   GameDetailsCubit()
       : super({
-          "round": 2,
-          "score": {"Player 1": 11, "Player 2": 22},
+          "round": 1,
+          "score": {"Player 1": 0, "Player 2": 0},
           "playerTurn": "4567",
           "selectedCells": <TicTacModel>[],
           "players": <String, dynamic>{
-            "Iron Man": "1234",
-            "Spider Man": "4567"
+            "Iron Man": "1234", // p1
+            "Spider Man": "4567" // p2
           },
         });
 
@@ -22,8 +22,6 @@ class GameDetailsCubit extends Cubit<Map<String, dynamic>> {
   }
 
   String getUserId() {
-    debugPrint("GameDetailsCubit : $state");
-
     return state["uid"].toString();
   } // getting the state
 
@@ -33,7 +31,6 @@ class GameDetailsCubit extends Cubit<Map<String, dynamic>> {
   }
 
   String getRoomID() {
-    debugPrint("GameDetailsCubit : $state");
     return state["roomID"].toString(); // getting the state
   }
 
@@ -51,15 +48,50 @@ class GameDetailsCubit extends Cubit<Map<String, dynamic>> {
       ...state,
       "selectedCells": [...state["selectedCells"], model]
     });
-    debugPrint("Selected cells cubit: ${state["selectedCells"]}");
   }
 
   void setPlayerTurn(String playerTurn) {
-    debugPrint("PlayerTurn cubit: $playerTurn");
+    debugPrint("New player turn set: $playerTurn");
     emit({...state, "playerTurn": playerTurn}); // setting the state
+  }
+
+  String getCurrentPlayerTurn() {
+    return state["playerTurn"].toString(); // getting the state
   }
 
   List<TicTacModel> getSelectedCellsDetails(int index) {
     return state["selectedCells"][index];
+  }
+
+  int getScore(String player) {
+    // if doesn't exist return 0
+    if (state["score"][player] == null) return 0;
+    return state["score"][player];
+  }
+
+  void incrementRound() {
+    emit({...state, "round": state["round"] + 1});
+  }
+
+  void incrementWinnerScore(String winnerID) {
+    // getting the player name from the id
+    for (var player in state["players"].entries) {
+      if (player.value == winnerID) {
+        // incrementing the score
+        emit({
+          ...state,
+          "score": {
+            ...state["score"],
+            player.key: state["score"][player.key] + 1
+          }
+        });
+
+        break;
+      }
+    }
+  }
+
+  void clearSelectedCells() {
+    emit({...state, "selectedCells": []});
   }
 }

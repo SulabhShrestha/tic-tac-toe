@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/providers/join_button_loading_provider.dart';
-import 'package:mobile/providers/waiting_for_connection_provider.dart';
+
 import 'package:mobile/utils/colors.dart';
 import 'package:mobile/views/homepage/widgets/gradient_button.dart';
 
@@ -41,22 +41,22 @@ class _LoadingButtonWithTextState extends ConsumerState<LoadingButtonWithText> {
           }
         }
       },
-      linearGradient: LinearGradient(
+      linearGradient: const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [ConstantColors.yellow, ConstantColors.red],
       ),
       child: isLoading
-          ? SizedBox(
+          ? const SizedBox(
               width: 24,
               height: 24,
-              child: const CircularProgressIndicator(),
+              child: CircularProgressIndicator(),
             )
           : FittedBox(
               fit: BoxFit.scaleDown,
               child: Text(
                 widget.text,
-                style: TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.white),
                 overflow: TextOverflow.fade,
               ),
             ),

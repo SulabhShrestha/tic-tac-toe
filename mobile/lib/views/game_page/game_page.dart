@@ -4,18 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile/cubit/game_details_cubit/game_details_cubit.dart';
 import 'package:mobile/models/tic_tac_model.dart';
 import 'package:mobile/providers/all_players_provider.dart';
 import 'package:mobile/providers/any_button_clicked.dart';
 import 'package:mobile/providers/waiting_for_connection_provider.dart';
-
+import 'package:mobile/socket_bloc/socket_bloc.dart';
 import 'package:mobile/utils/colors.dart';
-import 'package:mobile/views/bloc/game_details_cubit/game_details_cubit.dart';
-import 'package:mobile/views/bot_game_page/bloc/socket_bloc.dart';
-import 'package:mobile/views/bot_game_page/widget/round_indicator.dart';
 import 'package:mobile/views/game_page/widgets/emoji_panel.dart';
-import 'package:mobile/views/game_page/widgets/player_icon.dart';
-import 'package:mobile/views/game_page/widgets/player_profile_card.dart';
+import 'package:mobile/views/game_page/widgets/player_profile_card_socket.dart';
+import 'package:mobile/views/game_page/widgets/round_indicator_socket.dart';
 import 'package:mobile/views/game_page/widgets/waiting_loading_indicator.dart';
 import 'package:r_dotted_line_border/r_dotted_line_border.dart';
 
@@ -246,7 +244,7 @@ class _HomePageState extends ConsumerState<GamePage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              PlayerProfileCard(
+                              PlayerProfileCardSocket(
                                   playerInfo: context
                                       .read<GameDetailsCubit>()
                                       .state["players"]
@@ -254,9 +252,9 @@ class _HomePageState extends ConsumerState<GamePage> {
                                       .first),
 
                               // Round indicator
-                              const RoundIndicator(),
+                              const RoundIndicatorSocket(),
 
-                              PlayerProfileCard(
+                              PlayerProfileCardSocket(
                                   playerInfo: context
                                       .read<GameDetailsCubit>()
                                       .state["players"]

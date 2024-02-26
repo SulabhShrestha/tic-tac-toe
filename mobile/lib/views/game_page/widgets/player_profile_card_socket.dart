@@ -1,22 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
+import 'package:mobile/cubit/game_details_cubit/game_details_cubit.dart';
+import 'package:mobile/socket_bloc/socket_bloc.dart';
 import 'package:mobile/utils/colors.dart';
-import 'package:mobile/views/bloc/game_details_cubit/game_details_cubit.dart';
-import 'package:mobile/views/bot_game_page/bloc/socket_bloc.dart';
 
-class PlayerProfileCard extends ConsumerWidget {
+class PlayerProfileCardSocket extends StatelessWidget {
   final MapEntry<String, dynamic> playerInfo;
 
-  const PlayerProfileCard({
+  const PlayerProfileCardSocket({
     super.key,
     required this.playerInfo,
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final gameDetailsCubit = context.read<GameDetailsCubit>();
 
     // Player 1 -> P1

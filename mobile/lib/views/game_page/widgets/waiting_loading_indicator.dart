@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile/cubit/game_details_cubit/game_details_cubit.dart';
 import 'package:mobile/providers/qr_closed_provider.dart';
 import 'package:mobile/utils/colors.dart';
-import 'package:mobile/views/bloc/game_details_cubit/game_details_cubit.dart';
 import 'package:mobile/views/homepage/widgets/gradient_button.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 

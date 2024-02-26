@@ -1,11 +1,10 @@
 import 'dart:async';
 
-import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:meta/meta.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile/models/emoji_model.dart';
 import 'package:mobile/models/tic_tac_model.dart';
-import 'package:mobile/views/bot_game_page/repository/socket_repository.dart';
+import 'package:mobile/socket_repository/socket_repository.dart';
 
 part 'socket_event.dart';
 part 'socket_state.dart';

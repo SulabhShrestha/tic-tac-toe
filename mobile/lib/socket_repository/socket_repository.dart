@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:mobile/models/emoji_model.dart';
 import 'package:mobile/models/tic_tac_model.dart';
-import 'package:mobile/views/bot_game_page/socket_data_provider/socket_data_provider.dart';
+import 'package:mobile/socket_data_provider/socket_data_provider.dart';
 
 class SocketRepository {
   final SocketDataProvider socketDataProvider;

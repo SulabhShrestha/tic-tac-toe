@@ -3,12 +3,9 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mobile/providers/all_players_provider.dart';
+import 'package:mobile/cubit/game_details_cubit/game_details_cubit.dart';
 import 'package:mobile/providers/any_button_clicked.dart';
-
-import 'package:mobile/views/bloc/game_details_cubit/game_details_cubit.dart';
-import 'package:mobile/views/bot_game_page/bloc/socket_bloc.dart';
-
+import 'package:mobile/socket_bloc/socket_bloc.dart';
 import 'package:mobile/views/game_page/widgets/bold_first_word.dart';
 import 'package:mobile/views/homepage/widgets/loading_button_with_text.dart';
 

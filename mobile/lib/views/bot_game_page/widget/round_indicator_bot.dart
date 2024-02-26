@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mobile/views/bloc/game_details_cubit/game_details_cubit.dart';
+import 'package:mobile/cubit/bot_cubit/bot_cubit.dart';
 
-class RoundIndicator extends StatelessWidget {
-  const RoundIndicator({super.key});
+class RoundIndicatorBot extends StatelessWidget {
+  const RoundIndicatorBot({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +21,7 @@ class RoundIndicator extends StatelessWidget {
       child: Column(
         children: [
           const Text("Round", style: TextStyle(fontSize: 16)),
-          BlocBuilder<GameDetailsCubit, Map<String, dynamic>>(
+          BlocBuilder<BotCubit, Map<String, dynamic>>(
             builder: (context, state) {
               return Text(
                 state["round"].toString(),

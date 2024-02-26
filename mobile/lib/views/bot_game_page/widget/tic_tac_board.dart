@@ -74,8 +74,8 @@ class _TicTacBoardState extends State<TicTacBoard> {
                 : BorderSide.none,
           ),
         ),
-        child: Center(
-          child: const Text(" "),
+        child: const Center(
+          child: Text(" "),
         ),
       ),
     );

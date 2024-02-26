@@ -2,17 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
-import 'package:mobile/views/bloc/game_details_cubit/game_details_cubit.dart';
-
-import 'package:mobile/views/bot_game_page/bloc/socket_bloc.dart';
+import 'package:mobile/cubit/game_details_cubit/game_details_cubit.dart';
+import 'package:mobile/socket_bloc/socket_bloc.dart';
 
 class EmojiPanel extends ConsumerWidget {
   const EmojiPanel({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final _emojiMenuController = MenuController();
+    final emojiMenuController = MenuController();
 
     List<String> emojis = [
       "images/emojis/cry.svg",
@@ -23,7 +21,7 @@ class EmojiPanel extends ConsumerWidget {
       "images/emojis/squinting.svg",
     ];
     return MenuAnchor(
-      controller: _emojiMenuController,
+      controller: emojiMenuController,
       builder:
           (BuildContext context, MenuController controller, Widget? child) {
         return IconButton(
@@ -51,7 +49,7 @@ class EmojiPanel extends ConsumerWidget {
                       onTap: () {
                         debugPrint("Emoji clicked: $emoji");
 
-                        _emojiMenuController.close();
+                        emojiMenuController.close();
 
                         final gameDetailsCubit =
                             context.read<GameDetailsCubit>();

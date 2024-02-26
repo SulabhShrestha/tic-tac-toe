@@ -7,16 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/models/tic_tac_model.dart';
 import 'package:mobile/providers/all_players_provider.dart';
 import 'package:mobile/providers/any_button_clicked.dart';
-import 'package:mobile/providers/emoji_received_provider.dart';
-import 'package:mobile/providers/game_conclusion_provider.dart';
-import 'package:mobile/providers/game_details_provider.dart';
-import 'package:mobile/providers/player_turn_provider.dart';
-import 'package:mobile/providers/qr_closed_provider.dart';
-import 'package:mobile/providers/room_details_provider.dart';
-import 'package:mobile/providers/tic_tac_providers.dart';
-import 'package:mobile/providers/user_id_provider.dart';
 import 'package:mobile/providers/waiting_for_connection_provider.dart';
-import 'package:mobile/services/socket_web_services.dart';
+
 import 'package:mobile/utils/colors.dart';
 import 'package:mobile/views/bloc/game_details_cubit/game_details_cubit.dart';
 import 'package:mobile/views/bot_game_page/bloc/socket_bloc.dart';
@@ -51,7 +43,8 @@ class _HomePageState extends ConsumerState<GamePage> {
   bool showEmojiContainer = false;
 
   void resetAllStateAndMoveBack() {
-    // ref.read(socketWebServiceProvider).disconnect();
+    context.read<SocketBloc>().add(
+        DisconnectSocket(uid: context.read<GameDetailsCubit>().getUserId()));
     Navigator.pushNamedAndRemoveUntil(context, "/", (route) => true);
   }
 
@@ -124,11 +117,14 @@ class _HomePageState extends ConsumerState<GamePage> {
 
   @override
   void initState() {
-    context.read<SocketBloc>().add(ListenToEmojiEvent(
-        roomID: context.read<GameDetailsCubit>().getRoomID()));
-    context.read<SocketBloc>().add(ListenToGameConclusion());
-    context.read<SocketBloc>().add(ListenToPlayAgainRequest());
-    context.read<SocketBloc>().add(ListenToPlayAgainResponse());
+    context.read<SocketBloc>()
+      ..add(ListenToEmojiEvent(
+          roomID: context.read<GameDetailsCubit>().getRoomID()))
+      ..add(ListenToGameConclusion())
+      ..add(ListenToPlayAgainRequest())
+      ..add(ListenToPlayAgainResponse())
+      ..add(ListenToOtherPlayerDisconnect());
+
     super.initState();
   }
 
@@ -168,8 +164,7 @@ class _HomePageState extends ConsumerState<GamePage> {
                 ref
                     .watch(allPlayersProvider.notifier)
                     .addPlayers(socketBlocState.playersInfo);
-                ref.watch(playerTurnProvider.notifier).state =
-                    socketBlocState.playersInfo["Player 1"];
+
                 ref.watch(waitingForConnectionProvider.notifier).state = false;
               }
 
@@ -240,10 +235,7 @@ class _HomePageState extends ConsumerState<GamePage> {
                 children: [
                   // Opacity when needed
                   Opacity(
-                    opacity: ref.watch(waitingForConnectionProvider) ||
-                            ref.watch(gameConclusionProvider).isNotEmpty
-                        ? 0.5
-                        : 1,
+                    opacity: ref.watch(waitingForConnectionProvider) ? 0.5 : 1,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Column(

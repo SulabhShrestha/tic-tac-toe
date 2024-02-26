@@ -36,8 +36,7 @@ class MyApp extends StatelessWidget {
       child: MultiBlocProvider(
         providers: [
           BlocProvider(
-            create: (context) =>
-                SocketBloc(context.read<SocketRepository>())..add(InitSocket()),
+            create: (context) => SocketBloc(context.read<SocketRepository>()),
           ),
           BlocProvider(
               create: (_) =>

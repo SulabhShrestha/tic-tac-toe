@@ -51,4 +51,10 @@ class GameEndState extends SocketState {
   GameEndState({required this.status, this.winner});
 }
 
+class OtherPlayerDisconnectedState extends SocketState {
+  final String uid;
+
+  OtherPlayerDisconnectedState({required this.uid});
+}
+
 class GameError extends SocketState {}

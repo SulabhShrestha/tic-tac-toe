@@ -10,7 +10,8 @@ class SocketDataProvider {
   void init() {
     socket = IO.io(
         // dotenv.env['URL'],
-        "http://10.0.2.2:3000",
+        // "http://10.0.2.2:3000",
+        "http://192.168.1.67:3000",
         IO.OptionBuilder()
             .setTransports(['websocket'])
             .disableAutoConnect()
@@ -218,5 +219,20 @@ class SocketDataProvider {
 
   void sendPlayAgainResponse({required String roomID}) {
     socket.emit("play-again-accepted", {"roomID": roomID});
+  }
+
+  Stream<dynamic> listenToOtherPlayerDisconnect() {
+    StreamController<dynamic> controller = StreamController<dynamic>();
+
+    socket.on("user-disconnected", (data) {
+      debugPrint("User disconnected: $data");
+      controller.add(data);
+    });
+
+    controller.onCancel = (() {
+      controller.close();
+    });
+
+    return controller.stream;
   }
 }

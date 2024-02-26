@@ -5,12 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/providers/all_players_provider.dart';
 import 'package:mobile/providers/any_button_clicked.dart';
-import 'package:mobile/providers/game_conclusion_provider.dart';
-import 'package:mobile/providers/room_details_provider.dart';
-import 'package:mobile/providers/socket_web_service_provider.dart';
 
-import 'package:mobile/providers/user_id_provider.dart';
-import 'package:mobile/services/socket_web_services.dart';
 import 'package:mobile/views/bloc/game_details_cubit/game_details_cubit.dart';
 import 'package:mobile/views/bot_game_page/bloc/socket_bloc.dart';
 
@@ -57,7 +52,7 @@ class DisplayGameConclusion extends ConsumerWidget {
 
                 if (gameConclusion == "win")
                   BoldFirstWord(
-                    boldWord: getWinner(context: context)!,
+                    boldWord: getWinner(context: context, wonBy: winner)!,
                     remainingWords: " won the game",
                   ),
 

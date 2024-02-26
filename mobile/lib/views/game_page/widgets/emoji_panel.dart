@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:mobile/providers/emoji_received_provider.dart';
-import 'package:mobile/providers/room_details_provider.dart';
-import 'package:mobile/providers/socket_web_service_provider.dart';
-import 'package:mobile/providers/user_id_provider.dart';
+
 import 'package:mobile/views/bloc/game_details_cubit/game_details_cubit.dart';
 
 import 'package:mobile/views/bot_game_page/bloc/socket_bloc.dart';
@@ -30,15 +27,13 @@ class EmojiPanel extends ConsumerWidget {
       builder:
           (BuildContext context, MenuController controller, Widget? child) {
         return IconButton(
-          onPressed: ref.watch(emojiReceivedProvider).isNotEmpty
-              ? null
-              : () {
-                  if (controller.isOpen) {
-                    controller.close();
-                  } else {
-                    controller.open();
-                  }
-                },
+          onPressed: () {
+            if (controller.isOpen) {
+              controller.close();
+            } else {
+              controller.open();
+            }
+          },
           icon: const Icon(Icons.more_horiz),
           tooltip: 'Show menu',
         );

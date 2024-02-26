@@ -6,7 +6,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/providers/any_button_clicked.dart';
 import 'package:mobile/providers/join_button_loading_provider.dart';
-import 'package:mobile/providers/room_details_provider.dart';
 
 import 'package:mobile/providers/waiting_for_connection_provider.dart';
 
@@ -31,8 +30,6 @@ class HomePage extends ConsumerWidget {
           child: BlocConsumer<SocketBloc, SocketState>(
             listener: (context, state) {
               if (state is RoomCreated) {
-                ref.read(roomDetailsProvider.notifier).state = state.roomID;
-
                 context.read<GameDetailsCubit>().setRoomID(state.roomID);
 
                 // resetting the button clicked value
@@ -61,10 +58,12 @@ class HomePage extends ConsumerWidget {
 
                             debugPrint("Loading");
 
-                            context.read<SocketBloc>().add(CreateRoom(
-                                myUid: context
-                                    .read<GameDetailsCubit>()
-                                    .getUserId()));
+                            context.read<SocketBloc>()
+                              ..add(InitSocket())
+                              ..add(CreateRoom(
+                                  myUid: context
+                                      .read<GameDetailsCubit>()
+                                      .getUserId()));
                           },
                   ),
                   const SizedBox(height: 20),
@@ -198,8 +197,10 @@ class HomePage extends ConsumerWidget {
       // triggering loading button
       ref.read(joinButtonLoadingProvider.notifier).state = true;
     }
-    context.read<SocketBloc>().add(JoinRoom(
-        roomID: roomID, myUid: context.read<GameDetailsCubit>().getUserId()));
+    context.read<SocketBloc>()
+      ..add(InitSocket())
+      ..add(JoinRoom(
+          roomID: roomID, myUid: context.read<GameDetailsCubit>().getUserId()));
     context.read<SocketBloc>().add(ListenToRoomNotFoundEvent());
     context.read<SocketBloc>().add(ListenToGameInitEvent());
 

@@ -170,4 +170,12 @@ class SocketRepository {
   void sendPlayAgainResponse({required String roomID}) {
     socketDataProvider.sendPlayAgainResponse(roomID: roomID);
   }
+
+  // listening if the user other player has left the chat
+  Future<String> listenToOtherPlayerDisconnect() async {
+    final leftUserID =
+        await socketDataProvider.listenToOtherPlayerDisconnect().first;
+
+    return leftUserID;
+  }
 }

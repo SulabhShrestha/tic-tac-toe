@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/providers/qr_closed_provider.dart';
-import 'package:mobile/providers/room_details_provider.dart';
 import 'package:mobile/utils/colors.dart';
+import 'package:mobile/views/bloc/game_details_cubit/game_details_cubit.dart';
 import 'package:mobile/views/homepage/widgets/gradient_button.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -40,6 +41,8 @@ class _WaitingLoadingIndicatorState
 
   @override
   Widget build(BuildContext context) {
+    final roomID = context.read<GameDetailsCubit>().getRoomID();
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -61,7 +64,7 @@ class _WaitingLoadingIndicatorState
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            secondWordBold("Room ID: ", ref.watch(roomDetailsProvider)),
+            secondWordBold("Room ID: ", roomID),
             IconButton(
                 onPressed: isCopied
                     ? null
@@ -75,8 +78,7 @@ class _WaitingLoadingIndicatorState
                             content: Text("Copied to clipboard"),
                           ),
                         );
-                        Clipboard.setData(ClipboardData(
-                            text: ref.watch(roomDetailsProvider)));
+                        Clipboard.setData(ClipboardData(text: roomID));
                       },
                 icon: Icon(
                   Icons.content_copy,
@@ -123,7 +125,7 @@ class _WaitingLoadingIndicatorState
                               ),
                             ),
                             child: QrImageView(
-                              data: ref.watch(roomDetailsProvider),
+                              data: roomID,
                               version: QrVersions.auto,
                             ),
                           ),

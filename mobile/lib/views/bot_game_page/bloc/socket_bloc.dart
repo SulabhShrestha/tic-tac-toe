@@ -129,6 +129,13 @@ class SocketBloc extends Bloc<SocketEvent, SocketState> {
       socketRepository.sendPlayAgainResponse(roomID: event.roomID);
     });
 
+    on<ListenToOtherPlayerDisconnect>((event, emit) async {
+      debugPrint("ListenToOtherPlayerDisconnect event called");
+      final leftUserID = await socketRepository.listenToOtherPlayerDisconnect();
+
+      emit(OtherPlayerDisconnectedState(uid: leftUserID));
+    });
+
     on<DisconnectSocket>((event, emit) {
       debugPrint("DisconnectSocket event called");
       socketRepository.disconnect();

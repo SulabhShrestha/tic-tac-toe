@@ -11,6 +11,7 @@ import 'package:mobile/providers/any_button_clicked.dart';
 import 'package:mobile/providers/waiting_for_connection_provider.dart';
 import 'package:mobile/socket_bloc/socket_bloc.dart';
 import 'package:mobile/utils/colors.dart';
+import 'package:mobile/utils/game_helper.dart';
 import 'package:mobile/views/game_page/widgets/emoji_panel.dart';
 import 'package:mobile/views/game_page/widgets/player_profile_card_socket.dart';
 import 'package:mobile/views/game_page/widgets/round_indicator_socket.dart';
@@ -80,39 +81,6 @@ class _HomePageState extends ConsumerState<GamePage> {
         });
   }
 
-  Future<void> _showBackDialog() async {
-    await showDialog(
-        context: context,
-        builder: (_) {
-          return AlertDialog(
-            title: const Text('Are you sure?'),
-            content: const Text(
-              'Are you sure you want to leave this page?',
-            ),
-            actions: <Widget>[
-              TextButton(
-                style: TextButton.styleFrom(
-                  textStyle: Theme.of(context).textTheme.labelLarge,
-                ),
-                child: const Text('Nevermind'),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-              TextButton(
-                style: TextButton.styleFrom(
-                  textStyle: Theme.of(context).textTheme.labelLarge,
-                ),
-                child: const Text('Leave'),
-                onPressed: () async {
-                  resetAllStateAndMoveBack();
-                },
-              ),
-            ],
-          );
-        });
-  }
-
   @override
   void initState() {
     context.read<SocketBloc>()
@@ -131,7 +99,7 @@ class _HomePageState extends ConsumerState<GamePage> {
     return PopScope(
       canPop: false,
       onPopInvoked: (didPop) {
-        _showBackDialog();
+        GameHelper().showBackDialog(context, resetAllStateAndMoveBack);
       },
       child: Scaffold(
         backgroundColor: const Color(0xFFFDDCE6),

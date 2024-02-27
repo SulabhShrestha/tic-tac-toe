@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile/cubit/bot_cubit/bot_cubit.dart';
+import 'package:mobile/models/tic_tac_model.dart';
 import 'package:mobile/utils/colors.dart';
 import 'package:r_dotted_line_border/r_dotted_line_border.dart';
 
-class TicTacBoard extends StatefulWidget {
-  const TicTacBoard({super.key});
+class TicTacBoardBot extends StatefulWidget {
+  const TicTacBoardBot({super.key});
 
   @override
-  State<TicTacBoard> createState() => _TicTacBoardState();
+  State<TicTacBoardBot> createState() => _TicTacBoardBotState();
 }
 
-class _TicTacBoardState extends State<TicTacBoard> {
+class _TicTacBoardBotState extends State<TicTacBoardBot> {
   // for preventing multiple cells to be triggered at once when clicking multiple
   bool isCellSelected = false;
 
@@ -39,21 +42,34 @@ class _TicTacBoardState extends State<TicTacBoard> {
             crossAxisCount: 3,
           ),
           children: [
-            for (int a = 0; a < 9; a++) _buildGridCell(a),
+            for (int a = 0; a < 9; a++) _buildGridCell(a, context),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildGridCell(int index) {
+  Widget _buildGridCell(int index, BuildContext context) {
     // list of indexes for border
     List<int> borderBottomIndexes = [0, 1, 2, 3, 4, 5];
     List<int> borderRightIndexes = [0, 1, 3, 4, 6, 7];
 
+    final selectedCells = context.watch<BotCubit>().getSelectedCells();
+
+    // returning the selected cells
+    var cellDetails = selectedCells.firstWhere(
+      (element) => element.selectedIndex == index,
+      orElse: () => TicTacModel(uid: "None", selectedIndex: -1),
+    );
+
     return GestureDetector(
       // it should be both player turn and cell should be empty
-      onTap: () {},
+      onTap: () {
+        debugPrint("Cell: $index");
+        context
+            .read<BotCubit>()
+            .addSelectedCell(TicTacModel(uid: "You", selectedIndex: index));
+      },
 
       child: Container(
         decoration: BoxDecoration(
@@ -74,10 +90,21 @@ class _TicTacBoardState extends State<TicTacBoard> {
                 : BorderSide.none,
           ),
         ),
-        child: const Center(
-          child: Text(" "),
+        child: Center(
+          child: cellDetails.selectedIndex != index
+              ? const Text(" ")
+              : _buildSomething(cellDetails.uid),
         ),
       ),
+    );
+  }
+
+  _buildSomething(String selectedBy) {
+    final allPlayers = context.read<BotCubit>().getPlayers();
+
+    return Image.asset(
+      selectedBy == allPlayers.first ? "images/close.png" : "images/circle.png",
+      height: 54,
     );
   }
 }

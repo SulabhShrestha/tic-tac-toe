@@ -22,4 +22,11 @@ class TicTacModel {
       selectedIndex: json['selectedIndex'],
     );
   }
+
+  @override
+  bool operator ==(other) =>
+      other is TicTacModel && (other.selectedIndex == selectedIndex);
+
+  @override
+  int get hashCode => selectedIndex;
 }

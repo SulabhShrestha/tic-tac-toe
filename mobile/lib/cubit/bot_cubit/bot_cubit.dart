@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile/models/tic_tac_model.dart';
+import 'package:mobile/views/bot_game_page/utils/bot_game_helper.dart';
 
 class BotCubit extends Cubit<Map<String, dynamic>> {
   BotCubit()
@@ -16,7 +17,8 @@ class BotCubit extends Cubit<Map<String, dynamic>> {
 
   void initGame() {
     // generate random number and pick player
-    var player = ["Bot", "You"][Random().nextInt(2)];
+    // var player = ["Bot", "You"][Random().nextInt(2)];
+    var player = "Bot";
 
     // first chosen player, second the remain one
     emit({
@@ -27,15 +29,8 @@ class BotCubit extends Cubit<Map<String, dynamic>> {
 
     // return the first selected value if it is the bot
     if (player == "Bot") {
-      emit({
-        ...state,
-        "selectedCells": [
-          TicTacModel(uid: "Bot", selectedIndex: Random().nextInt(9))
-        ]
-      });
+      _findNextBestMove();
     }
-
-    debugPrint("Player: $state");
   }
 
   void clearData() {
@@ -44,7 +39,8 @@ class BotCubit extends Cubit<Map<String, dynamic>> {
       "score": {"Bot": 0, "You": 0},
       "playerTurn": "Bot",
       "players": <String>[],
-      "selectedCells": <TicTacModel>[],
+      "selectedCells":
+          List.generate(9, (index) => TicTacModel(selectedIndex: -1, uid: '')),
     });
   }
 
@@ -55,33 +51,36 @@ class BotCubit extends Cubit<Map<String, dynamic>> {
   void addSelectedCell(TicTacModel model) {
     emit({
       ...state,
-      "selectedCells": [...state["selectedCells"], model]
+      "selectedCells": [...state["selectedCells"], model],
     });
 
-    if (model.uid != "Bot") {
-      _findNextBestMove();
-    }
+    debugPrint("Selected cells: ${state["selectedCells"]}");
+
+    _findNextBestMove();
   }
 
   List<dynamic> getSelectedCells() => state["selectedCells"];
 
   void _findNextBestMove() {
+    debugPrint("Going for best move");
     // getting selected cells
     var selectedCells = getSelectedCells();
 
     var bestScore = -1000;
-    var bestMove = -1000;
+    int botMove = -2;
 
-    // looping through all the cells indexes to find the best move
-    for (int i = 0; i < 9; i++) {
-      // if cells is vacant
-      if (selectedCells.every((element) => element.selectedIndex != i)) {
-        var score = _minimax();
+    var unSelectedIndexes = _getUnselectedIndexes(selectedCells);
 
-        if (score > bestScore) {
-          bestScore = score;
-          bestMove = i;
-        }
+    var dupCells = [...selectedCells];
+
+    for (int index in unSelectedIndexes) {
+      dupCells.add(TicTacModel(selectedIndex: index, uid: 'Bot'));
+      var score = _minimax([...dupCells], 0, false, -1, 1);
+      dupCells.remove(TicTacModel(selectedIndex: index, uid: 'Bot'));
+      debugPrint("selected cells: $dupCells, ${dupCells.length}");
+      if (score > bestScore) {
+        bestScore = score;
+        botMove = index;
       }
     }
 
@@ -89,12 +88,86 @@ class BotCubit extends Cubit<Map<String, dynamic>> {
       ...state,
       "selectedCells": [
         ...state["selectedCells"],
-        TicTacModel(uid: "Bot", selectedIndex: bestMove)
+        TicTacModel(uid: "Bot", selectedIndex: botMove)
       ]
     });
   }
 
-  int _minimax() {
-    return 1;
+  /// board: current board
+  /// depth: depth of the tree
+  /// isMaximizing: if it is the bot's turn
+  int _minimax(
+      List<dynamic> board, int depth, bool isMaximizing, int alpha, int beta) {
+    // finding the winner
+    var result = BotGameHelper().checkForWinner(board);
+    if (result == BotGameConclusion.botWin) {
+      return 1;
+    } else if (result == BotGameConclusion.youWin) {
+      return -1;
+    } else if (result == BotGameConclusion.draw) {
+      return 0;
+    }
+
+    var unselectedIndexes = _getUnselectedIndexes(board);
+
+    // if it is the bot's turn
+    if (isMaximizing) {
+      int bestScore = -100;
+
+      for (int index in unselectedIndexes) {
+        board.add(TicTacModel(selectedIndex: index, uid: 'Bot'));
+        int eval = _minimax(board, depth + 1, false, alpha, beta);
+        board.remove(TicTacModel(selectedIndex: index, uid: 'Bot'));
+
+        bestScore = max(bestScore, eval);
+
+        // for more efficient handling
+        alpha = max(alpha, eval);
+
+        if (beta <= alpha) break;
+      }
+
+      return bestScore;
+    } else {
+      int bestScore = 100;
+      for (int index in unselectedIndexes) {
+        board.add(TicTacModel(selectedIndex: index, uid: 'You'));
+        int eval = _minimax(board, depth + 1, true, alpha, beta);
+        board.remove(TicTacModel(selectedIndex: index, uid: 'You'));
+        bestScore = min(bestScore, eval);
+
+        // for more efficient handling
+        beta = min(beta, eval);
+        if (beta <= alpha) break;
+      }
+      return bestScore;
+    }
+  }
+
+  // returns the unselected index only in the form of list
+  List<int> _getUnselectedIndexes(List<dynamic> ticModels) {
+    // Create a list to store unselected indexes
+    List<int> unselectedIndexes = [];
+
+    // Iterate through the ticModels list
+    for (int i = 0; i < 9; i++) {
+      bool found = false;
+
+      // Check if the index is selected in any of the TicModel objects
+      for (int j = 0; j < ticModels.length; j++) {
+        if (ticModels[j].selectedIndex == i) {
+          found = true;
+          break;
+        }
+      }
+
+      // If the index is not found in any TicModel object, add it to unselectedIndexes
+      if (!found) {
+        unselectedIndexes.add(i);
+      }
+    }
+
+    // Return the list of unselectedIndexes
+    return unselectedIndexes;
   }
 }

@@ -15,6 +15,8 @@ class BotGamePage extends StatelessWidget {
     final botCubit = context.read<BotCubit>();
     final players = botCubit.getPlayers();
 
+    debugPrint("Inside BotGamePage: $players");
+
     return PopScope(
       canPop: false,
       onPopInvoked: (didPop) {

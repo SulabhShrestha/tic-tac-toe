@@ -15,7 +15,7 @@ function checkForConclusion(selectedCellsInfo, io, roomID) {
       console.log(`${key} is the winner!`);
 
       // winner declared
-      io.to(roomID).emit("winner", key);
+      io.to(roomID).emit("game-conclusion", {"status": "win", "winner" : key});
       return;
     }
   }
@@ -27,7 +27,7 @@ function checkForConclusion(selectedCellsInfo, io, roomID) {
       .flat()
       .reduce((sum, index) => sum + (index + 1), 0) === 45
   ) {
-    io.to(roomID).emit("draw", "Game is draw");
+    io.to(roomID).emit("game-conclusion", {"status": "draw"});
   }
 }
 

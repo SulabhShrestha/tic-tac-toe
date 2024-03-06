@@ -137,6 +137,8 @@ io.on("connection", (socket) => {
 
     const gameInfo = getGameInfoByRoomId(roomID);
 
+    console.log("Event gameinfo ", gameInfo); 
+
     let userId = gameInfo["player-turn"];
 
     const selectedUserIndex = gameInfo.players.indexOf(userId);
@@ -213,10 +215,11 @@ io.on("connection", (socket) => {
   // handles the user sending emoji event
   socket.on("emoji", ({ roomID, emojiPath, sender }) => { 
     console.log("Emoji: ", roomID, emojiPath);
-
+ 
     // sending the event to the connected clients
     io.to(roomID).emit("emoji", { emojiPath, sender});
   }); 
+
 
   // Function to generate a unique room ID
   function generateRoomID() {
@@ -229,10 +232,12 @@ io.on("connection", (socket) => {
       result += characters.charAt(randomIndex);
     }
 
-    // return result;
-    return "sulabhRoom";
+    return result;
+    // return "sulabhRoom";
   }
 });
+
+
 
 const port = process.env.PORT || 3000;
 

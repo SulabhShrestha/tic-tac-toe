@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class SocketDataProvider {
@@ -9,9 +10,9 @@ class SocketDataProvider {
   // initialize the socket
   void init() {
     socket = IO.io(
-        // dotenv.env['URL'],
+        dotenv.env['URL'],
         // "http://10.0.2.2:3000",
-        "http://192.168.1.67:3000",
+        // "http://192.168.1.152:3000",
         IO.OptionBuilder()
             .setTransports(['websocket'])
             .disableAutoConnect()

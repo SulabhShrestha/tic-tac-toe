@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile/cubit/bot_cubit/bot_cubit.dart';
@@ -62,14 +64,17 @@ class _TicTacBoardBotState extends State<TicTacBoardBot> {
       orElse: () => TicTacModel(uid: "None", selectedIndex: -1),
     );
 
+    log("Selected cells: $selectedCells");
+
     return GestureDetector(
       // it should be both player turn and cell should be empty
-      onTap: () {
-        debugPrint("Cell: $index");
-        context
-            .read<BotCubit>()
-            .addSelectedCell(TicTacModel(uid: "You", selectedIndex: index));
-      },
+      onTap: cellDetails.selectedIndex == index
+          ? null
+          : () {
+              debugPrint("Cell: $index");
+              context.read<BotCubit>().addSelectedCell(
+                  TicTacModel(uid: "You", selectedIndex: index));
+            },
 
       child: Container(
         decoration: BoxDecoration(

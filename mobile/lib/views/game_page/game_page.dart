@@ -42,6 +42,7 @@ class _HomePageState extends ConsumerState<GamePage> {
   bool showEmojiContainer = false;
 
   void resetAllStateAndMoveBack() {
+    ref.read(waitingForConnectionProvider.notifier).update((state) => false);
     context.read<SocketBloc>().add(
         DisconnectSocket(uid: context.read<GameDetailsCubit>().getUserId()));
     Navigator.pushNamedAndRemoveUntil(context, "/", (route) => true);
@@ -81,6 +82,9 @@ class _HomePageState extends ConsumerState<GamePage> {
         });
   }
 
+  final GlobalKey<ScaffoldMessengerState> _scaffoldKey =
+      GlobalKey<ScaffoldMessengerState>();
+
   @override
   void initState() {
     context.read<SocketBloc>()
@@ -102,6 +106,7 @@ class _HomePageState extends ConsumerState<GamePage> {
         GameHelper().showBackDialog(context, resetAllStateAndMoveBack);
       },
       child: Scaffold(
+        key: _scaffoldKey,
         backgroundColor: const Color(0xFFFDDCE6),
         body: SafeArea(
           child: BlocConsumer<SocketBloc, SocketState>(
@@ -213,6 +218,7 @@ class _HomePageState extends ConsumerState<GamePage> {
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
                               PlayerProfileCardSocket(
+                                  scaffoldKey: _scaffoldKey,
                                   playerInfo: context
                                       .read<GameDetailsCubit>()
                                       .state["players"]
@@ -223,6 +229,7 @@ class _HomePageState extends ConsumerState<GamePage> {
                               const RoundIndicatorSocket(),
 
                               PlayerProfileCardSocket(
+                                  scaffoldKey: _scaffoldKey,
                                   playerInfo: context
                                       .read<GameDetailsCubit>()
                                       .state["players"]

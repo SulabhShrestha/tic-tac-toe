@@ -7,10 +7,12 @@ import 'package:mobile/utils/colors.dart';
 
 class PlayerProfileCardSocket extends StatelessWidget {
   final MapEntry<String, dynamic> playerInfo;
+  final GlobalKey<ScaffoldMessengerState> scaffoldKey;
 
   const PlayerProfileCardSocket({
     super.key,
     required this.playerInfo,
+    required this.scaffoldKey,
   });
 
   @override
@@ -28,7 +30,7 @@ class PlayerProfileCardSocket extends StatelessWidget {
     return BlocConsumer<SocketBloc, SocketState>(
       listener: (context, state) {
         if (state is OtherPlayerDisconnectedState) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          scaffoldKey.currentState!.showSnackBar(SnackBar(
             content: Text("${playerInfo.key} left the game"),
           ));
         }

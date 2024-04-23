@@ -44,6 +44,22 @@ class BotCubit extends Cubit<Map<String, dynamic>> {
     });
   }
 
+  // increment and reset value
+  void incrementRound({String winner = ""}) {
+    emit({
+      ...state,
+      "round": state["round"] + 1,
+      "score": {
+        "Bot": winner == "Bot" ? getScore("Bot") + 1 : getScore("Bot"),
+        "You": winner == "You" ? getScore("You") + 1 : getScore("You"),
+      },
+      "game-end": null,
+      "playerTurn": "Bot",
+      "selectedCells": <TicTacModel>[],
+    });
+    _findNextBestMove();
+  }
+
   List<String> getPlayers() => state["players"];
 
   int getScore(String player) => state["score"][player];
@@ -56,7 +72,38 @@ class BotCubit extends Cubit<Map<String, dynamic>> {
 
     debugPrint("Selected cells: ${state["selectedCells"]}");
 
-    _findNextBestMove();
+    var result = BotGameHelper().checkForWinner(getSelectedCells());
+
+    // checking for the winner
+    if (result == BotGameConclusion.notYet) {
+      _findNextBestMove();
+    }
+
+    result = BotGameHelper().checkForWinner(getSelectedCells());
+    if (result == BotGameConclusion.botWin) {
+      emit({
+        ...state,
+        "score": {
+          "Bot": getScore("Bot") + 1,
+          "You": getScore("You"),
+        },
+        "game-end": "Bot",
+      });
+    } else if (result == BotGameConclusion.youWin) {
+      emit({
+        ...state,
+        "score": {
+          "Bot": getScore("Bot"),
+          "You": getScore("You") + 1,
+        },
+        "game-end": "You",
+      });
+    } else if (result == BotGameConclusion.draw) {
+      emit({
+        ...state,
+        "game-end": "Draw",
+      });
+    }
   }
 
   List<dynamic> getSelectedCells() => state["selectedCells"];

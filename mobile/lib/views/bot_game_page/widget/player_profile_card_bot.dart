@@ -131,7 +131,7 @@ class PlayerProfileCardBot extends StatelessWidget {
                 children: [
                   const Text("Won: "),
                   Text(
-                    context.read<BotCubit>().getScore(player).toString(),
+                    context.watch<BotCubit>().getScore(player).toString(),
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,

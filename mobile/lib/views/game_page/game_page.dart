@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mobile/cubit/game_details_cubit/game_details_cubit.dart';
 import 'package:mobile/models/tic_tac_model.dart';
 import 'package:mobile/providers/all_players_provider.dart';
@@ -238,7 +239,7 @@ class _HomePageState extends ConsumerState<GamePage> {
                             ],
                           ),
 
-                          const SizedBox(height: 28),
+                          SizedBox(height: 16.h),
 
                           Container(
                             decoration: BoxDecoration(
@@ -304,6 +305,8 @@ class _HomePageState extends ConsumerState<GamePage> {
                                   ),
                                 ),
                               ),
+
+                              // list of emoji
                               const Align(
                                 alignment: Alignment.bottomRight,
                                 child: EmojiPanel(),

@@ -22,6 +22,7 @@ class EmojiPanel extends ConsumerWidget {
     ];
     return MenuAnchor(
       controller: emojiMenuController,
+      alignmentOffset: const Offset(0, -12),
       builder:
           (BuildContext context, MenuController controller, Widget? child) {
         return IconButton(

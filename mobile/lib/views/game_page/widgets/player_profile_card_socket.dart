@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mobile/cubit/game_details_cubit/game_details_cubit.dart';
 import 'package:mobile/socket_bloc/socket_bloc.dart';
@@ -48,12 +50,12 @@ class PlayerProfileCardSocket extends StatelessWidget {
                 children: [
                   Container(
                     height: 134,
-                    padding: const EdgeInsets.only(
-                        bottom: 12.0, left: 24, right: 24),
+                    padding:
+                        EdgeInsets.only(bottom: 12.h, left: 16.w, right: 16.w),
                     decoration: BoxDecoration(
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
+                          color: Colors.black.withOpacity(0.4),
                           blurRadius: 4,
                           offset: const Offset(0, 3),
                           blurStyle: BlurStyle.outer,
@@ -70,8 +72,8 @@ class PlayerProfileCardSocket extends StatelessWidget {
                           gameDetailsCubit.getUserId() == playerInfo.value
                               ? "You"
                               : playerInfo.key,
-                          style: const TextStyle(
-                            fontSize: 16,
+                          style: TextStyle(
+                            fontSize: 16.sp,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -93,12 +95,12 @@ class PlayerProfileCardSocket extends StatelessWidget {
                     ),
                   ),
                   Positioned(
-                    top: -20,
+                    top: -26,
                     right: 0,
                     left: 0,
                     child: Container(
-                      width: 62,
-                      height: 62,
+                      width: 56.r,
+                      height: 56.r,
                       decoration: BoxDecoration(
                         border: Border.all(
                           color: Colors.white,
@@ -132,7 +134,7 @@ class PlayerProfileCardSocket extends StatelessWidget {
               ),
 
               // score
-              const SizedBox(height: 12),
+              SizedBox(height: 14.h),
               BlocBuilder<SocketBloc, SocketState>(
                 builder: (context, state) {
                   return Stack(
@@ -163,8 +165,8 @@ class PlayerProfileCardSocket extends StatelessWidget {
                               gameDetailsCubit
                                   .getScore(playerInfo.key.toString())
                                   .toString(),
-                              style: const TextStyle(
-                                fontSize: 24,
+                              style: TextStyle(
+                                fontSize: 24.sp,
                                 fontWeight: FontWeight.bold,
                                 color: ConstantColors.blue,
                               ),

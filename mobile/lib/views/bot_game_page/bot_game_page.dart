@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mobile/cubit/bot_cubit/bot_cubit.dart';
 import 'package:mobile/utils/game_helper.dart';
 import 'package:mobile/views/bot_game_page/widget/round_indicator_bot.dart';
@@ -47,12 +48,10 @@ class BotGamePage extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const SizedBox(height: 16),
-                          Text(
+                          const Text(
                             "Game Over",
                             style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
+                                fontSize: 24, fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 16),
                           Text(
@@ -100,25 +99,30 @@ class BotGamePage extends StatelessWidget {
                   });
             }
           },
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Game information, player and bot
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  PlayerProfileCardBot(player: players.first, position: 0),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Game information, player and bot
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    PlayerProfileCardBot(player: players.first, position: 0),
 
-                  // Round indicator
-                  const RoundIndicatorBot(),
+                    // Round indicator
+                    const RoundIndicatorBot(),
 
-                  PlayerProfileCardBot(player: players.last, position: 1),
-                ],
-              ),
+                    PlayerProfileCardBot(player: players.last, position: 1),
+                  ],
+                ),
 
-              const TicTacBoardBot(),
-            ],
+                SizedBox(height: 16.h),
+
+                const TicTacBoardBot(),
+              ],
+            ),
           ),
         ),
       ),

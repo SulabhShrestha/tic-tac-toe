@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mobile/cubit/bot_cubit/bot_cubit.dart';
 import 'package:mobile/utils/colors.dart';
 
@@ -25,11 +26,11 @@ class PlayerProfileCardBot extends StatelessWidget {
           children: [
             Container(
               height: 134,
-              padding: const EdgeInsets.only(bottom: 12.0, left: 24, right: 24),
+              padding: EdgeInsets.only(bottom: 12.h, left: 16.w, right: 16.w),
               decoration: BoxDecoration(
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withOpacity(0.4),
                     blurRadius: 4,
                     offset: const Offset(0, 3),
                     blurStyle: BlurStyle.outer,
@@ -71,8 +72,8 @@ class PlayerProfileCardBot extends StatelessWidget {
               right: 0,
               left: 0,
               child: Container(
-                width: 62,
-                height: 62,
+                width: 56.r,
+                height: 56.r,
                 decoration: BoxDecoration(
                   border: Border.all(
                     color: Colors.white,
@@ -106,7 +107,7 @@ class PlayerProfileCardBot extends StatelessWidget {
         ),
 
         // score
-        const SizedBox(height: 12),
+        SizedBox(height: 14.h),
         Stack(
           clipBehavior: Clip.none,
           children: [

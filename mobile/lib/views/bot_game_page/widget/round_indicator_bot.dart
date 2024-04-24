@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mobile/cubit/bot_cubit/bot_cubit.dart';
 
 class RoundIndicatorBot extends StatelessWidget {
@@ -16,17 +17,17 @@ class RoundIndicatorBot extends StatelessWidget {
           colors: [Colors.amber, Colors.amber.shade700],
         ),
       ),
-      margin: const EdgeInsets.only(bottom: 32),
+      margin: EdgeInsets.only(bottom: 14.h),
       padding: const EdgeInsets.all(16),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text("Round", style: TextStyle(fontSize: 16)),
+          Text("Round", style: TextStyle(fontSize: 12.sp)),
           BlocBuilder<BotCubit, Map<String, dynamic>>(
             builder: (context, state) {
               return Text(
                 state["round"].toString(),
-                style:
-                    const TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
+                style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w500),
               );
             },
           ),

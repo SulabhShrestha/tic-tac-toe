@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mobile/cubit/bot_cubit/bot_cubit.dart';
 import 'package:mobile/views/bot_game_page/bot_game_page.dart';
 import 'package:mobile/views/game_page/game_page.dart';
@@ -29,34 +30,38 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return RepositoryProvider<SocketRepository>(
-      create: (context) => SocketRepository(
-        SocketDataProvider(),
-      ),
-      child: MultiBlocProvider(
-        providers: [
-          BlocProvider(
-            create: (context) => SocketBloc(context.read<SocketRepository>()),
-          ),
-          BlocProvider(
-              create: (_) =>
-                  GameDetailsCubit()..setUserId(generateRandomString())),
-          BlocProvider(create: (_) => BotCubit()),
-        ],
-        child: MaterialApp(
-          title: 'Tic Tac Toe',
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-            useMaterial3: true,
-            elevatedButtonTheme: ElevatedButtonThemeData(
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.white,
-                backgroundColor: Colors.deepPurple,
+    return ScreenUtilInit(
+      designSize: const Size(360, 690),
+      minTextAdapt: true,
+      child: RepositoryProvider<SocketRepository>(
+        create: (context) => SocketRepository(
+          SocketDataProvider(),
+        ),
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider(
+              create: (context) => SocketBloc(context.read<SocketRepository>()),
+            ),
+            BlocProvider(
+                create: (_) =>
+                    GameDetailsCubit()..setUserId(generateRandomString())),
+            BlocProvider(create: (_) => BotCubit()),
+          ],
+          child: MaterialApp(
+            title: 'Tic Tac Toe',
+            theme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+              useMaterial3: true,
+              elevatedButtonTheme: ElevatedButtonThemeData(
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white,
+                  backgroundColor: Colors.deepPurple,
+                ),
               ),
             ),
+            initialRoute: "/",
+            onGenerateRoute: generateRoute,
           ),
-          initialRoute: "/",
-          onGenerateRoute: generateRoute,
         ),
       ),
     );

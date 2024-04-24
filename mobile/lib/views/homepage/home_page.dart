@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -108,6 +110,11 @@ class HomePage extends ConsumerWidget {
       listener: (context, state) {
         if (state is GameStart) {
           debugPrint("Game started");
+
+          ref.read(anyButtonClickedProvider.notifier).update((state) => false);
+
+          ref.read(joinButtonLoadingProvider.notifier).update((state) => false);
+
           // vibrating the device
           Future(() async {
             await HapticFeedback.vibrate();
@@ -127,7 +134,6 @@ class HomePage extends ConsumerWidget {
             "players": state.playersInfo,
           });
         } else if (state is RoomNotFound) {
-          debugPrint("Room not found");
           Navigator.pop(context);
 
           // resetting value
@@ -192,17 +198,24 @@ class HomePage extends ConsumerWidget {
       {bool isFromQR = false}) {
     ref.read(anyButtonClickedProvider.notifier).state = true;
 
-    if (isFromQR) {
-      // triggering loading button
-      ref.read(joinButtonLoadingProvider.notifier).state = true;
-    }
+    ref.read(joinButtonLoadingProvider.notifier).state = true;
+
     context.read<SocketBloc>()
       ..add(InitSocket())
       ..add(JoinRoom(
           roomID: roomID, myUid: context.read<GameDetailsCubit>().getUserId()));
-    context.read<SocketBloc>().add(ListenToRoomNotFoundEvent());
-    context.read<SocketBloc>().add(ListenToGameInitEvent());
+
+    context.read<SocketBloc>()
+      ..add(ListenToRoomNotFoundEvent())
+      ..add(ListenToGameInitEvent());
 
     context.read<GameDetailsCubit>().setRoomID(roomID);
+
+    if (isFromQR) {
+      log("Room ID joiningR: $roomID");
+
+      // sending qr scanned event
+      context.read<SocketBloc>().add(QrScanned(roomID: roomID));
+    }
   }
 }

@@ -87,7 +87,5 @@ class ListenToEmojiEvent extends SocketEvent {
 class ListenToOtherPlayerDisconnect extends SocketEvent {}
 
 class DisconnectSocket extends SocketEvent {
-  final String uid;
-
-  DisconnectSocket({required this.uid});
+  DisconnectSocket();
 }

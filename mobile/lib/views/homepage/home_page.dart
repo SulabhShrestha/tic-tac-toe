@@ -8,19 +8,26 @@ import 'package:mobile/cubit/bot_cubit/bot_cubit.dart';
 import 'package:mobile/cubit/game_details_cubit/game_details_cubit.dart';
 import 'package:mobile/providers/any_button_clicked.dart';
 import 'package:mobile/providers/join_button_loading_provider.dart';
-import 'package:mobile/providers/waiting_for_connection_provider.dart';
+import 'package:mobile/providers/waiting_for_other_player_connection_provider.dart';
 import 'package:mobile/socket_bloc/socket_bloc.dart';
+import 'package:mobile/views/homepage/widgets/ask_room_ID.dart';
 import 'package:mobile/views/homepage/widgets/gradient_button.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import 'widgets/loading_button_with_text.dart';
 
-class HomePage extends ConsumerWidget {
+class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends ConsumerState<HomePage> {
+  @override
+  Widget build(BuildContext context) {
     var anyButtonClickedProv = ref.watch(anyButtonClickedProvider);
+    var joiningButtonLoadingProv = ref.watch(joinButtonLoadingProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFFDDCE6),
@@ -33,9 +40,13 @@ class HomePage extends ConsumerWidget {
                 context.read<GameDetailsCubit>().setRoomID(state.roomID);
 
                 // resetting the button clicked value
-                ref.read(anyButtonClickedProvider.notifier).state = false;
+                ref
+                    .read(anyButtonClickedProvider.notifier)
+                    .update((state) => false);
 
-                ref.read(waitingForConnectionProvider.notifier).state = true;
+                ref
+                    .read(waitingForOtherPlayerConnectionProvider.notifier)
+                    .update((state) => true);
 
                 Navigator.of(context).pushNamed("/game", arguments: {
                   "players": <String, dynamic>{},
@@ -50,7 +61,13 @@ class HomePage extends ConsumerWidget {
                   LoadingButtonWithText(
                     text: "Create Game",
                     onTap: anyButtonClickedProv
-                        ? null
+                        ? () {
+                            debugPrint("Loading should be cancelled");
+                            ref
+                                .read(anyButtonClickedProvider.notifier)
+                                .update((state) => false);
+                            context.read<SocketBloc>().add(DisconnectSocket());
+                          }
                         : () {
                             // setting the value of any button clicked
                             ref.read(anyButtonClickedProvider.notifier).state =
@@ -70,17 +87,31 @@ class HomePage extends ConsumerWidget {
                   GradientButton(
                       linearGradient: const LinearGradient(
                           colors: [Colors.deepPurple, Colors.deepOrange]),
-                      onTap: anyButtonClickedProv
-                          ? () {}
+                      onTap: joiningButtonLoadingProv
+                          ? () {
+                              debugPrint("Loading should be cancelled");
+                              ref
+                                  .read(joinButtonLoadingProvider.notifier)
+                                  .update((state) => false);
+                              context
+                                  .read<SocketBloc>()
+                                  .add(DisconnectSocket());
+                            }
                           : () {
                               // alert dialog
                               showDialog(
                                   context: context,
                                   builder: (context) {
-                                    return _askForRoomId(context, ref);
+                                    return const AskRoomID();
                                   });
                             },
-                      child: const Text("Join Game")),
+                      child: joiningButtonLoadingProv
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(),
+                            )
+                          : const Text("Join Game")),
 
                   // Playing with Bot
                   const SizedBox(height: 42),
@@ -101,121 +132,5 @@ class HomePage extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  Widget _askForRoomId(BuildContext context, WidgetRef ref) {
-    final TextEditingController roomIDController = TextEditingController();
-    final FocusNode focusNode = FocusNode();
-    return BlocConsumer<SocketBloc, SocketState>(
-      listener: (context, state) {
-        if (state is GameStart) {
-          debugPrint("Game started");
-
-          ref.read(anyButtonClickedProvider.notifier).update((state) => false);
-
-          ref.read(joinButtonLoadingProvider.notifier).update((state) => false);
-
-          // vibrating the device
-          Future(() async {
-            await HapticFeedback.vibrate();
-            await SystemSound.play(SystemSoundType.click);
-          });
-
-          // listen to event
-          context.read<SocketBloc>().add(ListenToEvent());
-
-          // adding players info to the game details cubit
-          context.read<GameDetailsCubit>().setPlayers(state.playersInfo);
-          context
-              .read<GameDetailsCubit>()
-              .setPlayerTurn(state.playersInfo["Player 1"]);
-
-          Navigator.of(context).pushNamed("/game", arguments: {
-            "players": state.playersInfo,
-          });
-        } else if (state is RoomNotFound) {
-          Navigator.pop(context);
-
-          // resetting value
-          ref.read(anyButtonClickedProvider.notifier).state = false;
-
-          ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text("Room not found")));
-        }
-      },
-      builder: (context, state) {
-        return AlertDialog(
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text("Enter Room ID"),
-              IconButton(
-                onPressed: () {
-                  showDialog(
-                      context: context,
-                      builder: (_) {
-                        return Dialog(
-                          child: SizedBox(
-                            height: 250,
-                            width: 250,
-                            child: MobileScanner(
-                              fit: BoxFit.cover,
-                              onDetect: (capturedData) {
-                                Navigator.pop(context);
-
-                                joinSocketRoom(context, ref,
-                                    capturedData.barcodes.first.displayValue!,
-                                    isFromQR: true);
-                              },
-                            ),
-                          ),
-                        );
-                      });
-                },
-                icon: const Icon(Icons.qr_code_scanner),
-              )
-            ],
-          ),
-          content: TextField(
-            controller: roomIDController,
-            focusNode: focusNode,
-            decoration: const InputDecoration(hintText: "Enter Room ID"),
-          ),
-          actions: [
-            LoadingButtonWithText(
-                text: "Join",
-                onTap: () {
-                  focusNode.unfocus();
-                  joinSocketRoom(context, ref, roomIDController.text);
-                }),
-          ],
-        );
-      },
-    );
-  }
-
-  void joinSocketRoom(BuildContext context, WidgetRef ref, String roomID,
-      {bool isFromQR = false}) {
-    ref.read(anyButtonClickedProvider.notifier).state = true;
-
-    ref.read(joinButtonLoadingProvider.notifier).state = true;
-
-    context.read<SocketBloc>()
-      ..add(InitSocket())
-      ..add(JoinRoom(
-          roomID: roomID, myUid: context.read<GameDetailsCubit>().getUserId()));
-
-    context.read<SocketBloc>()
-      ..add(ListenToRoomNotFoundEvent())
-      ..add(ListenToGameInitEvent());
-
-    context.read<GameDetailsCubit>().setRoomID(roomID);
-
-    if (isFromQR) {
-      log("Room ID joiningR: $roomID");
-
-      // sending qr scanned event
-      context.read<SocketBloc>().add(QrScanned(roomID: roomID));
-    }
   }
 }

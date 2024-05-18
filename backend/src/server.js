@@ -55,7 +55,9 @@ io.on("connection", (socket) => {
 
   // Event when a player creates a game
   socket.on("create-room", ({ uid }) => {
-    const roomID = generateRoomID();
+    let roomID = generateRoomID();
+
+    roomID = "sulabh"; 
 
     console.log("Create room : ", uid);
 

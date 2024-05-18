@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile/providers/any_button_clicked.dart';
 import 'package:mobile/providers/join_button_loading_provider.dart';
 
 import 'package:mobile/utils/colors.dart';
@@ -25,20 +26,18 @@ class _LoadingButtonWithTextState extends ConsumerState<LoadingButtonWithText> {
 
   @override
   Widget build(BuildContext context) {
-    if (ref.watch(joinButtonLoadingProvider) != null) {
-      isLoading = ref.watch(joinButtonLoadingProvider)!;
-    }
-
     return GradientButton(
       onTap: () {
-        // when not loading
-        if (!isLoading) {
-          setState(() {
-            isLoading = true;
-          });
-          if (widget.onTap != null) {
-            widget.onTap!();
-          }
+        setState(() {
+          isLoading = !isLoading;
+        });
+
+        ref
+            .read(anyButtonClickedProvider.notifier)
+            .update((state) => isLoading);
+
+        if (widget.onTap != null) {
+          widget.onTap!();
         }
       },
       linearGradient: const LinearGradient(

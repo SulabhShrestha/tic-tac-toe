@@ -9,7 +9,7 @@ import 'package:mobile/cubit/game_details_cubit/game_details_cubit.dart';
 import 'package:mobile/models/tic_tac_model.dart';
 import 'package:mobile/providers/all_players_provider.dart';
 import 'package:mobile/providers/any_button_clicked.dart';
-import 'package:mobile/providers/waiting_for_connection_provider.dart';
+import 'package:mobile/providers/waiting_for_other_player_connection_provider.dart';
 import 'package:mobile/socket_bloc/socket_bloc.dart';
 import 'package:mobile/utils/colors.dart';
 import 'package:mobile/utils/game_helper.dart';
@@ -43,9 +43,10 @@ class _HomePageState extends ConsumerState<GamePage> {
   bool showEmojiContainer = false;
 
   void resetAllStateAndMoveBack() {
-    ref.read(waitingForConnectionProvider.notifier).update((state) => false);
-    context.read<SocketBloc>().add(
-        DisconnectSocket(uid: context.read<GameDetailsCubit>().getUserId()));
+    ref
+        .read(waitingForOtherPlayerConnectionProvider.notifier)
+        .update((state) => false);
+    context.read<SocketBloc>().add(DisconnectSocket());
     Navigator.pushNamedAndRemoveUntil(context, "/", (route) => true);
   }
 
@@ -137,7 +138,9 @@ class _HomePageState extends ConsumerState<GamePage> {
                     .watch(allPlayersProvider.notifier)
                     .addPlayers(socketBlocState.playersInfo);
 
-                ref.watch(waitingForConnectionProvider.notifier).state = false;
+                ref
+                    .watch(waitingForOtherPlayerConnectionProvider.notifier)
+                    .state = false;
               }
 
               if (socketBlocState is CellsDetailsBlocState) {
@@ -207,7 +210,9 @@ class _HomePageState extends ConsumerState<GamePage> {
                 children: [
                   // Opacity when needed
                   Opacity(
-                    opacity: ref.watch(waitingForConnectionProvider) ? 0.5 : 1,
+                    opacity: ref.watch(waitingForOtherPlayerConnectionProvider)
+                        ? 0.5
+                        : 1,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Column(
@@ -319,7 +324,7 @@ class _HomePageState extends ConsumerState<GamePage> {
                   ),
 
                   // show loading indicator when waiting for opponent, and make background blur
-                  if (ref.watch(waitingForConnectionProvider))
+                  if (ref.watch(waitingForOtherPlayerConnectionProvider))
                     BackdropFilter(
                         filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
                         child: Center(

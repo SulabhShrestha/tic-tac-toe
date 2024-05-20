@@ -19,6 +19,8 @@ class GameStart extends SocketState {
   GameStart({required this.playersInfo});
 }
 
+class QrScannedReceived extends SocketState {}
+
 class CellsDetailsBlocState extends SocketState {
   final TicTacModel model;
   final String playerTurn;

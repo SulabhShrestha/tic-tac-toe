@@ -83,6 +83,13 @@ class SocketRepository {
     socketDataProvider.sendQrScannedEvent(roomID: roomID);
   }
 
+  Future<bool> listenToQrScannedReceived() async {
+    final qrScanned =
+        await socketDataProvider.listenToQrScannedReceived().first;
+
+    return qrScanned;
+  }
+
   void sendEvent(
       {required String uid,
       required String roomID,

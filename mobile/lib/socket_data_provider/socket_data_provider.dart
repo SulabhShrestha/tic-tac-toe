@@ -12,7 +12,7 @@ class SocketDataProvider {
     socket = IO.io(
         // dotenv.env['URL'],
         // "http://10.0.2.2:3000",
-        "http://192.168.1.152:3000",
+        "http://192.168.1.69:3000",
         IO.OptionBuilder()
             .setTransports(['websocket'])
             .disableAutoConnect()
@@ -175,6 +175,21 @@ class SocketDataProvider {
     });
 
     // Return the stream from the StreamController
+    return controller.stream;
+  }
+
+  Stream<bool> listenToQrScannedReceived() {
+    StreamController<bool> controller = StreamController<bool>();
+
+    socket.on("qr-scanned", (data) {
+      debugPrint("QR scanned received: $data");
+      controller.add(true); // data is always true, so doesn't really matters
+    });
+
+    controller.onCancel = (() {
+      controller.close();
+    });
+
     return controller.stream;
   }
 

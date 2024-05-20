@@ -1,9 +1,11 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/cubit/game_details_cubit/game_details_cubit.dart';
-import 'package:mobile/providers/qr_closed_provider.dart';
+import 'package:mobile/providers/qr_opened_provider.dart';
 import 'package:mobile/utils/colors.dart';
 import 'package:mobile/views/homepage/widgets/gradient_button.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -92,7 +94,7 @@ class _WaitingLoadingIndicatorState
         ),
         GradientButton(
           onTap: () {
-            ref.read(qrClosedProvider.notifier).state = true;
+            ref.read(qrOpenedProvider.notifier).update((state) => true);
 
             showDialog(
               barrierDismissible: false,
@@ -150,8 +152,9 @@ class _WaitingLoadingIndicatorState
                             ),
                             child: IconButton(
                               onPressed: () {
-                                ref.read(qrClosedProvider.notifier).state =
-                                    true;
+                                ref
+                                    .read(qrOpenedProvider.notifier)
+                                    .update((state) => false);
                                 Navigator.pop(context);
                               },
                               icon: const Icon(Icons.close),

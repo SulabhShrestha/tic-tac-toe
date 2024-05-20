@@ -31,6 +31,8 @@ class QrScanned extends SocketEvent {
   QrScanned({required this.roomID});
 }
 
+class ListenToQrScanned extends SocketEvent {}
+
 class UpdateGameDetails extends SocketEvent {
   final String? roomID;
 

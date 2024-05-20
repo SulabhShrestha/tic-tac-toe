@@ -50,6 +50,13 @@ class SocketBloc extends Bloc<SocketEvent, SocketState> {
       socketRepository.sendQrScannedEvent(roomID: event.roomID);
     });
 
+    on<ListenToQrScanned>((event, emit) async {
+      debugPrint("QrScannedReceived event called");
+      final qrScanned = await socketRepository.listenToQrScannedReceived();
+
+      emit(QrScannedReceived());
+    });
+
     on<ListenToEvent>((event, emit) async {
       debugPrint("ListenToEvent event called");
       await for (var eventData in socketRepository.listenToEvent()) {

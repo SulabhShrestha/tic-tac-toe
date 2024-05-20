@@ -9,6 +9,7 @@ import 'package:mobile/cubit/game_details_cubit/game_details_cubit.dart';
 import 'package:mobile/models/tic_tac_model.dart';
 import 'package:mobile/providers/all_players_provider.dart';
 import 'package:mobile/providers/any_button_clicked.dart';
+import 'package:mobile/providers/qr_opened_provider.dart';
 import 'package:mobile/providers/waiting_for_other_player_connection_provider.dart';
 import 'package:mobile/socket_bloc/socket_bloc.dart';
 import 'package:mobile/utils/colors.dart';
@@ -95,7 +96,8 @@ class _HomePageState extends ConsumerState<GamePage> {
       ..add(ListenToGameConclusion())
       ..add(ListenToPlayAgainRequest())
       ..add(ListenToPlayAgainResponse())
-      ..add(ListenToOtherPlayerDisconnect());
+      ..add(ListenToOtherPlayerDisconnect())
+      ..add(ListenToQrScanned());
 
     super.initState();
   }
@@ -141,18 +143,14 @@ class _HomePageState extends ConsumerState<GamePage> {
                 ref
                     .watch(waitingForOtherPlayerConnectionProvider.notifier)
                     .state = false;
-              }
-
-              if (socketBlocState is CellsDetailsBlocState) {
+              } else if (socketBlocState is CellsDetailsBlocState) {
                 context
                     .read<GameDetailsCubit>()
                     .setPlayerTurn(socketBlocState.playerTurn);
                 context
                     .read<GameDetailsCubit>()
                     .addSelectedCells(socketBlocState.model);
-              }
-
-              if (socketBlocState is PlayAgainResponseReceivedState) {
+              } else if (socketBlocState is PlayAgainResponseReceivedState) {
                 debugPrint("inside listen when Play again response");
 
                 // adding to player turn to cubit
@@ -165,6 +163,14 @@ class _HomePageState extends ConsumerState<GamePage> {
 
                 // resetting all selected cells
                 context.read<GameDetailsCubit>().clearSelectedCells();
+              } else if (socketBlocState is QrScannedReceived) {
+                debugPrint("QR scanned received, going to pop the context");
+
+                bool isQrOpened = ref.watch(qrOpenedProvider);
+
+                if (isQrOpened) {
+                  Navigator.pop(context);
+                }
               }
             },
             listenWhen: (previous, current) {
@@ -368,7 +374,7 @@ class _HomePageState extends ConsumerState<GamePage> {
         return entry.key;
       }
     }
-    return "IronMan's ";
+    return "IronMan's";
   }
 
   Widget _buildGridCell(int index, BuildContext context) {

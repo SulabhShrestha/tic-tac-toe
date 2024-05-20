@@ -79,7 +79,13 @@ class _AskRoomIDState extends ConsumerState<AskRoomID> {
                             child: MobileScanner(
                               fit: BoxFit.cover,
                               onDetect: (capturedData) {
+                                if (ref.watch(joinButtonLoadingProvider)) {
+                                  return;
+                                }
+
                                 Navigator.pop(context);
+
+                                log("message: ${capturedData.barcodes.first.displayValue}");
 
                                 joinSocketRoom(context, ref,
                                     capturedData.barcodes.first.displayValue!,
@@ -125,7 +131,9 @@ class _AskRoomIDState extends ConsumerState<AskRoomID> {
 
   void joinSocketRoom(BuildContext context, WidgetRef ref, String roomID,
       {bool isFromQR = false}) {
-    ref.read(anyButtonClickedProvider.notifier).state = true;
+    ref.read(joinButtonLoadingProvider.notifier).update((state) => true);
+
+    log("I am joining room");
 
     context.read<SocketBloc>()
       ..add(InitSocket())

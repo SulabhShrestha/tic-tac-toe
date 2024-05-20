@@ -204,7 +204,12 @@ class _HomePageState extends ConsumerState<GamePage> {
 
                 Navigator.pop(context);
 
-                _showPlayAgainDialog(current.playerID);
+                // find player name using playerID
+                var playerName = context
+                    .read<GameDetailsCubit>()
+                    .getPlayerName(current.playerID);
+
+                _showPlayAgainDialog(playerName);
 
                 return false;
               }

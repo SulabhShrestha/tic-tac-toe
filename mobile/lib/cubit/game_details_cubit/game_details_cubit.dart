@@ -25,6 +25,15 @@ class GameDetailsCubit extends Cubit<Map<String, dynamic>> {
     return state["uid"].toString();
   } // getting the state
 
+  String getPlayerName(String uid) {
+    for (var player in state["players"].entries) {
+      if (player.value == uid) {
+        return player.key;
+      }
+    }
+    return "Unknown";
+  }
+
   void setRoomID(String roomID) {
     debugPrint("RoomID cubit: $roomID");
     emit({...state, "roomID": roomID}); // setting the state

@@ -8,7 +8,6 @@ module.exports = {
   addGameInfo: (newInfo) => {
     game_info = [...game_info, newInfo];
 
-    console.log("Game info; ", game_info);
   },
   setGameInfo: (updatedGameInfo) => (game_info = updatedGameInfo),
 

@@ -59,7 +59,6 @@ io.on("connection", (socket) => {
 
     roomID = "sulabh"; 
 
-    console.log("Create room : ", uid);
 
     // adding to onlinePlayers
     onlinePlayers[socket.id] = uid;
@@ -72,7 +71,6 @@ io.on("connection", (socket) => {
 
     socket.join(roomID);
 
-    console.log(`Room created: ${roomID}`);
     socket.emit("room-created", roomID);
   });
 
@@ -83,8 +81,7 @@ io.on("connection", (socket) => {
     // getting room details
     const roomDetails = getGameInfoByRoomId(roomID);
 
-    console.log("Room details", roomDetails);
-
+  
     // room doesn't exists
     if (!roomDetails) {
       socket.emit("room-not-found", "The room you searching doesn't exists.");
@@ -135,12 +132,10 @@ io.on("connection", (socket) => {
 
   // handling the event when a user selects a cell
   socket.on("event", function ({ uid, roomID, selectedIndex }) {
-    console.log("Event: ", uid, roomID, selectedIndex);
-
+    
     const gameInfo = getGameInfoByRoomId(roomID);
 
-    console.log("Event gameinfo ", gameInfo); 
-
+    
     let userId = gameInfo["player-turn"];
 
     const selectedUserIndex = gameInfo.players.indexOf(userId);
@@ -195,7 +190,7 @@ io.on("connection", (socket) => {
     playAgainRequests = playAgainRequests.filter((room) => room != roomID);
 
     let selectedCells = getSelectedCellsInfoByRoomID(roomID);
-    console.log("Selected cells: ", selectedCells);
+    
 
     // the second person to play game is the first to initate the game now
     let gameInitiater = selectedCells[1].selectedBy;
@@ -208,15 +203,13 @@ io.on("connection", (socket) => {
       "player-turn": gameInitiater,
     });
 
-    console.log("Play again accepted:", getGameInfoByRoomId(roomID))
-
     // sending the event to the connected clients, and the player turn as well
     io.to(roomID).emit("play-again-accepted", gameInitiater);
   });
 
   // handles the user sending emoji event
   socket.on("emoji", ({ roomID, emojiPath, sender }) => { 
-    console.log("Emoji: ", roomID, emojiPath);
+    
  
     // sending the event to the connected clients
     io.to(roomID).emit("emoji", { emojiPath, sender});

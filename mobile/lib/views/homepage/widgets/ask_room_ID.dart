@@ -56,6 +56,7 @@ class _AskRoomIDState extends ConsumerState<AskRoomID> {
 
           // resetting value
           ref.read(anyButtonClickedProvider.notifier).state = false;
+          ref.read(joinButtonLoadingProvider.notifier).state = false;
 
           ScaffoldMessenger.of(context)
               .showSnackBar(const SnackBar(content: Text("Room not found")));

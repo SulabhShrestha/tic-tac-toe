@@ -20,58 +20,69 @@ class EmojiPanel extends ConsumerWidget {
       "images/emojis/poop.svg",
       "images/emojis/squinting.svg",
     ];
-    return MenuAnchor(
-      controller: emojiMenuController,
-      alignmentOffset: const Offset(0, -12),
-      builder:
-          (BuildContext context, MenuController controller, Widget? child) {
-        return IconButton(
-          onPressed: () {
-            if (controller.isOpen) {
-              controller.close();
-            } else {
-              controller.open();
-            }
+    return BlocBuilder<SocketBloc, SocketState>(
+      builder: (context, state) {
+        // not letting user to hit the emoji button if the other player is disconnected
+        // this caused the problem of making other user looks like he is still in the game
+
+        var disableMenu = state is OtherPlayerDisconnectedState;
+
+        return MenuAnchor(
+          controller: emojiMenuController,
+          alignmentOffset: const Offset(0, -12),
+          builder:
+              (BuildContext context, MenuController controller, Widget? child) {
+            return IconButton(
+              onPressed: disableMenu
+                  ? null
+                  : () {
+                      if (controller.isOpen) {
+                        controller.close();
+                      } else {
+                        controller.open();
+                      }
+                    },
+              icon: const Icon(Icons.more_horiz),
+              tooltip: 'Show menu',
+            );
           },
-          icon: const Icon(Icons.more_horiz),
-          tooltip: 'Show menu',
+          menuChildren: [
+            MenuItemButton(
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Row(
+                  children: [
+                    for (var emoji in emojis)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: GestureDetector(
+                          onTap: () {
+                            debugPrint("Emoji clicked: $emoji");
+
+                            emojiMenuController.close();
+
+                            final gameDetailsCubit =
+                                context.read<GameDetailsCubit>();
+
+                            context.read<SocketBloc>().add(SendEmoji(
+                                  emojiPath: emoji,
+                                  uid: gameDetailsCubit.getUserId(),
+                                  roomID: gameDetailsCubit.getRoomID(),
+                                ));
+                          },
+                          child: SvgPicture.asset(
+                            emoji,
+                            height: 42,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         );
       },
-      menuChildren: [
-        MenuItemButton(
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Row(
-              children: [
-                for (var emoji in emojis)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: GestureDetector(
-                      onTap: () {
-                        debugPrint("Emoji clicked: $emoji");
-
-                        emojiMenuController.close();
-
-                        final gameDetailsCubit =
-                            context.read<GameDetailsCubit>();
-
-                        context.read<SocketBloc>().add(SendEmoji(
-                              emojiPath: emoji,
-                              uid: gameDetailsCubit.getUserId(),
-                              roomID: gameDetailsCubit.getRoomID(),
-                            ));
-                      },
-                      child: SvgPicture.asset(
-                        emoji,
-                        height: 42,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

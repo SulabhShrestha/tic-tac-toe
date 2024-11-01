@@ -108,7 +108,7 @@ class _TicTacBoardBotState extends State<TicTacBoardBot> {
     final allPlayers = context.read<BotCubit>().getPlayers();
 
     return Image.asset(
-      selectedBy == allPlayers.first ? "images/close.png" : "images/circle.png",
+      selectedBy == allPlayers.first ? "images/check.png" : "images/circle.png",
       height: 54,
     );
   }

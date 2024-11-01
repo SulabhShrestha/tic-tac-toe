@@ -47,10 +47,15 @@ class PlayAgainResponseReceivedState extends SocketState {
 }
 
 class GameEndState extends SocketState {
-  final String status;
-  final String? winner;
+  final String status; // for win, draw, lose
+  final String? winner; // can be null in the case of draw
+  final List<int>? winnerSequence; // so does this. 
 
-  GameEndState({required this.status, this.winner});
+  GameEndState({
+    required this.status,
+    this.winner,
+    this.winnerSequence,
+  });
 }
 
 class OtherPlayerDisconnectedState extends SocketState {

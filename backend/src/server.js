@@ -36,8 +36,6 @@ const onlinePlayers = {};
 let playAgainRequests = [];
 
 io.on("connection", (socket) => {
-  console.log(`a user connected ${socket.id}`);
-
   // triggers automatically when user is disconnected
   socket.on("disconnect", () => {
     // getting the game info
@@ -57,8 +55,7 @@ io.on("connection", (socket) => {
   socket.on("create-room", ({ uid }) => {
     let roomID = generateRoomID();
 
-    roomID = "sulabh"; 
-
+    roomID = "sulabh";
 
     // adding to onlinePlayers
     onlinePlayers[socket.id] = uid;
@@ -81,7 +78,6 @@ io.on("connection", (socket) => {
     // getting room details
     const roomDetails = getGameInfoByRoomId(roomID);
 
-  
     // room doesn't exists
     if (!roomDetails) {
       socket.emit("room-not-found", "The room you searching doesn't exists.");
@@ -113,7 +109,6 @@ io.on("connection", (socket) => {
         players: [player1, player2],
         "player-turn": player1,
       });
-      console.log("Room info: ", getGameInfoByRoomId(roomID));
 
       // sending the game initialized event to the room
       io.to(roomID).emit("game-init", {
@@ -132,10 +127,8 @@ io.on("connection", (socket) => {
 
   // handling the event when a user selects a cell
   socket.on("event", function ({ uid, roomID, selectedIndex }) {
-    
     const gameInfo = getGameInfoByRoomId(roomID);
 
-    
     let userId = gameInfo["player-turn"];
 
     const selectedUserIndex = gameInfo.players.indexOf(userId);
@@ -154,7 +147,6 @@ io.on("connection", (socket) => {
     });
 
     const selectedCellsInfo = getSelectedCellsInfoByRoomID(roomID);
-    checkForConclusion(selectedCellsInfo, io, roomID);
 
     // sending the event to the connected clients
     io.to(roomID).emit("event", {
@@ -162,11 +154,13 @@ io.on("connection", (socket) => {
       uid,
       "player-turn": nextPlayerTurn,
     });
+    let isConcluded = checkForConclusion(selectedCellsInfo, io, roomID);
+
+    if (isConcluded) return;
   });
 
   // handling the play again event and sending to the other person
   socket.on("play-again", ({ roomID, uid }) => {
-
     // checking if the play again request is already made
     if (playAgainRequests.includes(roomID)) return;
 
@@ -178,19 +172,15 @@ io.on("connection", (socket) => {
 
   // forwarding qr scanned event to other device
   socket.on("qr-scanned", ({ roomID }) => {
-    console.log("qr scanned");
-
     socket.broadcast.to(roomID).emit("qr-scanned");
   });
 
   // handles the play again event sent accepted by the other person
   socket.on("play-again-accepted", ({ roomID }) => {
-
     // removing the room from the play again requests
     playAgainRequests = playAgainRequests.filter((room) => room != roomID);
 
     let selectedCells = getSelectedCellsInfoByRoomID(roomID);
-    
 
     // the second person to play game is the first to initate the game now
     let gameInitiater = selectedCells[1].selectedBy;
@@ -208,13 +198,10 @@ io.on("connection", (socket) => {
   });
 
   // handles the user sending emoji event
-  socket.on("emoji", ({ roomID, emojiPath, sender }) => { 
-    
- 
+  socket.on("emoji", ({ roomID, emojiPath, sender }) => {
     // sending the event to the connected clients
-    io.to(roomID).emit("emoji", { emojiPath, sender});
-  }); 
-
+    io.to(roomID).emit("emoji", { emojiPath, sender });
+  });
 
   // Function to generate a unique room ID
   function generateRoomID() {
@@ -231,8 +218,6 @@ io.on("connection", (socket) => {
     // return "sulabhRoom";
   }
 });
-
-
 
 const port = process.env.PORT || 3000;
 

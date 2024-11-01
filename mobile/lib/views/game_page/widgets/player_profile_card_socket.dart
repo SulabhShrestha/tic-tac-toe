@@ -11,12 +11,10 @@ import 'package:mobile/views/game_page/utils/custom_toast.dart';
 
 class PlayerProfileCardSocket extends StatelessWidget {
   final MapEntry<String, dynamic> playerInfo;
-  final GlobalKey<ScaffoldMessengerState> scaffoldKey;
 
   const PlayerProfileCardSocket({
     super.key,
     required this.playerInfo,
-    required this.scaffoldKey,
   });
 
   @override
@@ -34,7 +32,7 @@ class PlayerProfileCardSocket extends StatelessWidget {
     return BlocConsumer<SocketBloc, SocketState>(
       listener: (context, state) {
         if (state is OtherPlayerDisconnectedState) {
-          CustomToast.show("${playerInfo.key} left the game"); 
+          CustomToast.show("${playerInfo.key} left the game");
         }
       },
       builder: (context, state) {
@@ -87,7 +85,7 @@ class PlayerProfileCardSocket extends StatelessWidget {
                               horizontal: 24, vertical: 8),
                           child: Image.asset(
                               playerInfo.key == "Player 1"
-                                  ? "images/close.png"
+                                  ? "images/check.png"
                                   : "images/circle.png",
                               height: 24),
                         ),

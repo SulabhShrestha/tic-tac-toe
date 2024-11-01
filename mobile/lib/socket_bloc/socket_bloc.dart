@@ -102,8 +102,12 @@ class SocketBloc extends Bloc<SocketEvent, SocketState> {
       await for (var gameConclusion
           in socketRepository.listenToGameConclusion()) {
         emit(GameEndState(
-            status: gameConclusion['status'],
-            winner: gameConclusion['winner']));
+          status: gameConclusion['status'],
+          winner: gameConclusion['winner'],
+          winnerSequence: gameConclusion["winSequence"] != null
+              ? (gameConclusion['winSequence'] as List).cast<int>()
+              : null,
+        ));
       }
     });
 

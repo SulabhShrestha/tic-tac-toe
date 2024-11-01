@@ -1,3 +1,4 @@
+// true means it is concluded and shouldn't continue any more
 function checkForConclusion(selectedCellsInfo, io, roomID) {
   // Grouping based on unique selectedBy values
   const groupedBySelectedBy = selectedCellsInfo.reduce((acc, cell) => {
@@ -11,12 +12,18 @@ function checkForConclusion(selectedCellsInfo, io, roomID) {
   for (const key in groupedBySelectedBy) {
     const element = groupedBySelectedBy[key];
 
-    if (hasWinningSequence(element)) {
+    var winSequence = getWinningSequence(element);
+
+    if (winSequence) {
       console.log(`${key} is the winner!`);
 
       // winner declared
-      io.to(roomID).emit("game-conclusion", {"status": "win", "winner" : key});
-      return;
+      io.to(roomID).emit("game-conclusion", {
+        status: "win",
+        winner: key,
+        winSequence,
+      });
+      return true;
     }
   }
 
@@ -27,11 +34,14 @@ function checkForConclusion(selectedCellsInfo, io, roomID) {
       .flat()
       .reduce((sum, index) => sum + (index + 1), 0) === 45
   ) {
-    io.to(roomID).emit("game-conclusion", {"status": "draw"});
+    io.to(roomID).emit("game-conclusion", { status: "draw" });
+    return true; 
   }
+
+  return false; 
 }
 
-function hasWinningSequence(indices) {
+function getWinningSequence(indices) {
   // Define the winning sequences
   const winningSequences = [
     [0, 1, 2],
@@ -44,10 +54,13 @@ function hasWinningSequence(indices) {
     [2, 4, 6], // Diagonals
   ];
 
-  // Check if any winning sequence is a subset of the provided indices
-  return winningSequences.some((sequence) =>
+  // Find and return the winning sequence if it exists
+  const winningSequence = winningSequences.find((sequence) =>
     sequence.every((index) => indices.includes(index))
   );
+
+  // Return the winning sequence or null if no winning sequence found
+  return winningSequence || null;
 }
 
 module.exports = { checkForConclusion };

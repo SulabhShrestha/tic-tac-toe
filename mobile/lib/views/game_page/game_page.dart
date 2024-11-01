@@ -18,6 +18,7 @@ import 'package:mobile/views/game_page/widgets/emoji_panel.dart';
 import 'package:mobile/views/game_page/widgets/player_profile_card_socket.dart';
 import 'package:mobile/views/game_page/widgets/round_indicator_socket.dart';
 import 'package:mobile/views/game_page/widgets/waiting_loading_indicator.dart';
+import 'package:mobile/views/widgets/line_painter.dart';
 import 'package:r_dotted_line_border/r_dotted_line_border.dart';
 
 import 'widgets/display_game_conclusion.dart';
@@ -178,21 +179,23 @@ class _HomePageState extends ConsumerState<GamePage> {
                   current is GameEndState) {
                 debugPrint("Previous: $previous, Current: $current");
 
-                // incrementing winner
-                if (current.winner != null) {
-                  context
-                      .read<GameDetailsCubit>()
-                      .incrementWinnerScore(current.winner!);
-                }
+                Future.delayed(Duration(milliseconds: 400), () {
+// incrementing winner
+                  if (current.winner != null) {
+                    context
+                        .read<GameDetailsCubit>()
+                        .incrementWinnerScore(current.winner!);
+                  }
 
-                showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (_) {
-                      return DisplayGameConclusion(
-                          gameConclusion: current.status,
-                          winner: current.winner);
-                    });
+                  showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (_) {
+                        return DisplayGameConclusion(
+                            gameConclusion: current.status,
+                            winner: current.winner);
+                      });
+                });
 
                 return false; // no need to listen to listener now
               }
@@ -234,9 +237,7 @@ class _HomePageState extends ConsumerState<GamePage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              
                               PlayerProfileCardSocket(
-                                  scaffoldKey: _scaffoldKey,
                                   playerInfo: context
                                       .read<GameDetailsCubit>()
                                       .state["players"]
@@ -247,7 +248,6 @@ class _HomePageState extends ConsumerState<GamePage> {
                               const RoundIndicatorSocket(),
 
                               PlayerProfileCardSocket(
-                                  scaffoldKey: _scaffoldKey,
                                   playerInfo: context
                                       .read<GameDetailsCubit>()
                                       .state["players"]
@@ -441,10 +441,31 @@ class _HomePageState extends ConsumerState<GamePage> {
                       : BorderSide.none,
                 ),
               ),
-              child: Center(
-                child: selectedCellsDetails.selectedIndex != -1
-                    ? _buildSomething(selectedCellsDetails.uid)
-                    : const Text(" "),
+              child: BlocBuilder<SocketBloc, SocketState>(
+                builder: (context, cState) {
+                  if (cState is GameEndState && cState.status != "draw") {
+                    var winLineType =
+                        GameHelper().getWinLineType(cState.winnerSequence!);
+                    return selectedCellsDetails.selectedIndex != -1
+                        ? _buildSomething(selectedCellsDetails.uid,
+                            winLineType: winLineType,
+                            hasWinner: cState.winnerSequence!.contains(index))
+                        : Text("");
+                  } else if (cState is GameEndState &&
+                      cState.status == "draw") {
+                    return selectedCellsDetails.selectedIndex != -1
+                        ? _buildSomething(selectedCellsDetails.uid,
+                            isDraw: true)
+                        : Text("");
+                  }
+                  return Center(
+                    child: selectedCellsDetails.selectedIndex != -1
+                        ? _buildSomething(
+                            selectedCellsDetails.uid,
+                          )
+                        : const Text(" "),
+                  );
+                },
               ),
             ),
           );
@@ -453,12 +474,39 @@ class _HomePageState extends ConsumerState<GamePage> {
     );
   }
 
-  Widget _buildSomething(String selectedBy) {
+  /// [hasWinner] is used to draw over the cell
+  Widget _buildSomething(
+    String selectedBy, {
+    // for winner
+    bool hasWinner = false,
+    WinLineType? winLineType,
+
+    // for draw
+    bool isDraw = false,
+  }) {
     var allPlayers = context.read<GameDetailsCubit>().state["players"];
-    return Image.asset(
-        selectedBy == allPlayers["Player 1"]
-            ? "images/close.png"
-            : "images/circle.png",
-        height: 54);
+    return LayoutBuilder(builder: (context, constraints) {
+      return Stack(
+        children: [
+          Center(
+            child: Image.asset(
+                selectedBy == allPlayers["Player 1"]
+                    ? "images/check.png"
+                    : "images/circle.png",
+                height: 54),
+          ),
+          if (hasWinner) ...{
+            // Image.asset("images/cross.png", height: 54),
+            CustomLinePainter(
+              lineType: winLineType!,
+            ),
+          } else if (isDraw) ...{
+            Center(
+              child: Image.asset("images/cross.png", height: 54),
+            ),
+          }
+        ],
+      );
+    });
   }
 }

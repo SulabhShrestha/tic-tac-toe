@@ -7,7 +7,6 @@ module.exports = {
   },
   addGameInfo: (newInfo) => {
     game_info = [...game_info, newInfo];
-
   },
   setGameInfo: (updatedGameInfo) => (game_info = updatedGameInfo),
 
@@ -25,21 +24,16 @@ module.exports = {
 
   // get game info by user id
   getGameInfoByUserId: (uid) => {
-    console.log("Getting games: ", game_info, uid);
     return game_info.find((game) => game.players.includes(uid));
   },
 
   // delete game
   deleteGameInfoByUserId: (uid) => {
-    
     game_info = game_info.filter((game) => !game.players.includes(uid));
-
-    console.log("After: ", game_info);
   },
 
   // remove all the selected cells from the game info
   clearSelectedCellsInfoByRoomID: (roomID) => {
-    
     game_info = game_info.map((game) => {
       // Check if the room property matches the provided room
       if (game.roomID === roomID) {

@@ -12,7 +12,7 @@ class SocketDataProvider {
     socket = IO.io(
         // dotenv.env['URL'],
         // "http://10.0.2.2:3000",
-        "http://192.168.1.69:3000",
+        "http://192.168.1.75:3000",
         IO.OptionBuilder()
             .setTransports(['websocket'])
             .disableAutoConnect()

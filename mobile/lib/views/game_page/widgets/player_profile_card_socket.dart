@@ -3,9 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:mobile/cubit/game_details_cubit/game_details_cubit.dart';
 import 'package:mobile/socket_bloc/socket_bloc.dart';
 import 'package:mobile/utils/colors.dart';
+import 'package:mobile/views/game_page/utils/custom_toast.dart';
 
 class PlayerProfileCardSocket extends StatelessWidget {
   final MapEntry<String, dynamic> playerInfo;
@@ -32,9 +34,7 @@ class PlayerProfileCardSocket extends StatelessWidget {
     return BlocConsumer<SocketBloc, SocketState>(
       listener: (context, state) {
         if (state is OtherPlayerDisconnectedState) {
-          scaffoldKey.currentState!.showSnackBar(SnackBar(
-            content: Text("${playerInfo.key} left the game"),
-          ));
+          CustomToast.show("${playerInfo.key} left the game"); 
         }
       },
       builder: (context, state) {

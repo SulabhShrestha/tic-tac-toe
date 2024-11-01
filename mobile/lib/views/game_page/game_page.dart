@@ -234,6 +234,7 @@ class _HomePageState extends ConsumerState<GamePage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
+                              
                               PlayerProfileCardSocket(
                                   scaffoldKey: _scaffoldKey,
                                   playerInfo: context

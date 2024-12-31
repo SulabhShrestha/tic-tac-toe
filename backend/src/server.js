@@ -55,7 +55,7 @@ io.on("connection", (socket) => {
   socket.on("create-room", ({ uid }) => {
     let roomID = generateRoomID();
 
-    roomID = "sulabh";
+    // roomID = "sulabh";
 
     // adding to onlinePlayers
     onlinePlayers[socket.id] = uid;

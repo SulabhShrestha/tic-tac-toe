@@ -64,8 +64,6 @@ class _TicTacBoardBotState extends State<TicTacBoardBot> {
       orElse: () => TicTacModel(uid: "None", selectedIndex: -1),
     );
 
-    log("Selected cells: $selectedCells");
-
     return GestureDetector(
       // it should be both player turn and cell should be empty
       onTap: cellDetails.selectedIndex == index

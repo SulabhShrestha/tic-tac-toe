@@ -41,13 +41,16 @@ class BotGamePage extends StatelessWidget {
               } else {
                 conclusionText = "You won";
               }
-              showDialog(
-                  context: context,
-                  builder: (_) {
-                    return Dialog(
-                      child: GameOverDialog(conclusionText: conclusionText),
-                    );
-                  });
+              if (Navigator.canPop(context)) {
+                showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (_) {
+                      return Dialog(
+                        child: GameOverDialog(conclusionText: conclusionText),
+                      );
+                    });
+              }
             }
           },
           child: Padding(

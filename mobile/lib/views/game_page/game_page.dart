@@ -180,7 +180,7 @@ class _HomePageState extends ConsumerState<GamePage> {
                 debugPrint("Previous: $previous, Current: $current");
 
                 Future.delayed(Duration(milliseconds: 400), () {
-// incrementing winner
+                  // incrementing winner
                   if (current.winner != null) {
                     context
                         .read<GameDetailsCubit>()

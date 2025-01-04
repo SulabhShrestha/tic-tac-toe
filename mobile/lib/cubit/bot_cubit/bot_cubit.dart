@@ -11,7 +11,7 @@ class BotCubit extends Cubit<Map<String, dynamic>> {
           "score": {"Bot": 0, "You": 0},
           "playerTurn": "Bot",
           "players": <String>[],
-          "startedBy": "", 
+          "startedBy": "",
           "selectedCells": <TicTacModel>[],
         });
 
@@ -39,14 +39,15 @@ class BotCubit extends Cubit<Map<String, dynamic>> {
       "players": <String>[],
       "startedBy": "",
       "selectedCells": <TicTacModel>[],
+      "winingSequence": [],
     });
   }
 
   void incrementRound({String winner = ""}) {
     String currentPlayer = state["startedBy"];
 
-    String nextPlayer =
-        (state["players"] as List).firstWhere((element) => element != currentPlayer);
+    String nextPlayer = (state["players"] as List)
+        .firstWhere((element) => element != currentPlayer);
 
     emit({
       ...state,
@@ -98,18 +99,39 @@ class BotCubit extends Cubit<Map<String, dynamic>> {
 
     Map<String, dynamic> newState = {...state};
 
+    List ticTacModels = (newState["selectedCells"] as List);
+
     if (result == BotGameConclusion.botWin) {
+      List<int> botSelectedIndex = [];
+
+      for (var element in ticTacModels) {
+        if (element.uid == "Bot") {
+          botSelectedIndex.add(element.selectedIndex);
+        }
+      }
       newState["score"] = {
         "Bot": getScore("Bot") + 1,
         "You": getScore("You"),
       };
       newState["game-end"] = "Bot";
+      newState["winningSequence"] =
+          BotGameHelper().getWinningSequence(botSelectedIndex);
     } else if (result == BotGameConclusion.youWin) {
+      List<int> playerSelectedIndex = []; 
+
+      for (var element in ticTacModels) {
+        if (element.uid == "You") {
+          playerSelectedIndex.add(element.selectedIndex);
+        }
+      }
+
       newState["score"] = {
         "Bot": getScore("Bot"),
         "You": getScore("You") + 1,
       };
       newState["game-end"] = "You";
+      newState["winningSequence"] =
+          BotGameHelper().getWinningSequence(playerSelectedIndex);
     } else if (result == BotGameConclusion.draw) {
       newState["game-end"] = "Draw";
     }

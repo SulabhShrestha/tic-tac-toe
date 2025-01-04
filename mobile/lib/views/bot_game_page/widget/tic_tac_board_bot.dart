@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile/cubit/bot_cubit/bot_cubit.dart';
 import 'package:mobile/models/tic_tac_model.dart';
 import 'package:mobile/utils/colors.dart';
+import 'package:mobile/utils/game_helper.dart';
+import 'package:mobile/views/bot_game_page/utils/bot_game_helper.dart';
 import 'package:mobile/views/widgets/line_painter.dart';
 import 'package:r_dotted_line_border/r_dotted_line_border.dart';
 
@@ -51,6 +53,17 @@ class _TicTacBoardBotState extends State<TicTacBoardBot> {
 
                 if (state["game-end"] == "Draw") {
                   isDraw = true;
+                } else if (state["game-end"] == "You" ||
+                    state["game-end"] == "Bot") {
+                  List<int> winningSequence = state["winningSequence"] ?? [];
+                  if(winningSequence.contains(a)){
+                    var winLineType =
+                        GameHelper().getWinLineType(winningSequence);
+                    return _buildGridCell(a, context,
+                        isDraw: false, winLineType: winLineType);
+                    
+                  }
+                  
                 }
                 return _buildGridCell(a, context, isDraw: isDraw);
               }),
@@ -61,7 +74,7 @@ class _TicTacBoardBotState extends State<TicTacBoardBot> {
   }
 
   Widget _buildGridCell(int index, BuildContext context,
-      {bool isDraw = false}) {
+      {bool isDraw = false, WinLineType? winLineType}) {
     // list of indexes for border
     List<int> borderBottomIndexes = [0, 1, 2, 3, 4, 5];
     List<int> borderRightIndexes = [0, 1, 3, 4, 6, 7];
@@ -115,6 +128,10 @@ class _TicTacBoardBotState extends State<TicTacBoardBot> {
         if (isDraw) ...{
           Center(
             child: Image.asset("images/cross.png", height: 54),
+          ),
+        } else if (winLineType != null) ...{
+          CustomLinePainter(
+            lineType: winLineType,
           ),
         }
       ],

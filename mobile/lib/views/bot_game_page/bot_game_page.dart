@@ -31,7 +31,7 @@ class BotGamePage extends StatelessWidget {
       },
       child: Scaffold(
         body: BlocListener<BotCubit, Map<String, dynamic>>(
-          listener: (context, state) {
+          listener: (_, state) {
             if (state["game-end"] != null) {
               var conclusionText = "";
               if (state["game-end"] == "Bot") {
@@ -42,14 +42,16 @@ class BotGamePage extends StatelessWidget {
                 conclusionText = "You won";
               }
               if (Navigator.canPop(context)) {
-                showDialog(
-                    context: context,
-                    barrierDismissible: false,
-                    builder: (_) {
-                      return Dialog(
-                        child: GameOverDialog(conclusionText: conclusionText),
-                      );
-                    });
+                Future.delayed(Duration(milliseconds: 200), () {
+                  showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder: (_) {
+                        return Dialog(
+                          child: GameOverDialog(conclusionText: conclusionText),
+                        );
+                      });
+                });
               }
             }
           },

@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile/cubit/bot_cubit/bot_cubit.dart';
 import 'package:mobile/models/tic_tac_model.dart';
 import 'package:mobile/utils/colors.dart';
+import 'package:mobile/views/widgets/line_painter.dart';
 import 'package:r_dotted_line_border/r_dotted_line_border.dart';
 
 class TicTacBoardBot extends StatefulWidget {
@@ -44,14 +45,23 @@ class _TicTacBoardBotState extends State<TicTacBoardBot> {
             crossAxisCount: 3,
           ),
           children: [
-            for (int a = 0; a < 9; a++) _buildGridCell(a, context),
+            for (int a = 0; a < 9; a++)
+              BlocBuilder<BotCubit, Map<String, dynamic>>(builder: (_, state) {
+                bool isDraw = false;
+
+                if (state["game-end"] == "Draw") {
+                  isDraw = true;
+                }
+                return _buildGridCell(a, context, isDraw: isDraw);
+              }),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildGridCell(int index, BuildContext context) {
+  Widget _buildGridCell(int index, BuildContext context,
+      {bool isDraw = false}) {
     // list of indexes for border
     List<int> borderBottomIndexes = [0, 1, 2, 3, 4, 5];
     List<int> borderRightIndexes = [0, 1, 3, 4, 6, 7];
@@ -64,41 +74,50 @@ class _TicTacBoardBotState extends State<TicTacBoardBot> {
       orElse: () => TicTacModel(uid: "None", selectedIndex: -1),
     );
 
-    return GestureDetector(
-      // it should be both player turn and cell should be empty
-      onTap: cellDetails.selectedIndex == index
-          ? null
-          : () {
-              debugPrint("Cell: $index");
-              context.read<BotCubit>().addSelectedCell(
-                  TicTacModel(uid: "You", selectedIndex: index));
-            },
+    return Stack(
+      children: [
+        GestureDetector(
+          // it should be both player turn and cell should be empty
+          onTap: cellDetails.selectedIndex == index
+              ? null
+              : () {
+                  debugPrint("Cell: $index");
+                  context.read<BotCubit>().addSelectedCell(
+                      TicTacModel(uid: "You", selectedIndex: index));
+                },
 
-      child: Container(
-        decoration: BoxDecoration(
-          border: RDottedLineBorder(
-            dottedLength: 6,
-            dottedSpace: 4,
-            right: borderRightIndexes.contains(index)
-                ? const BorderSide(
-                    color: ConstantColors.white,
-                    width: 1,
-                  )
-                : BorderSide.none,
-            bottom: borderBottomIndexes.contains(index)
-                ? const BorderSide(
-                    color: ConstantColors.white,
-                    width: 1,
-                  )
-                : BorderSide.none,
+          child: Container(
+            decoration: BoxDecoration(
+              border: RDottedLineBorder(
+                dottedLength: 6,
+                dottedSpace: 4,
+                right: borderRightIndexes.contains(index)
+                    ? const BorderSide(
+                        color: ConstantColors.white,
+                        width: 1,
+                      )
+                    : BorderSide.none,
+                bottom: borderBottomIndexes.contains(index)
+                    ? const BorderSide(
+                        color: ConstantColors.white,
+                        width: 1,
+                      )
+                    : BorderSide.none,
+              ),
+            ),
+            child: Center(
+              child: cellDetails.selectedIndex != index
+                  ? const Text(" ")
+                  : _buildSomething(cellDetails.uid),
+            ),
           ),
         ),
-        child: Center(
-          child: cellDetails.selectedIndex != index
-              ? const Text(" ")
-              : _buildSomething(cellDetails.uid),
-        ),
-      ),
+        if (isDraw) ...{
+          Center(
+            child: Image.asset("images/cross.png", height: 54),
+          ),
+        }
+      ],
     );
   }
 

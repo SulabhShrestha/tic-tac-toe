@@ -66,7 +66,7 @@ class BotGameHelper {
     if (_hasWinningSequence(groupedCells["Bot"]!)) {
       return BotGameConclusion.botWin;
     } else if (_hasWinningSequence(groupedCells["You"]!)) {
-      return BotGameConclusion.youWin;
+      return BotGameConclusion.playerWin;
     }
 
     return BotGameConclusion.notYet;
@@ -76,6 +76,6 @@ class BotGameHelper {
 enum BotGameConclusion {
   draw,
   botWin,
-  youWin,
+  playerWin,
   notYet,
 }

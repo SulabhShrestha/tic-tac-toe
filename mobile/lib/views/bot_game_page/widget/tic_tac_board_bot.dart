@@ -48,25 +48,25 @@ class _TicTacBoardBotState extends State<TicTacBoardBot> {
           ),
           children: [
             for (int a = 0; a < 9; a++)
-              BlocBuilder<BotCubit, Map<String, dynamic>>(builder: (_, state) {
-                bool isDraw = false;
+              BlocBuilder<BotCubit, BotState>(
+                builder: (_, state) {
+                  bool isDraw = false;
 
-                if (state["game-end"] == "Draw") {
-                  isDraw = true;
-                } else if (state["game-end"] == "You" ||
-                    state["game-end"] == "Bot") {
-                  List<int> winningSequence = state["winningSequence"] ?? [];
-                  if(winningSequence.contains(a)){
-                    var winLineType =
-                        GameHelper().getWinLineType(winningSequence);
-                    return _buildGridCell(a, context,
-                        isDraw: false, winLineType: winLineType);
-                    
+                  if (state.gameEnd == BotGameConclusion.draw) {
+                    isDraw = true;
+                  } else if (state.gameEnd == BotGameConclusion.botWin ||
+                      state.gameEnd == BotGameConclusion.playerWin) {
+                    List<int> winningSequence = state.winningSequence ?? [];
+                    if (winningSequence.contains(a)) {
+                      var winLineType =
+                          GameHelper().getWinLineType(winningSequence);
+                      return _buildGridCell(a, context,
+                          isDraw: false, winLineType: winLineType);
+                    }
                   }
-                  
-                }
-                return _buildGridCell(a, context, isDraw: isDraw);
-              }),
+                  return _buildGridCell(a, context, isDraw: isDraw);
+                },
+              ),
           ],
         ),
       ),

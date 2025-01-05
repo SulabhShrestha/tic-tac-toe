@@ -9,6 +9,7 @@ import 'package:mobile/views/bot_game_page/widget/tic_tac_board_bot.dart';
 import 'package:mobile/views/game_page/widgets/round_indicator_socket.dart';
 import 'package:mobile/views/homepage/widgets/gradient_button.dart';
 
+import 'utils/bot_game_helper.dart';
 import 'widget/player_profile_card_bot.dart';
 
 class BotGamePage extends StatelessWidget {
@@ -23,20 +24,21 @@ class BotGamePage extends StatelessWidget {
 
     return PopScope(
       canPop: false,
-      onPopInvoked: (didPop) {
+      
+      onPopInvokedWithResult: (didPop, _) {
         GameHelper().showBackDialog(context, () {
           botCubit.clearData();
           Navigator.pushNamedAndRemoveUntil(context, "/", (route) => true);
         });
       },
       child: Scaffold(
-        body: BlocListener<BotCubit, Map<String, dynamic>>(
+        body: BlocListener<BotCubit, BotState>(
           listener: (_, state) {
-            if (state["game-end"] != null) {
+            if (state.gameEnd != null && state.gameEnd != BotGameConclusion.notYet) {
               var conclusionText = "";
-              if (state["game-end"] == "Bot") {
+              if (state.gameEnd == BotGameConclusion.botWin) {
                 conclusionText = "Bot won";
-              } else if (state["game-end"] == "Draw") {
+              } else if (state.gameEnd == BotGameConclusion.draw) {
                 conclusionText = "Draw";
               } else {
                 conclusionText = "You won";

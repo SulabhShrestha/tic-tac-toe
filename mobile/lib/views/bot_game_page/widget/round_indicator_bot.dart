@@ -23,10 +23,10 @@ class RoundIndicatorBot extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text("Round", style: TextStyle(fontSize: 12.sp)),
-          BlocBuilder<BotCubit, Map<String, dynamic>>(
+          BlocBuilder<BotCubit, BotState>(
             builder: (context, state) {
               return Text(
-                state["round"].toString(),
+                state.round.toString(),
                 style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w500),
               );
             },

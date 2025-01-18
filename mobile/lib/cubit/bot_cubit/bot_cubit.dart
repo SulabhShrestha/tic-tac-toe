@@ -61,7 +61,7 @@ class BotCubit extends Cubit<BotState> {
 
   List<String> getPlayers() => state.players!;
   int getScore(String player) =>
-      player == "Bot" ? state.score!.bot : state.score!.player;
+      player == "Bot" ? state.score?.bot ?? 0 : state.score?.player ?? 0;
 
   void addSelectedCell(TicTacModel model) {
     // Add user's move

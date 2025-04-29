@@ -9,7 +9,6 @@ import 'package:mobile/cubit/game_details_cubit/game_details_cubit.dart';
 import 'package:mobile/models/tic_tac_model.dart';
 import 'package:mobile/providers/all_players_provider.dart';
 import 'package:mobile/providers/any_button_clicked.dart';
-import 'package:mobile/providers/qr_opened_provider.dart';
 import 'package:mobile/providers/waiting_for_other_player_connection_provider.dart';
 import 'package:mobile/socket_bloc/socket_bloc.dart';
 import 'package:mobile/utils/colors.dart';
@@ -89,6 +88,8 @@ class _HomePageState extends ConsumerState<GamePage> {
   final GlobalKey<ScaffoldMessengerState> _scaffoldKey =
       GlobalKey<ScaffoldMessengerState>();
 
+  final keyForQrCode = GlobalKey();
+
   @override
   void initState() {
     context.read<SocketBloc>()
@@ -167,9 +168,7 @@ class _HomePageState extends ConsumerState<GamePage> {
               } else if (socketBlocState is QrScannedReceived) {
                 debugPrint("QR scanned received, going to pop the context");
 
-                bool isQrOpened = ref.watch(qrOpenedProvider);
-
-                if (isQrOpened) {
+                if (keyForQrCode.currentContext != null) {
                   Navigator.pop(context);
                 }
               }
@@ -353,7 +352,9 @@ class _HomePageState extends ConsumerState<GamePage> {
                               ),
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            child: const WaitingLoadingIndicator(),
+                            child: WaitingLoadingIndicator(
+                              keyForQrCode: keyForQrCode,
+                            ),
                           ),
                         )),
                 ],

@@ -183,6 +183,9 @@ class SocketDataProvider {
 
     socket.on("qr-scanned", (data) {
       debugPrint("QR scanned received: $data");
+      if (controller.isClosed) {
+        controller = StreamController<bool>();
+      }
       controller.add(true); // data is always true, so doesn't really matters
     });
 

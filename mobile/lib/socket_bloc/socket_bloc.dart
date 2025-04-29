@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -51,7 +52,7 @@ class SocketBloc extends Bloc<SocketEvent, SocketState> {
     });
 
     on<ListenToQrScanned>((event, emit) async {
-      debugPrint("QrScannedReceived event called");
+      log("QrScannedReceived event called");
       final qrScanned = await socketRepository.listenToQrScannedReceived();
 
       emit(QrScannedReceived());

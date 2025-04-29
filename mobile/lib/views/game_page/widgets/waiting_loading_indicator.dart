@@ -5,13 +5,16 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/cubit/game_details_cubit/game_details_cubit.dart';
-import 'package:mobile/providers/qr_opened_provider.dart';
 import 'package:mobile/utils/colors.dart';
 import 'package:mobile/views/homepage/widgets/gradient_button.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
 class WaitingLoadingIndicator extends ConsumerStatefulWidget {
-  const WaitingLoadingIndicator({super.key});
+  final GlobalKey keyForQrCode;
+  const WaitingLoadingIndicator({
+    super.key,
+    required this.keyForQrCode,
+  });
 
   @override
   ConsumerState<WaitingLoadingIndicator> createState() =>
@@ -94,13 +97,12 @@ class _WaitingLoadingIndicatorState
         ),
         GradientButton(
           onTap: () {
-            ref.read(qrOpenedProvider.notifier).update((state) => true);
-
             showDialog(
               barrierDismissible: false,
               context: context,
               builder: (context) {
                 return Dialog(
+                  key: widget.keyForQrCode,
                   backgroundColor: Colors.transparent,
                   child: SizedBox(
                     width: 400,
@@ -152,9 +154,6 @@ class _WaitingLoadingIndicatorState
                             ),
                             child: IconButton(
                               onPressed: () {
-                                ref
-                                    .read(qrOpenedProvider.notifier)
-                                    .update((state) => false);
                                 Navigator.pop(context);
                               },
                               icon: const Icon(Icons.close),

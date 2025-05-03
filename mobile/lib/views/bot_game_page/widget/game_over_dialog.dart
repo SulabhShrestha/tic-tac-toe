@@ -37,8 +37,8 @@ class GameOverDialog extends StatelessWidget {
                   colors: [Colors.red.shade400, Colors.red.shade200]),
               onTap: () {
                 context.read<BotCubit>().clearData();
-                Navigator.pushNamedAndRemoveUntil(
-                    context, "/", (route) => true);
+
+                Navigator.popUntil(context, (route) => route.isFirst);
               },
               child: const Text("Exit"),
             ),

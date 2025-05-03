@@ -11,7 +11,7 @@ class BotState {
   final BotGameConclusion? gameEnd;
 
   BotState({
-    this.round,
+    this.round = 1,
     this.score,
     this.playerTurn,
     this.players,
@@ -49,6 +49,6 @@ class Score {
   final int bot;
   final int player;
 
-  Score({required this.bot, required this.player});
+  Score({this.bot =0, this.player = 0});
 }
 

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -12,8 +14,25 @@ import 'package:mobile/views/homepage/widgets/gradient_button.dart';
 import 'utils/bot_game_helper.dart';
 import 'widget/player_profile_card_bot.dart';
 
-class BotGamePage extends StatelessWidget {
+class BotGamePage extends StatefulWidget {
   const BotGamePage({super.key});
+
+  @override
+  State<BotGamePage> createState() => _BotGamePageState();
+}
+
+class _BotGamePageState extends State<BotGamePage> {
+  @override
+  void initState() {
+    log("Inside BotGamePage initState");
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    log("Inside BotGamePage dispose");
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,17 +43,17 @@ class BotGamePage extends StatelessWidget {
 
     return PopScope(
       canPop: false,
-      
       onPopInvokedWithResult: (didPop, _) {
         GameHelper().showBackDialog(context, () {
           botCubit.clearData();
-          Navigator.pushNamedAndRemoveUntil(context, "/", (route) => true);
+          Navigator.popUntil(context, (route) => route.isFirst);
         });
       },
       child: Scaffold(
         body: BlocListener<BotCubit, BotState>(
           listener: (_, state) {
-            if (state.gameEnd != null && state.gameEnd != BotGameConclusion.notYet) {
+            if (state.gameEnd != null &&
+                state.gameEnd != BotGameConclusion.notYet) {
               var conclusionText = "";
               if (state.gameEnd == BotGameConclusion.botWin) {
                 conclusionText = "Bot won";

@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:mobile/cubit/bot_cubit/bot_cubit.dart';
@@ -24,8 +25,15 @@ class BotGamePage extends StatefulWidget {
 class _BotGamePageState extends State<BotGamePage> {
   @override
   void initState() {
-    log("Inside BotGamePage initState");
+    gameStarted();
     super.initState();
+  }
+
+  void gameStarted() async {
+    await Future.wait([
+      HapticFeedback.vibrate(),
+      SystemSound.play(SystemSoundType.click),
+    ]);
   }
 
   @override

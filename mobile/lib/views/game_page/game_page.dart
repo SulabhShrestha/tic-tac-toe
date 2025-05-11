@@ -171,6 +171,9 @@ class _HomePageState extends ConsumerState<GamePage> {
                 if (keyForQrCode.currentContext != null) {
                   Navigator.pop(context);
                 }
+              } else if (socketBlocState is OtherPlayerDisconnectedState) {
+                debugPrint("Other player disconnected");
+                Navigator.pop(context);
               }
             },
             listenWhen: (previous, current) {

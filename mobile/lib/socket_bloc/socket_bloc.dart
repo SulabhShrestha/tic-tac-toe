@@ -150,6 +150,7 @@ class SocketBloc extends Bloc<SocketEvent, SocketState> {
     on<DisconnectSocket>((event, emit) {
       debugPrint("DisconnectSocket event called");
       socketRepository.disconnect();
+      emit(SocketInitial()); 
     });
   }
 }

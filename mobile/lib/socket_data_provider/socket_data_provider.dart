@@ -10,9 +10,9 @@ class SocketDataProvider {
   // initialize the socket
   void init() {
     socket = IO.io(
-        dotenv.env['URL'],
+        // dotenv.env['URL'],
         // "http://10.0.2.2:3000",
-        // "http://192.168.1.88:3000",
+        "http://192.168.1.66:3000",
         IO.OptionBuilder()
             .setTransports(['websocket'])
             .disableAutoConnect()

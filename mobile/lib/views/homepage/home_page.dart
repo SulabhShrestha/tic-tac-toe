@@ -94,6 +94,8 @@ class _HomePageState extends ConsumerState<HomePage> with ActivityLoggerMx {
                           colors: [Colors.deepPurple, Colors.deepOrange]),
                       onTap: joiningButtonLoadingProv
                           ? () {
+                              logActivity(
+                                  activityType: ActivityType.cancelJoinGame);
                               debugPrint("Loading should be cancelled");
                               ref
                                   .read(joinButtonLoadingProvider.notifier)
@@ -126,6 +128,8 @@ class _HomePageState extends ConsumerState<HomePage> with ActivityLoggerMx {
                       onTap: anyButtonClickedProv
                           ? () {}
                           : () {
+                              logActivity(
+                                  activityType: ActivityType.playWithBot);
                               context.read<BotCubit>().initGame();
                               Navigator.of(context).pushNamed("/bot-game");
                             },

@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile/core/service/activity_logger.dart';
 import 'package:mobile/cubit/game_details_cubit/game_details_cubit.dart';
+import 'package:mobile/mixins/activity_logger_mx.dart';
 import 'package:mobile/providers/any_button_clicked.dart';
 import 'package:mobile/providers/join_button_loading_provider.dart';
 import 'package:mobile/socket_bloc/socket_bloc.dart';
@@ -18,7 +20,7 @@ class AskRoomID extends ConsumerStatefulWidget {
   ConsumerState<AskRoomID> createState() => _AskRoomIDState();
 }
 
-class _AskRoomIDState extends ConsumerState<AskRoomID> {
+class _AskRoomIDState extends ConsumerState<AskRoomID> with ActivityLoggerMx {
   final TextEditingController roomIDController = TextEditingController();
   final FocusNode focusNode = FocusNode();
 
@@ -83,6 +85,8 @@ class _AskRoomIDState extends ConsumerState<AskRoomID> {
                                 if (ref.watch(joinButtonLoadingProvider)) {
                                   return;
                                 }
+                                logActivity(
+                                    activityType: ActivityType.joinGameViaQR);
 
                                 Navigator.pop(context);
 
@@ -111,6 +115,8 @@ class _AskRoomIDState extends ConsumerState<AskRoomID> {
                 text: "Join",
                 onTap: ref.watch(joinButtonLoadingProvider)
                     ? () {
+                        logActivity(
+                            activityType: ActivityType.cancelJoinGame);
                         debugPrint("Loading should be cancelled");
                         ref
                             .read(joinButtonLoadingProvider.notifier)
@@ -118,6 +124,11 @@ class _AskRoomIDState extends ConsumerState<AskRoomID> {
                         context.read<SocketBloc>().add(DisconnectSocket());
                       }
                     : () {
+                        logActivity(
+                            activityType: ActivityType.joinGame,
+                            additionalData: {
+                              "roomID": roomIDController.text,
+                            });
                         focusNode.unfocus();
                         joinSocketRoom(context, ref, roomIDController.text);
                         ref

@@ -1,13 +1,17 @@
+import 'dart:developer';
+
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'dart:async';
 
 enum ActivityType {
   appOpen,
   cancelCreateGame,
   createGame,
+  cancelJoinGame,
   joinGame,
+  joinGameViaQR,
   playWithBot,
   gameStart,
 }
@@ -37,7 +41,7 @@ class ActivityLoggerImpl implements ActivityLogger {
     };
 
     var data = jsonEncode(activityData);
-    print("Logging activity: $data");
+    log("Logging activity: $data");
 
     http
         .post(Uri.parse(_loggerEndpoint),
@@ -47,12 +51,12 @@ class ActivityLoggerImpl implements ActivityLogger {
             body: data)
         .then((response) {
       if (response.statusCode == 200) {
-        print('Activity logged successfully');
+        log('Activity logged successfully');
       } else {
-        print('Failed to log activity: ${response.statusCode}');
+        log('Failed to log activity: ${response.statusCode}');
       }
     }).catchError((error) {
-      print('Error logging activity: $error');
+      log('Error logging activity: $error');
     });
   }
 }

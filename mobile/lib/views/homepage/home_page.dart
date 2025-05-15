@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:mobile/core/service/activity_logger.dart';
 import 'package:mobile/cubit/bot_cubit/bot_cubit.dart';
 import 'package:mobile/cubit/game_details_cubit/game_details_cubit.dart';
+import 'package:mobile/mixins/activity_logger_mx.dart';
 import 'package:mobile/providers/any_button_clicked.dart';
 import 'package:mobile/providers/join_button_loading_provider.dart';
 import 'package:mobile/providers/waiting_for_other_player_connection_provider.dart';
@@ -23,7 +25,7 @@ class HomePage extends ConsumerStatefulWidget {
   ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends ConsumerState<HomePage> {
+class _HomePageState extends ConsumerState<HomePage> with ActivityLoggerMx {
   @override
   Widget build(BuildContext context) {
     var anyButtonClickedProv = ref.watch(anyButtonClickedProvider);
@@ -62,6 +64,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                     text: "Create Game",
                     onTap: anyButtonClickedProv
                         ? () {
+                            logActivity(
+                                activityType: ActivityType.cancelCreateGame);
                             debugPrint("Loading should be cancelled");
                             ref
                                 .read(anyButtonClickedProvider.notifier)
@@ -69,6 +73,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                             context.read<SocketBloc>().add(DisconnectSocket());
                           }
                         : () {
+                            logActivity(activityType: ActivityType.createGame);
                             // setting the value of any button clicked
                             ref.read(anyButtonClickedProvider.notifier).state =
                                 true;

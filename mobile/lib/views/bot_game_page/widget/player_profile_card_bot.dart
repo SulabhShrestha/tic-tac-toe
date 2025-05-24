@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mobile/cubit/bot_cubit/bot_cubit.dart';
 import 'package:mobile/utils/colors.dart';
 
@@ -53,15 +54,22 @@ class PlayerProfileCardBot extends StatelessWidget {
                   const SizedBox(height: 8),
                   Container(
                     decoration: const BoxDecoration(
-                      color: ConstantColors.red,
+                      gradient: LinearGradient(
+                        begin: Alignment.bottomRight,
+                        end: Alignment.center,
+                        colors: [
+                          ConstantColors.white,
+                          Color(0xFFFFE4E1),
+                        ],
+                      ),
                       borderRadius: BorderRadius.all(Radius.circular(12)),
                     ),
                     padding:
                         const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                    child: Image.asset(
+                    child: SvgPicture.asset(
                         position == 0
-                            ? "images/close.png"
-                            : "images/circle.png",
+                            ? "images/cross.svg"
+                            : "images/circle.svg",
                         height: 24),
                   ),
                 ],

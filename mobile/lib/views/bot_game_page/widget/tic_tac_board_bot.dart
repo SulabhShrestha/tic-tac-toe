@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:mobile/cubit/bot_cubit/bot_cubit.dart';
 import 'package:mobile/models/tic_tac_model.dart';
 import 'package:mobile/utils/colors.dart';
@@ -33,7 +34,14 @@ class _TicTacBoardBotState extends State<TicTacBoardBot> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: ConstantColors.red,
+          gradient: const LinearGradient(
+            begin: Alignment.topRight,
+            end: Alignment.center,
+            colors: [
+              ConstantColors.white,
+              Color(0xFFFFE4E1),
+            ],
+          ),
           borderRadius: const BorderRadius.all(Radius.circular(24)),
           border: Border.all(
             color: Colors.white,
@@ -105,14 +113,14 @@ class _TicTacBoardBotState extends State<TicTacBoardBot> {
                 dottedLength: 6,
                 dottedSpace: 4,
                 right: borderRightIndexes.contains(index)
-                    ? const BorderSide(
-                        color: ConstantColors.white,
+                    ? BorderSide(
+                        color: Colors.black.withValues(alpha: 0.2),
                         width: 1,
                       )
                     : BorderSide.none,
                 bottom: borderBottomIndexes.contains(index)
-                    ? const BorderSide(
-                        color: ConstantColors.white,
+                    ? BorderSide(
+                        color: Colors.black.withValues(alpha: 0.2),
                         width: 1,
                       )
                     : BorderSide.none,
@@ -141,8 +149,8 @@ class _TicTacBoardBotState extends State<TicTacBoardBot> {
   _buildSomething(String selectedBy) {
     final allPlayers = context.read<BotCubit>().getPlayers();
 
-    return Image.asset(
-      selectedBy == allPlayers.first ? "images/check.png" : "images/circle.png",
+    return SvgPicture.asset(
+      selectedBy == allPlayers.first ? "images/cross.svg" : "images/circle.svg",
       height: 54,
     );
   }

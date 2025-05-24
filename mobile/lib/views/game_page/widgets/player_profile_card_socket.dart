@@ -78,15 +78,22 @@ class PlayerProfileCardSocket extends StatelessWidget {
                         const SizedBox(height: 8),
                         Container(
                           decoration: const BoxDecoration(
-                            color: ConstantColors.red,
+                            gradient: LinearGradient(
+                              begin: Alignment.bottomRight,
+                              end: Alignment.center,
+                              colors: [
+                                ConstantColors.white,
+                                Color(0xFFFFE4E1),
+                              ],
+                            ),
                             borderRadius: BorderRadius.all(Radius.circular(12)),
                           ),
                           padding: const EdgeInsets.symmetric(
                               horizontal: 24, vertical: 8),
-                          child: Image.asset(
+                          child: SvgPicture.asset(
                               playerInfo.key == "Player 1"
-                                  ? "images/check.png"
-                                  : "images/circle.png",
+                                  ? "images/cross.svg"
+                                  : "images/circle.svg",
                               height: 24),
                         ),
                       ],

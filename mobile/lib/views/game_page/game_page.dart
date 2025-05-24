@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mobile/cubit/game_details_cubit/game_details_cubit.dart';
 import 'package:mobile/models/tic_tac_model.dart';
 import 'package:mobile/providers/all_players_provider.dart';
@@ -271,7 +272,14 @@ class _HomePageState extends ConsumerState<GamePage> {
                             child: Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: ConstantColors.red,
+                                gradient: const LinearGradient(
+                                  begin: Alignment.topRight,
+                                  end: Alignment.center,
+                                  colors: [
+                                    ConstantColors.white,
+                                    Color(0xFFFFE4E1),
+                                  ],
+                                ),
                                 borderRadius:
                                     const BorderRadius.all(Radius.circular(24)),
                                 border: Border.all(
@@ -432,14 +440,14 @@ class _HomePageState extends ConsumerState<GamePage> {
                   dottedLength: 6,
                   dottedSpace: 4,
                   right: borderRightIndexes.contains(index)
-                      ? const BorderSide(
-                          color: ConstantColors.white,
+                      ? BorderSide(
+                          color: Colors.black.withValues(alpha: 0.2),
                           width: 1,
                         )
                       : BorderSide.none,
                   bottom: borderBottomIndexes.contains(index)
-                      ? const BorderSide(
-                          color: ConstantColors.white,
+                      ? BorderSide(
+                          color: Colors.black.withValues(alpha: 0.2),
                           width: 1,
                         )
                       : BorderSide.none,
@@ -493,10 +501,10 @@ class _HomePageState extends ConsumerState<GamePage> {
       return Stack(
         children: [
           Center(
-            child: Image.asset(
+            child: SvgPicture.asset(
                 selectedBy == allPlayers["Player 1"]
-                    ? "images/check.png"
-                    : "images/circle.png",
+                    ? "images/cross.svg"
+                    : "images/circle.svg",
                 height: 54),
           ),
           if (hasWinner) ...{

@@ -1,2 +1,0 @@
-/Users/thesulabh/Documents/Flutter/tic-tac-toe/mobile/android/app/.cxx/Debug/446c454h/armeabi-v7a/CMakeFiles/rebuild_cache.dir
-/Users/thesulabh/Documents/Flutter/tic-tac-toe/mobile/android/app/.cxx/Debug/446c454h/armeabi-v7a/CMakeFiles/edit_cache.dir

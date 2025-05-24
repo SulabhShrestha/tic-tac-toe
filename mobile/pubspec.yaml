@@ -47,6 +47,7 @@ dependencies:
   fluttertoast: ^8.2.8
   hooks_riverpod: ^2.6.1
   flutter_hooks: ^0.21.2
+  device_info_plus: ^11.4.0
 
 dev_dependencies:
   flutter_test:

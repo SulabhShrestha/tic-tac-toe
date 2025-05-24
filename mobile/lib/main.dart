@@ -1,10 +1,12 @@
 import 'dart:math';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:mobile/core/service/device_info_service.dart';
 import 'package:mobile/cubit/bot_cubit/bot_cubit.dart';
 import 'package:mobile/views/bot_game_page/bot_game_page.dart';
 import 'package:mobile/views/game_page/game_page.dart';
@@ -18,7 +20,12 @@ import 'views/homepage/home_page.dart';
 
 void main() async {
   Bloc.observer = SocketBlocObserver();
-  await dotenv.load(fileName: ".env");
+
+  await Future.wait([
+    dotenv.load(fileName: ".env"),
+    DeviceInfoService().getDeviceFingerprint(),
+  ]);
+
   runApp(const ProviderScope(child: MyApp()));
 
   generateRandomString(); // generate random uid and stores in cache

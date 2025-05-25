@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:mobile/core/service/activity_logger.dart';
 import 'package:mobile/cubit/bot_cubit/bot_cubit.dart';
 import 'package:mobile/cubit/game_details_cubit/game_details_cubit.dart';
@@ -12,8 +14,10 @@ import 'package:mobile/providers/any_button_clicked.dart';
 import 'package:mobile/providers/join_button_loading_provider.dart';
 import 'package:mobile/providers/waiting_for_other_player_connection_provider.dart';
 import 'package:mobile/socket_bloc/socket_bloc.dart';
+import 'package:mobile/utils/colors.dart';
 import 'package:mobile/views/homepage/widgets/ask_room_ID.dart';
 import 'package:mobile/views/homepage/widgets/gradient_button.dart';
+import 'package:mobile/views/homepage/widgets/online_play_options.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import 'widgets/loading_button_with_text.dart';
@@ -32,10 +36,21 @@ class _HomePageState extends ConsumerState<HomePage> with ActivityLoggerMx {
     var joiningButtonLoadingProv = ref.watch(joinButtonLoadingProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFFDDCE6),
       body: SafeArea(
-        child: SizedBox(
+        top: false,
+        maintainBottomViewPadding: true,
+        child: Container(
           width: double.infinity,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topRight,
+              end: Alignment.center,
+              colors: [
+                ConstantColors.white,
+                Color(0xFFFFE4E1),
+              ],
+            ),
+          ),
           child: BlocConsumer<SocketBloc, SocketState>(
             listener: (context, state) {
               if (state is RoomCreated) {
@@ -60,80 +75,71 @@ class _HomePageState extends ConsumerState<HomePage> with ActivityLoggerMx {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  LoadingButtonWithText(
-                    text: "Create Game",
-                    onTap: anyButtonClickedProv
-                        ? () {
-                            logActivity(
-                                activityType: ActivityType.cancelCreateGame);
-                            debugPrint("Loading should be cancelled");
-                            ref
-                                .read(anyButtonClickedProvider.notifier)
-                                .update((state) => false);
-                            context.read<SocketBloc>().add(DisconnectSocket());
-                          }
-                        : () {
-                            logActivity(activityType: ActivityType.createGame);
-                            // setting the value of any button clicked
-                            ref.read(anyButtonClickedProvider.notifier).state =
-                                true;
-
-                            debugPrint("Loading");
-
-                            context.read<SocketBloc>()
-                              ..add(InitSocket())
-                              ..add(CreateRoom(
-                                  myUid: context
-                                      .read<GameDetailsCubit>()
-                                      .getUserId()));
-                          },
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SvgPicture.asset(
+                        "images/cross.svg",
+                        height: 120.h,
+                      ),
+                      SvgPicture.asset(
+                        "images/circle.svg",
+                        height: 120.h,
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 20),
+                  42.verticalSpace,
+
+                  Text(
+                    "Choose a play mode",
+                    style: TextStyle(
+                      color: ConstantColors.blue,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  16.verticalSpace,
                   GradientButton(
-                      linearGradient: const LinearGradient(
-                          colors: [Colors.deepPurple, Colors.deepOrange]),
-                      onTap: joiningButtonLoadingProv
-                          ? () {
-                              logActivity(
-                                  activityType: ActivityType.cancelJoinGame);
-                              debugPrint("Loading should be cancelled");
-                              ref
-                                  .read(joinButtonLoadingProvider.notifier)
-                                  .update((state) => false);
-                              context
-                                  .read<SocketBloc>()
-                                  .add(DisconnectSocket());
-                            }
-                          : () {
-                              // alert dialog
-                              showDialog(
-                                  context: context,
-                                  builder: (context) {
-                                    return const AskRoomID();
-                                  });
-                            },
-                      child: joiningButtonLoadingProv
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(),
-                            )
-                          : const Text("Join Game")),
+                    height: 42.h,
+                    width: 0.7.sw,
+                    onTap: () {
+                      showModalBottomSheet(
+                          context: context,
+                          enableDrag: false,
+                          useSafeArea: true,
+                          builder: (_) {
+                            return const OnlinePlayOptions();
+                          });
+                    },
+                    child: Text(
+                      "With Friend",
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                      ),
+                    ),
+                  ),
 
                   // Playing with Bot
-                  const SizedBox(height: 42),
+                  SizedBox(height: 16.h),
                   GradientButton(
-                      linearGradient: const LinearGradient(
-                          colors: [Colors.green, Colors.blue]),
-                      onTap: anyButtonClickedProv
-                          ? () {}
-                          : () {
-                              logActivity(
-                                  activityType: ActivityType.playWithBot);
-                              context.read<BotCubit>().initGame();
-                              Navigator.of(context).pushNamed("/bot-game");
-                            },
-                      child: const Text("Play with Bot")),
+                    height: 42.h,
+                    width: 0.7.sw,
+                    linearGradient: const LinearGradient(
+                        colors: [Colors.green, Colors.blue]),
+                    onTap: anyButtonClickedProv
+                        ? () {}
+                        : () {
+                            logActivity(activityType: ActivityType.playWithBot);
+                            context.read<BotCubit>().initGame();
+                            Navigator.of(context).pushNamed("/bot-game");
+                          },
+                    child: Text(
+                      "With Bot",
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                      ),
+                    ),
+                  ),
                 ],
               );
             },

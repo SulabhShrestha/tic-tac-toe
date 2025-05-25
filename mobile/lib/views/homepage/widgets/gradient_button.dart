@@ -5,6 +5,7 @@ class GradientButton extends StatelessWidget {
   final Widget child;
   final LinearGradient? linearGradient;
   final double? width;
+  final double? height;
 
   const GradientButton({
     super.key,
@@ -13,12 +14,14 @@ class GradientButton extends StatelessWidget {
     this.linearGradient =
         const LinearGradient(colors: [Colors.cyan, Colors.indigo]),
     this.width = 150.0,
+    this.height,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 38,
+      height: height ?? 38,
+      width: width,
       decoration: BoxDecoration(
         gradient: linearGradient,
         borderRadius: BorderRadius.circular(20),

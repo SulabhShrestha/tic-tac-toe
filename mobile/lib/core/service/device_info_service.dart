@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:device_info_plus/device_info_plus.dart';
 
 class DeviceInfoService {
-
   // making this singleton class
   static final DeviceInfoService _instance = DeviceInfoService._internal();
   factory DeviceInfoService() {
@@ -20,7 +19,7 @@ class DeviceInfoService {
   Future<void> getDeviceFingerprint() async {
     var deviceInfo = await _deviceInfoPlugin.deviceInfo;
 
-    log("Device info: ${deviceInfo.data["fingerprint"]}");
+    log("Device info: ${deviceInfo.data}");
     _deviceId = deviceInfo.data["fingerprint"];
   }
 }

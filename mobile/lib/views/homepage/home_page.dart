@@ -19,6 +19,7 @@ import 'package:mobile/views/homepage/widgets/ask_room_ID.dart';
 import 'package:mobile/views/homepage/widgets/gradient_button.dart';
 import 'package:mobile/views/homepage/widgets/online_play_options.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:wakelock_plus/wakelock_plus.dart';
 
 import 'widgets/loading_button_with_text.dart';
 
@@ -34,6 +35,8 @@ class _HomePageState extends ConsumerState<HomePage> with ActivityLoggerMx {
   Widget build(BuildContext context) {
     var anyButtonClickedProv = ref.watch(anyButtonClickedProvider);
     var joiningButtonLoadingProv = ref.watch(joinButtonLoadingProvider);
+
+    WakelockPlus.enable();
 
     return Scaffold(
       body: SafeArea(

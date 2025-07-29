@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile/models/tic_tac_model.dart';
@@ -53,6 +55,7 @@ class GameDetailsCubit extends Cubit<Map<String, dynamic>> {
   }
 
   void addSelectedCells(TicTacModel model) {
+    log("Selected cell added: $model");
     emit({
       ...state,
       "selectedCells": [...state["selectedCells"], model]
@@ -102,5 +105,15 @@ class GameDetailsCubit extends Cubit<Map<String, dynamic>> {
 
   void clearSelectedCells() {
     emit({...state, "selectedCells": []});
+  }
+
+  void resetGameDetails() {
+    emit({
+      "round": 1,
+      "score": {"Player 1": 0, "Player 2": 0},
+      "playerTurn": "4567",
+      "selectedCells": <TicTacModel>[],
+      "players": <String, dynamic>{"Iron Man": "1234", "Spider Man": "4567"}
+    });
   }
 }

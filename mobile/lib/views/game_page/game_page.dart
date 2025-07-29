@@ -49,6 +49,7 @@ class _HomePageState extends ConsumerState<GamePage> {
         .read(waitingForOtherPlayerConnectionProvider.notifier)
         .update((state) => false);
     context.read<SocketBloc>().add(DisconnectSocket());
+    context.read<GameDetailsCubit>().resetGameDetails();
     Navigator.pushNamedAndRemoveUntil(context, "/", (route) => true);
   }
 

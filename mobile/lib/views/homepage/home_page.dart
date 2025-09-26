@@ -108,8 +108,8 @@ class _HomePageState extends ConsumerState<HomePage> with ActivityLoggerMx {
                     onTap: () {
                       showModalBottomSheet(
                           context: context,
-                          enableDrag: false,
-                          useSafeArea: true,
+                          // enableDrag: false,
+                          useSafeArea: false,
                           builder: (_) {
                             return const OnlinePlayOptions();
                           });

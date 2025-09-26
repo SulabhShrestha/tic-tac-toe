@@ -23,7 +23,9 @@ class OnlinePlayOptions extends ConsumerWidget with ActivityLoggerMx {
     return SizedBox(
       width: double.infinity,
       child: Padding(
-        padding: EdgeInsets.symmetric(vertical: 16.h),
+        padding: EdgeInsets.symmetric(vertical: 16.h).copyWith(
+          bottom: 16.h + MediaQuery.of(context).viewPadding.bottom,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

@@ -12,11 +12,13 @@ class SocketDataProvider {
     socket = IO.io(
         // dotenv.env['URL'],
         // "http://10.0.2.2:3000",
-        "http://192.168.1.77:3000",
+        "http://192.168.1.770:3000",
         IO.OptionBuilder()
             .setTransports(['websocket'])
             .disableAutoConnect()
+            .disableReconnection()
             .enableForceNewConnection()
+            .setTimeout(15000) // 15 seconds
             .build());
 
     socket.connect(); // connect to the server
@@ -24,8 +26,23 @@ class SocketDataProvider {
       debugPrint("Connected to the server");
     });
 
+    socket.onConnectTimeout((_) {
+      debugPrint("Connection timeout");
+    });
+
     socket.onDisconnect((_) {
       debugPrint("Disconnected from the server");
+    });
+  }
+
+  void onConnectionError(void Function(String error) callback) {
+    socket.onConnectError((err) {
+      debugPrint("Connection error: $err");
+      if (err == "timeout") {
+        callback("timeout");
+      } else {
+        callback("error: $err");
+      }
     });
   }
 

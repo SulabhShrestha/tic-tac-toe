@@ -11,6 +11,12 @@ class RoomCreated extends SocketState {
   RoomCreated({required this.roomID});
 }
 
+class ConnectionErrorState extends SocketState {
+  final String error;
+
+  ConnectionErrorState({required this.error});
+}
+
 class RoomNotFound extends SocketState {}
 
 class GameStart extends SocketState {

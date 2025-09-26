@@ -41,6 +41,13 @@ class SocketRepository {
     return false;
   }
 
+  String onConnectionError(void Function(String error) callback) {
+    socketDataProvider.onConnectionError((error) {
+      callback(error);
+    });
+    return "done";
+  }
+
   /// Listen to game-init event
   Future<Map<String, dynamic>> listenToGameInit() async {
     final gamePlayersData = await socketDataProvider.listenToGameInit().first;

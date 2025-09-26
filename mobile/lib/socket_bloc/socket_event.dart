@@ -5,6 +5,11 @@ abstract class SocketEvent {}
 
 class InitSocket extends SocketEvent {}
 
+class SocketErrorEvent extends SocketEvent {
+  final String message;
+  SocketErrorEvent(this.message);
+}
+
 class JoinRoom extends SocketEvent {
   final String roomID;
   final String myUid;

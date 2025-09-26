@@ -71,9 +71,33 @@ class _HomePageState extends ConsumerState<HomePage> with ActivityLoggerMx {
                 Navigator.of(context).pushNamed("/game", arguments: {
                   "players": <String, dynamic>{},
                 });
+              }else if(state is ConnectionErrorState){
+
+                if (Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                }
+
+                
+                ref
+                    .read(anyButtonClickedProvider.notifier)
+                    .update((state) => false);
+
+                if(state.error.contains("timeout")){
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Connection timeout. Please try again later."),
+                    ),
+                  );
+                }else{
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Connection error. Please try again later."),
+                    ),
+                  );
+                }
               }
             },
-            builder: (context, state) {
+            builder: (_, state) {
               return Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,

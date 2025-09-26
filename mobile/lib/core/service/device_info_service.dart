@@ -19,7 +19,6 @@ class DeviceInfoService {
   Future<void> getDeviceFingerprint() async {
     var deviceInfo = await _deviceInfoPlugin.deviceInfo;
 
-    log("Device info: ${deviceInfo.data}");
     _deviceId = deviceInfo.data["fingerprint"];
   }
 }

@@ -15,8 +15,19 @@ class SocketBloc extends Bloc<SocketEvent, SocketState> {
 
   SocketBloc(this.socketRepository) : super(SocketInitial()) {
     on<InitSocket>((event, emit) {
-      socketRepository.init();
+      socketRepository
+        ..init()
+        ..onConnectionError(
+          (error) {
+            add(SocketErrorEvent(error));
+          },
+        );
     });
+
+    on<SocketErrorEvent>((event, emit) {
+      emit(ConnectionErrorState(error: event.message));
+    });
+
 
     on<CreateRoom>((event, emit) async {
       socketRepository.createRoom(uid: event.myUid);
@@ -150,7 +161,7 @@ class SocketBloc extends Bloc<SocketEvent, SocketState> {
     on<DisconnectSocket>((event, emit) {
       debugPrint("DisconnectSocket event called");
       socketRepository.disconnect();
-      emit(SocketInitial()); 
+      emit(SocketInitial());
     });
   }
 }

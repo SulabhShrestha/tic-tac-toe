@@ -55,7 +55,7 @@ io.on("connection", (socket) => {
   socket.on("create-room", ({ uid }) => {
     let roomID = generateRoomID();
 
-    roomID = "sulabh";
+    // roomID = "sulabh";
 
     // adding to onlinePlayers
     onlinePlayers[socket.id] = uid;
@@ -206,7 +206,7 @@ io.on("connection", (socket) => {
   // Function to generate a unique room ID
   function generateRoomID() {
     const characters =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789~!@#$%^&*()+=[]{}<>?";
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let result = "";
 
     for (let i = 0; i < 5; i++) {
